@@ -1,0 +1,50 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexus-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-18",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // D1 Database
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nexus-db",
+      "database_id": "bf8148c0-b43e-4d09-bcee-d79d4760650e",
+      "migrations_dir": "../../packages/db/migrations"
+    }
+  ],
+
+  // KV Namespace for caching + rate limiting
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "3239a3d638544acfb41b93fc2296e38a"
+    }
+  ],
+
+  // Vectorize for semantic search
+  "vectorize": [
+    {
+      "binding": "VECTORIZE",
+      "index_name": "nexus-tools"
+    }
+  ],
+
+  // AI for embeddings
+  "ai": {
+    "binding": "AI"
+  },
+
+  // Public environment variables only
+  "vars": {
+    "BETTER_AUTH_URL": "https://api.nexus.yogan.dev"
+  }
+
+  // Secrets (set via .dev.vars locally, wrangler secret put for production):
+  // - BETTER_AUTH_SECRET
+  // - GOOGLE_CLIENT_ID
+  // - GOOGLE_CLIENT_SECRET
+  // - GITHUB_CLIENT_ID
+  // - GITHUB_CLIENT_SECRET
+}

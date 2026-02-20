@@ -1,0 +1,22 @@
+{
+  "name": "@nexus/auth",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "scripts": {
+    "generate": "npx @better-auth/cli generate --config ./src/index.ts"
+  },
+  "dependencies": {
+    "better-auth": "^1.2.0",
+    "better-auth-cloudflare": "^0.2.9",
+    "drizzle-orm": "^0.44.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260206.0",
+    "typescript": "^5.7.3"
+  }
+}
