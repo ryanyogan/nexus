@@ -13,6 +13,13 @@ const config = defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  ssr: {
+    // Ensure these packages are bundled for SSR
+    noExternal: ['zod', 'drizzle-orm'],
+  },
+  optimizeDeps: {
+    include: ['zod'],
+  },
   plugins: [
     devtools(),
     cloudflare({ viteEnvironment: { name: 'ssr' } }),

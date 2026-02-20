@@ -16,7 +16,7 @@
     "hono": "^4.7.11",
     "@hono/zod-validator": "^0.4.3",
     "zod": "^3.25.34",
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.26.0"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

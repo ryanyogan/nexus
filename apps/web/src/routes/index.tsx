@@ -3,11 +3,11 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
-  Layers,
+  BookOpen,
   Zap,
   Search,
-  Puzzle,
-  Shield,
+  Code2,
+  Database,
   Globe,
   ArrowRight,
   Github,
@@ -197,14 +197,14 @@ function HomePage() {
                   `,
                 }}
               >
-                <Layers className="h-8 w-8 text-primary-foreground" />
+                <BookOpen className="h-8 w-8 text-primary-foreground" />
               </div>
             </div>
 
             {/* Title with holographic effect */}
             <h1 className="hero-title text-4xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
               <HolographicText as="span" delay={0.5}>
-                One MCP Server to
+                The Documentation
               </HolographicText>{" "}
               <span
                 className="bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] bg-clip-text text-transparent"
@@ -212,14 +212,13 @@ function HomePage() {
                   animation: "gradient-shift 3s linear infinite",
                 }}
               >
-                Rule Them All
+                Oracle for AI
               </span>
             </h1>
 
             <p className="hero-subtitle mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              Discover, compose, and invoke MCP servers from one unified
-              endpoint. The universal registry for Model Context Protocol
-              servers.
+              Instant access to indexed documentation for every library.
+              Semantic search powered by AI. One MCP server for all your coding knowledge.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -234,14 +233,14 @@ function HomePage() {
                 }}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Explore Servers
+                  Browse Libraries
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
                 {/* Glow effect on hover */}
                 <div className="absolute inset-0 -z-0 bg-gradient-to-r from-primary via-accent to-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               </Link>
               <a
-                href="https://github.com"
+                href="https://github.com/yogan/nexus"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hero-cta inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border bg-card/50 px-8 text-base font-semibold text-foreground backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-card"
@@ -268,27 +267,33 @@ function HomePage() {
                   <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
                   <div className="h-3 w-3 rounded-full bg-green-500/80" />
                   <span className="ml-2 font-mono text-xs text-muted-foreground">
-                    agent.ts
+                    MCP Tools
                   </span>
                 </div>
                 <pre className="overflow-x-auto p-4 text-left font-mono text-sm">
                   <code>
-                    <span className="text-muted-foreground/60">{"// Just describe what you need"}</span>{"\n"}
-                    <span className="text-accent">const</span>{" "}
-                    <span className="text-foreground">tools</span>{" "}
-                    <span className="text-accent">=</span>{" "}
+                    <span className="text-muted-foreground/60">{"// Find the right library"}</span>{"\n"}
                     <span className="text-accent">await</span>{" "}
                     <span className="text-foreground">nexus</span>
                     <span className="text-muted-foreground">.</span>
-                    <span className="text-primary">search</span>
+                    <span className="text-primary">resolve-library</span>
                     <span className="text-muted-foreground">(</span>
-                    <span className="text-green-400">"read a PDF and summarize it"</span>
+                    <span className="text-green-400">"react"</span>
                     <span className="text-muted-foreground">)</span>{"\n\n"}
-                    <span className="text-muted-foreground/60">{"// Returns: ["}</span>{"\n"}
-                    <span className="text-muted-foreground/60">{"//   { server: 'pdf-tools', tool: 'extract_text', score: 0.94 },"}</span>{"\n"}
-                    <span className="text-muted-foreground/60">{"//   { server: 'anthropic', tool: 'summarize', score: 0.91 },"}</span>{"\n"}
-                    <span className="text-muted-foreground/60">{"//   { server: 'openai', tool: 'gpt4_completion', score: 0.87 },"}</span>{"\n"}
-                    <span className="text-muted-foreground/60">{"// ]"}</span>
+                    <span className="text-muted-foreground/60">{"// Search documentation with semantic understanding"}</span>{"\n"}
+                    <span className="text-accent">await</span>{" "}
+                    <span className="text-foreground">nexus</span>
+                    <span className="text-muted-foreground">.</span>
+                    <span className="text-primary">query-docs</span>
+                    <span className="text-muted-foreground">({"{"}</span>{"\n"}
+                    {"  "}<span className="text-foreground">libraryId</span>
+                    <span className="text-muted-foreground">:</span>{" "}
+                    <span className="text-green-400">"react"</span>
+                    <span className="text-muted-foreground">,</span>{"\n"}
+                    {"  "}<span className="text-foreground">query</span>
+                    <span className="text-muted-foreground">:</span>{" "}
+                    <span className="text-green-400">"How to use useEffect cleanup"</span>{"\n"}
+                    <span className="text-muted-foreground">{"})"}</span>
                   </code>
                 </pre>
               </div>
@@ -314,45 +319,45 @@ function HomePage() {
               </span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-              Everything you need to discover, compose, and use MCP servers
+              Everything you need to access documentation instantly
             </p>
           </div>
 
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
               icon={<Search className="h-6 w-6" />}
-              title="Universal Registry"
-              description="Browse and search all registered MCP servers with rich metadata, capability tags, and quality signals."
+              title="Semantic Search"
+              description="Ask questions in natural language. Nexus understands your intent and finds the most relevant documentation."
               color="purple"
             />
             <FeatureCard
               icon={<Zap className="h-6 w-6" />}
-              title="Intelligent Routing"
-              description="Just call the tool you need. Nexus figures out which server handles it and routes automatically."
+              title="Pre-Indexed Docs"
+              description="Documentation is chunked and indexed ahead of time. No waiting for fetches - instant results."
               color="cyan"
             />
             <FeatureCard
-              icon={<Puzzle className="h-6 w-6" />}
-              title="Compose Stacks"
-              description="Combine multiple MCP servers into one endpoint. Create your perfect dev stack."
+              icon={<Code2 className="h-6 w-6" />}
+              title="Code Examples"
+              description="Get real code snippets and examples from official documentation, not hallucinated answers."
               color="purple"
             />
             <FeatureCard
               icon={<Sparkles className="h-6 w-6" />}
-              title="Semantic Matching"
-              description="Ask for 'read a PDF' and Nexus finds the right tool, even if it's named differently."
+              title="Always Current"
+              description="Documentation is automatically re-indexed from source repos. Never work with stale information."
               color="cyan"
             />
             <FeatureCard
-              icon={<Shield className="h-6 w-6" />}
-              title="Auth Aggregation"
-              description="Store credentials once. Nexus handles authentication to all your connected servers."
+              icon={<Database className="h-6 w-6" />}
+              title="Growing Library"
+              description="React, Next.js, Hono, Drizzle, TanStack, and more. Submit your favorite libraries to be indexed."
               color="purple"
             />
             <FeatureCard
               icon={<Globe className="h-6 w-6" />}
               title="Edge Powered"
-              description="Built on Cloudflare Workers for ultra-low latency responses worldwide."
+              description="Built on Cloudflare Workers with Vectorize for ultra-low latency semantic search worldwide."
               color="cyan"
             />
           </div>
@@ -373,7 +378,7 @@ function HomePage() {
               How It Works
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-              Connect once, access everything
+              Connect once, access all documentation
             </p>
           </div>
 
@@ -381,17 +386,17 @@ function HomePage() {
             <StepCard
               number="1"
               title="Connect to Nexus"
-              description="Point your MCP client to the Nexus endpoint. One connection gives you access to all registered servers."
+              description="Add Nexus as an MCP server in your AI coding assistant. One endpoint for all library documentation."
             />
             <StepCard
               number="2"
-              title="Discover Tools"
-              description="Browse the registry or let Nexus's semantic search find the perfect tool for your task."
+              title="Find Your Library"
+              description="Use resolve-library to search for any library by name. Get the library ID for documentation queries."
             />
             <StepCard
               number="3"
-              title="Call Any Tool"
-              description="Invoke tools from any server through the unified Nexus endpoint. We handle the routing."
+              title="Query Docs"
+              description="Ask questions about the library. Get relevant documentation chunks with code examples instantly."
             />
           </div>
         </div>
@@ -405,7 +410,7 @@ function HomePage() {
               Ready to get started?
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-              Explore the registry and start using MCP servers in seconds.
+              Explore indexed libraries or submit your own for indexing.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
@@ -416,7 +421,7 @@ function HomePage() {
                 }}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Browse Registry
+                  Browse Libraries
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </Link>
@@ -443,7 +448,7 @@ function HomePage() {
                   boxShadow: "0 0 15px rgba(139, 92, 246, 0.3)",
                 }}
               >
-                <Layers className="h-4 w-4 text-primary-foreground" />
+                <BookOpen className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-semibold text-foreground">Nexus</span>
             </div>

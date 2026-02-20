@@ -11,9 +11,21 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ExploreRouteImport } from './routes/explore'
-import { Route as DocsRouteImport } from './routes/docs'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ServersServerIdRouteImport } from './routes/servers/$serverId'
+import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
+import { Route as DocsWebUiRouteImport } from './routes/docs/web-ui'
+import { Route as DocsSubmitRouteImport } from './routes/docs/submit'
+import { Route as DocsGettingStartedRouteImport } from './routes/docs/getting-started'
+import { Route as DocsMcpToolsIndexRouteImport } from './routes/docs/mcp-tools/index'
+import { Route as DocsApiIndexRouteImport } from './routes/docs/api/index'
+import { Route as DocsMcpToolsResolveLibraryRouteImport } from './routes/docs/mcp-tools/resolve-library'
+import { Route as DocsMcpToolsQueryDocsRouteImport } from './routes/docs/mcp-tools/query-docs'
+import { Route as DocsMcpToolsListLibrariesRouteImport } from './routes/docs/mcp-tools/list-libraries'
+import { Route as DocsMcpToolsGetLibraryInfoRouteImport } from './routes/docs/mcp-tools/get-library-info'
+import { Route as DocsApiSubmissionsRouteImport } from './routes/docs/api/submissions'
+import { Route as DocsApiStatsRouteImport } from './routes/docs/api/stats'
+import { Route as DocsApiLibrariesRouteImport } from './routes/docs/api/libraries'
 
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
@@ -25,64 +37,221 @@ const ExploreRoute = ExploreRouteImport.update({
   path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ServersServerIdRoute = ServersServerIdRouteImport.update({
-  id: '/servers/$serverId',
-  path: '/servers/$serverId',
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibrariesLibraryIdRoute = LibrariesLibraryIdRouteImport.update({
+  id: '/libraries/$libraryId',
+  path: '/libraries/$libraryId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsWebUiRoute = DocsWebUiRouteImport.update({
+  id: '/docs/web-ui',
+  path: '/docs/web-ui',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsSubmitRoute = DocsSubmitRouteImport.update({
+  id: '/docs/submit',
+  path: '/docs/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsGettingStartedRoute = DocsGettingStartedRouteImport.update({
+  id: '/docs/getting-started',
+  path: '/docs/getting-started',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsMcpToolsIndexRoute = DocsMcpToolsIndexRouteImport.update({
+  id: '/docs/mcp-tools/',
+  path: '/docs/mcp-tools/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsApiIndexRoute = DocsApiIndexRouteImport.update({
+  id: '/docs/api/',
+  path: '/docs/api/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsMcpToolsResolveLibraryRoute =
+  DocsMcpToolsResolveLibraryRouteImport.update({
+    id: '/docs/mcp-tools/resolve-library',
+    path: '/docs/mcp-tools/resolve-library',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DocsMcpToolsQueryDocsRoute = DocsMcpToolsQueryDocsRouteImport.update({
+  id: '/docs/mcp-tools/query-docs',
+  path: '/docs/mcp-tools/query-docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsMcpToolsListLibrariesRoute =
+  DocsMcpToolsListLibrariesRouteImport.update({
+    id: '/docs/mcp-tools/list-libraries',
+    path: '/docs/mcp-tools/list-libraries',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DocsMcpToolsGetLibraryInfoRoute =
+  DocsMcpToolsGetLibraryInfoRouteImport.update({
+    id: '/docs/mcp-tools/get-library-info',
+    path: '/docs/mcp-tools/get-library-info',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DocsApiSubmissionsRoute = DocsApiSubmissionsRouteImport.update({
+  id: '/docs/api/submissions',
+  path: '/docs/api/submissions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsApiStatsRoute = DocsApiStatsRouteImport.update({
+  id: '/docs/api/stats',
+  path: '/docs/api/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsApiLibrariesRoute = DocsApiLibrariesRouteImport.update({
+  id: '/docs/api/libraries',
+  path: '/docs/api/libraries',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/docs': typeof DocsRoute
   '/explore': typeof ExploreRoute
   '/sign-in': typeof SignInRoute
-  '/servers/$serverId': typeof ServersServerIdRoute
+  '/docs/getting-started': typeof DocsGettingStartedRoute
+  '/docs/submit': typeof DocsSubmitRoute
+  '/docs/web-ui': typeof DocsWebUiRoute
+  '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
+  '/docs/': typeof DocsIndexRoute
+  '/docs/api/libraries': typeof DocsApiLibrariesRoute
+  '/docs/api/stats': typeof DocsApiStatsRoute
+  '/docs/api/submissions': typeof DocsApiSubmissionsRoute
+  '/docs/mcp-tools/get-library-info': typeof DocsMcpToolsGetLibraryInfoRoute
+  '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
+  '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
+  '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
+  '/docs/api/': typeof DocsApiIndexRoute
+  '/docs/mcp-tools/': typeof DocsMcpToolsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/docs': typeof DocsRoute
   '/explore': typeof ExploreRoute
   '/sign-in': typeof SignInRoute
-  '/servers/$serverId': typeof ServersServerIdRoute
+  '/docs/getting-started': typeof DocsGettingStartedRoute
+  '/docs/submit': typeof DocsSubmitRoute
+  '/docs/web-ui': typeof DocsWebUiRoute
+  '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
+  '/docs': typeof DocsIndexRoute
+  '/docs/api/libraries': typeof DocsApiLibrariesRoute
+  '/docs/api/stats': typeof DocsApiStatsRoute
+  '/docs/api/submissions': typeof DocsApiSubmissionsRoute
+  '/docs/mcp-tools/get-library-info': typeof DocsMcpToolsGetLibraryInfoRoute
+  '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
+  '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
+  '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
+  '/docs/api': typeof DocsApiIndexRoute
+  '/docs/mcp-tools': typeof DocsMcpToolsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/docs': typeof DocsRoute
   '/explore': typeof ExploreRoute
   '/sign-in': typeof SignInRoute
-  '/servers/$serverId': typeof ServersServerIdRoute
+  '/docs/getting-started': typeof DocsGettingStartedRoute
+  '/docs/submit': typeof DocsSubmitRoute
+  '/docs/web-ui': typeof DocsWebUiRoute
+  '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
+  '/docs/': typeof DocsIndexRoute
+  '/docs/api/libraries': typeof DocsApiLibrariesRoute
+  '/docs/api/stats': typeof DocsApiStatsRoute
+  '/docs/api/submissions': typeof DocsApiSubmissionsRoute
+  '/docs/mcp-tools/get-library-info': typeof DocsMcpToolsGetLibraryInfoRoute
+  '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
+  '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
+  '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
+  '/docs/api/': typeof DocsApiIndexRoute
+  '/docs/mcp-tools/': typeof DocsMcpToolsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/docs' | '/explore' | '/sign-in' | '/servers/$serverId'
+  fullPaths:
+    | '/'
+    | '/explore'
+    | '/sign-in'
+    | '/docs/getting-started'
+    | '/docs/submit'
+    | '/docs/web-ui'
+    | '/libraries/$libraryId'
+    | '/docs/'
+    | '/docs/api/libraries'
+    | '/docs/api/stats'
+    | '/docs/api/submissions'
+    | '/docs/mcp-tools/get-library-info'
+    | '/docs/mcp-tools/list-libraries'
+    | '/docs/mcp-tools/query-docs'
+    | '/docs/mcp-tools/resolve-library'
+    | '/docs/api/'
+    | '/docs/mcp-tools/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/docs' | '/explore' | '/sign-in' | '/servers/$serverId'
+  to:
+    | '/'
+    | '/explore'
+    | '/sign-in'
+    | '/docs/getting-started'
+    | '/docs/submit'
+    | '/docs/web-ui'
+    | '/libraries/$libraryId'
+    | '/docs'
+    | '/docs/api/libraries'
+    | '/docs/api/stats'
+    | '/docs/api/submissions'
+    | '/docs/mcp-tools/get-library-info'
+    | '/docs/mcp-tools/list-libraries'
+    | '/docs/mcp-tools/query-docs'
+    | '/docs/mcp-tools/resolve-library'
+    | '/docs/api'
+    | '/docs/mcp-tools'
   id:
     | '__root__'
     | '/'
-    | '/docs'
     | '/explore'
     | '/sign-in'
-    | '/servers/$serverId'
+    | '/docs/getting-started'
+    | '/docs/submit'
+    | '/docs/web-ui'
+    | '/libraries/$libraryId'
+    | '/docs/'
+    | '/docs/api/libraries'
+    | '/docs/api/stats'
+    | '/docs/api/submissions'
+    | '/docs/mcp-tools/get-library-info'
+    | '/docs/mcp-tools/list-libraries'
+    | '/docs/mcp-tools/query-docs'
+    | '/docs/mcp-tools/resolve-library'
+    | '/docs/api/'
+    | '/docs/mcp-tools/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DocsRoute: typeof DocsRoute
   ExploreRoute: typeof ExploreRoute
   SignInRoute: typeof SignInRoute
-  ServersServerIdRoute: typeof ServersServerIdRoute
+  DocsGettingStartedRoute: typeof DocsGettingStartedRoute
+  DocsSubmitRoute: typeof DocsSubmitRoute
+  DocsWebUiRoute: typeof DocsWebUiRoute
+  LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
+  DocsIndexRoute: typeof DocsIndexRoute
+  DocsApiLibrariesRoute: typeof DocsApiLibrariesRoute
+  DocsApiStatsRoute: typeof DocsApiStatsRoute
+  DocsApiSubmissionsRoute: typeof DocsApiSubmissionsRoute
+  DocsMcpToolsGetLibraryInfoRoute: typeof DocsMcpToolsGetLibraryInfoRoute
+  DocsMcpToolsListLibrariesRoute: typeof DocsMcpToolsListLibrariesRoute
+  DocsMcpToolsQueryDocsRoute: typeof DocsMcpToolsQueryDocsRoute
+  DocsMcpToolsResolveLibraryRoute: typeof DocsMcpToolsResolveLibraryRoute
+  DocsApiIndexRoute: typeof DocsApiIndexRoute
+  DocsMcpToolsIndexRoute: typeof DocsMcpToolsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -101,13 +270,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -115,11 +277,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/servers/$serverId': {
-      id: '/servers/$serverId'
-      path: '/servers/$serverId'
-      fullPath: '/servers/$serverId'
-      preLoaderRoute: typeof ServersServerIdRouteImport
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/libraries/$libraryId': {
+      id: '/libraries/$libraryId'
+      path: '/libraries/$libraryId'
+      fullPath: '/libraries/$libraryId'
+      preLoaderRoute: typeof LibrariesLibraryIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/web-ui': {
+      id: '/docs/web-ui'
+      path: '/docs/web-ui'
+      fullPath: '/docs/web-ui'
+      preLoaderRoute: typeof DocsWebUiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/submit': {
+      id: '/docs/submit'
+      path: '/docs/submit'
+      fullPath: '/docs/submit'
+      preLoaderRoute: typeof DocsSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/getting-started': {
+      id: '/docs/getting-started'
+      path: '/docs/getting-started'
+      fullPath: '/docs/getting-started'
+      preLoaderRoute: typeof DocsGettingStartedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp-tools/': {
+      id: '/docs/mcp-tools/'
+      path: '/docs/mcp-tools'
+      fullPath: '/docs/mcp-tools/'
+      preLoaderRoute: typeof DocsMcpToolsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/api/': {
+      id: '/docs/api/'
+      path: '/docs/api'
+      fullPath: '/docs/api/'
+      preLoaderRoute: typeof DocsApiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp-tools/resolve-library': {
+      id: '/docs/mcp-tools/resolve-library'
+      path: '/docs/mcp-tools/resolve-library'
+      fullPath: '/docs/mcp-tools/resolve-library'
+      preLoaderRoute: typeof DocsMcpToolsResolveLibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp-tools/query-docs': {
+      id: '/docs/mcp-tools/query-docs'
+      path: '/docs/mcp-tools/query-docs'
+      fullPath: '/docs/mcp-tools/query-docs'
+      preLoaderRoute: typeof DocsMcpToolsQueryDocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp-tools/list-libraries': {
+      id: '/docs/mcp-tools/list-libraries'
+      path: '/docs/mcp-tools/list-libraries'
+      fullPath: '/docs/mcp-tools/list-libraries'
+      preLoaderRoute: typeof DocsMcpToolsListLibrariesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp-tools/get-library-info': {
+      id: '/docs/mcp-tools/get-library-info'
+      path: '/docs/mcp-tools/get-library-info'
+      fullPath: '/docs/mcp-tools/get-library-info'
+      preLoaderRoute: typeof DocsMcpToolsGetLibraryInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/api/submissions': {
+      id: '/docs/api/submissions'
+      path: '/docs/api/submissions'
+      fullPath: '/docs/api/submissions'
+      preLoaderRoute: typeof DocsApiSubmissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/api/stats': {
+      id: '/docs/api/stats'
+      path: '/docs/api/stats'
+      fullPath: '/docs/api/stats'
+      preLoaderRoute: typeof DocsApiStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/api/libraries': {
+      id: '/docs/api/libraries'
+      path: '/docs/api/libraries'
+      fullPath: '/docs/api/libraries'
+      preLoaderRoute: typeof DocsApiLibrariesRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -127,10 +380,22 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DocsRoute: DocsRoute,
   ExploreRoute: ExploreRoute,
   SignInRoute: SignInRoute,
-  ServersServerIdRoute: ServersServerIdRoute,
+  DocsGettingStartedRoute: DocsGettingStartedRoute,
+  DocsSubmitRoute: DocsSubmitRoute,
+  DocsWebUiRoute: DocsWebUiRoute,
+  LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
+  DocsIndexRoute: DocsIndexRoute,
+  DocsApiLibrariesRoute: DocsApiLibrariesRoute,
+  DocsApiStatsRoute: DocsApiStatsRoute,
+  DocsApiSubmissionsRoute: DocsApiSubmissionsRoute,
+  DocsMcpToolsGetLibraryInfoRoute: DocsMcpToolsGetLibraryInfoRoute,
+  DocsMcpToolsListLibrariesRoute: DocsMcpToolsListLibrariesRoute,
+  DocsMcpToolsQueryDocsRoute: DocsMcpToolsQueryDocsRoute,
+  DocsMcpToolsResolveLibraryRoute: DocsMcpToolsResolveLibraryRoute,
+  DocsApiIndexRoute: DocsApiIndexRoute,
+  DocsMcpToolsIndexRoute: DocsMcpToolsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

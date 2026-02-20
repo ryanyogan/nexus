@@ -18,6 +18,14 @@
     }
   ],
 
+  // R2 Bucket for documentation chunks
+  "r2_buckets": [
+    {
+      "binding": "DOCS_BUCKET",
+      "bucket_name": "nexus-docs"
+    }
+  ],
+
   // KV Namespace for caching + rate limiting
   "kv_namespaces": [
     {
@@ -30,9 +38,26 @@
   "vectorize": [
     {
       "binding": "VECTORIZE",
-      "index_name": "nexus-tools"
+      "index_name": "nexus-docs"
     }
   ],
+
+  // Queues for ingestion pipeline
+  "queues": {
+    "producers": [
+      {
+        "queue": "nexus-ingestion",
+        "binding": "INGESTION_QUEUE"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "nexus-ingestion",
+        "max_batch_size": 5,
+        "max_batch_timeout": 30
+      }
+    ]
+  },
 
   // AI for embeddings
   "ai": {
@@ -50,4 +75,5 @@
   // - GOOGLE_CLIENT_SECRET
   // - GITHUB_CLIENT_ID
   // - GITHUB_CLIENT_SECRET
+  // - GITHUB_TOKEN (for fetching repo contents)
 }

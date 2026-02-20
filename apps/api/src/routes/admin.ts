@@ -1,314 +1,730 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
-import { servers, tools, serverStats } from "@nexus/db/schema";
-import type { AppContext } from "../types";
+import { libraries, submissions, libraryStats, chunks } from "@nexus/db";
+import type { AppContext, IngestionJob } from "../types";
 
 const adminRouter = new Hono<AppContext>();
 
-// Seed demo data
+// ============================================================================
+// Library Definitions for Seeding
+// ============================================================================
+
+interface LibrarySeed {
+  id: string;
+  name: string;
+  description: string;
+  sourceType: "github" | "website" | "npm";
+  sourceUrl: string;
+  repositoryUrl?: string;
+  homepageUrl?: string;
+  iconUrl?: string;
+  categories: string[];
+  isFeatured?: boolean;
+}
+
+const SEED_LIBRARIES: LibrarySeed[] = [
+  // Frontend Frameworks
+  {
+    id: "react",
+    name: "React",
+    description: "A JavaScript library for building user interfaces with a component-based architecture.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/reactjs/react.dev",
+    repositoryUrl: "https://github.com/facebook/react",
+    homepageUrl: "https://react.dev",
+    iconUrl: "https://react.dev/favicon.ico",
+    categories: ["frontend", "fullstack"],
+    isFeatured: true,
+  },
+  {
+    id: "nextjs",
+    name: "Next.js",
+    description: "The React framework for production with hybrid static & server rendering, TypeScript support, and more.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/vercel/next.js",
+    repositoryUrl: "https://github.com/vercel/next.js",
+    homepageUrl: "https://nextjs.org",
+    iconUrl: "https://nextjs.org/favicon.ico",
+    categories: ["frontend", "fullstack", "backend"],
+    isFeatured: true,
+  },
+  {
+    id: "vue",
+    name: "Vue.js",
+    description: "The progressive JavaScript framework for building web interfaces.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/vuejs/docs",
+    repositoryUrl: "https://github.com/vuejs/vue",
+    homepageUrl: "https://vuejs.org",
+    iconUrl: "https://vuejs.org/logo.svg",
+    categories: ["frontend"],
+    isFeatured: true,
+  },
+  {
+    id: "svelte",
+    name: "Svelte",
+    description: "Cybernetically enhanced web apps with a compile-time framework approach.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/sveltejs/svelte",
+    repositoryUrl: "https://github.com/sveltejs/svelte",
+    homepageUrl: "https://svelte.dev",
+    iconUrl: "https://svelte.dev/favicon.png",
+    categories: ["frontend"],
+  },
+  {
+    id: "solid",
+    name: "SolidJS",
+    description: "Simple and performant reactivity for building user interfaces.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/solidjs/solid-docs-next",
+    repositoryUrl: "https://github.com/solidjs/solid",
+    homepageUrl: "https://solidjs.com",
+    iconUrl: "https://solidjs.com/favicon.ico",
+    categories: ["frontend"],
+  },
+
+  // Backend Frameworks
+  {
+    id: "hono",
+    name: "Hono",
+    description: "Ultrafast web framework for the Edges. Works on Cloudflare Workers, Deno, Bun, and more.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/honojs/hono",
+    repositoryUrl: "https://github.com/honojs/hono",
+    homepageUrl: "https://hono.dev",
+    iconUrl: "https://hono.dev/images/logo.png",
+    categories: ["backend", "cloud"],
+    isFeatured: true,
+  },
+  {
+    id: "express",
+    name: "Express",
+    description: "Fast, unopinionated, minimalist web framework for Node.js.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/expressjs/expressjs.com",
+    repositoryUrl: "https://github.com/expressjs/express",
+    homepageUrl: "https://expressjs.com",
+    iconUrl: "https://expressjs.com/images/favicon.png",
+    categories: ["backend"],
+  },
+  {
+    id: "fastify",
+    name: "Fastify",
+    description: "Fast and low overhead web framework for Node.js with TypeScript support.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/fastify/fastify",
+    repositoryUrl: "https://github.com/fastify/fastify",
+    homepageUrl: "https://fastify.io",
+    iconUrl: "https://fastify.io/img/favicon.ico",
+    categories: ["backend"],
+  },
+
+  // Database & ORM
+  {
+    id: "drizzle",
+    name: "Drizzle ORM",
+    description: "TypeScript ORM for SQL databases with zero dependencies and maximum type safety.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/drizzle-team/drizzle-orm",
+    repositoryUrl: "https://github.com/drizzle-team/drizzle-orm",
+    homepageUrl: "https://orm.drizzle.team",
+    iconUrl: "https://orm.drizzle.team/favicon.ico",
+    categories: ["database", "backend"],
+    isFeatured: true,
+  },
+  {
+    id: "prisma",
+    name: "Prisma",
+    description: "Next-generation Node.js and TypeScript ORM with auto-generated query builder.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/prisma/docs",
+    repositoryUrl: "https://github.com/prisma/prisma",
+    homepageUrl: "https://prisma.io",
+    iconUrl: "https://prisma.io/favicon.ico",
+    categories: ["database", "backend"],
+  },
+
+  // Cloud & Infrastructure
+  {
+    id: "cloudflare-workers",
+    name: "Cloudflare Workers",
+    description: "Build serverless applications on Cloudflare's edge network with JavaScript/TypeScript.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/cloudflare/cloudflare-docs",
+    repositoryUrl: "https://github.com/cloudflare/workers-sdk",
+    homepageUrl: "https://workers.cloudflare.com",
+    iconUrl: "https://www.cloudflare.com/favicon.ico",
+    categories: ["cloud", "backend"],
+    isFeatured: true,
+  },
+  {
+    id: "cloudflare-d1",
+    name: "Cloudflare D1",
+    description: "Cloudflare's native serverless SQL database built on SQLite.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/cloudflare/cloudflare-docs",
+    repositoryUrl: "https://github.com/cloudflare/workers-sdk",
+    homepageUrl: "https://developers.cloudflare.com/d1",
+    iconUrl: "https://www.cloudflare.com/favicon.ico",
+    categories: ["cloud", "database"],
+  },
+
+  // State Management
+  {
+    id: "tanstack-query",
+    name: "TanStack Query",
+    description: "Powerful data synchronization for React, Vue, Solid, and Svelte applications.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/TanStack/query",
+    repositoryUrl: "https://github.com/TanStack/query",
+    homepageUrl: "https://tanstack.com/query",
+    iconUrl: "https://tanstack.com/favicon.ico",
+    categories: ["frontend", "utilities"],
+    isFeatured: true,
+  },
+  {
+    id: "tanstack-router",
+    name: "TanStack Router",
+    description: "Type-safe router with built-in caching for React applications.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/TanStack/router",
+    repositoryUrl: "https://github.com/TanStack/router",
+    homepageUrl: "https://tanstack.com/router",
+    iconUrl: "https://tanstack.com/favicon.ico",
+    categories: ["frontend"],
+  },
+  {
+    id: "zustand",
+    name: "Zustand",
+    description: "A small, fast, and scalable state management solution for React.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/pmndrs/zustand",
+    repositoryUrl: "https://github.com/pmndrs/zustand",
+    homepageUrl: "https://zustand-demo.pmnd.rs",
+    iconUrl: "https://zustand-demo.pmnd.rs/favicon.ico",
+    categories: ["frontend", "utilities"],
+  },
+
+  // Testing
+  {
+    id: "vitest",
+    name: "Vitest",
+    description: "A blazing fast unit test framework powered by Vite.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/vitest-dev/vitest",
+    repositoryUrl: "https://github.com/vitest-dev/vitest",
+    homepageUrl: "https://vitest.dev",
+    iconUrl: "https://vitest.dev/favicon.ico",
+    categories: ["testing", "utilities"],
+  },
+  {
+    id: "playwright",
+    name: "Playwright",
+    description: "End-to-end testing framework for modern web apps.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/microsoft/playwright",
+    repositoryUrl: "https://github.com/microsoft/playwright",
+    homepageUrl: "https://playwright.dev",
+    iconUrl: "https://playwright.dev/img/playwright-logo.svg",
+    categories: ["testing"],
+  },
+
+  // Utilities
+  {
+    id: "zod",
+    name: "Zod",
+    description: "TypeScript-first schema validation with static type inference.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/colinhacks/zod",
+    repositoryUrl: "https://github.com/colinhacks/zod",
+    homepageUrl: "https://zod.dev",
+    iconUrl: "https://zod.dev/favicon.ico",
+    categories: ["utilities", "backend"],
+  },
+  {
+    id: "tailwindcss",
+    name: "Tailwind CSS",
+    description: "A utility-first CSS framework for rapid UI development.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/tailwindlabs/tailwindcss.com",
+    repositoryUrl: "https://github.com/tailwindlabs/tailwindcss",
+    homepageUrl: "https://tailwindcss.com",
+    iconUrl: "https://tailwindcss.com/favicons/favicon.ico",
+    categories: ["frontend", "utilities"],
+    isFeatured: true,
+  },
+  {
+    id: "typescript",
+    name: "TypeScript",
+    description: "JavaScript with syntax for types. A strongly typed programming language that builds on JavaScript.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/microsoft/TypeScript-Website",
+    repositoryUrl: "https://github.com/microsoft/TypeScript",
+    homepageUrl: "https://typescriptlang.org",
+    iconUrl: "https://www.typescriptlang.org/favicon.ico",
+    categories: ["utilities"],
+    isFeatured: true,
+  },
+
+  // AI
+  {
+    id: "vercel-ai-sdk",
+    name: "Vercel AI SDK",
+    description: "Build AI-powered applications with React, Svelte, Vue, and Node.js.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/vercel/ai",
+    repositoryUrl: "https://github.com/vercel/ai",
+    homepageUrl: "https://sdk.vercel.ai",
+    iconUrl: "https://sdk.vercel.ai/favicon.ico",
+    categories: ["ai", "fullstack"],
+    isFeatured: true,
+  },
+  {
+    id: "langchain",
+    name: "LangChain.js",
+    description: "Framework for developing applications powered by language models in JavaScript/TypeScript.",
+    sourceType: "github",
+    sourceUrl: "https://github.com/langchain-ai/langchainjs",
+    repositoryUrl: "https://github.com/langchain-ai/langchainjs",
+    homepageUrl: "https://js.langchain.com",
+    iconUrl: "https://js.langchain.com/img/favicon.ico",
+    categories: ["ai", "backend"],
+  },
+];
+
+// ============================================================================
+// POST /api/admin/seed - Seed initial libraries
+// ============================================================================
+
 adminRouter.post("/seed", async (c) => {
   const db = c.get("db");
   const now = new Date().toISOString();
 
-  // Demo MCP servers
-  const demoServers = [
-    {
-      id: "github",
-      name: "GitHub",
-      description: "Interact with GitHub repositories, issues, pull requests, and more.",
-      endpoint: "https://github-mcp.example.com",
-      transport: "streamable-http" as const,
-      authType: "oauth" as const,
-      categories: ["code", "api"],
-      iconUrl: "https://github.githubassets.com/favicons/favicon.svg",
-      homepageUrl: "https://github.com",
-      repositoryUrl: "https://github.com/modelcontextprotocol/servers",
-      isActive: true,
-      isVerified: true,
-    },
-    {
-      id: "cloudflare",
-      name: "Cloudflare",
-      description: "Manage Cloudflare Workers, D1 databases, KV storage, and other Cloudflare services.",
-      endpoint: "https://cloudflare-mcp.example.com",
-      transport: "streamable-http" as const,
-      authType: "api_key" as const,
-      categories: ["cloud", "api"],
-      iconUrl: "https://www.cloudflare.com/favicon.ico",
-      homepageUrl: "https://cloudflare.com",
-      repositoryUrl: "https://github.com/cloudflare/mcp-server-cloudflare",
-      isActive: true,
-      isVerified: true,
-    },
-    {
-      id: "brave-search",
-      name: "Brave Search",
-      description: "Search the web using Brave's privacy-focused search engine.",
-      endpoint: "https://brave-mcp.example.com",
-      transport: "streamable-http" as const,
-      authType: "api_key" as const,
-      categories: ["search", "api"],
-      iconUrl: "https://brave.com/static-assets/images/brave-favicon.png",
-      homepageUrl: "https://search.brave.com",
-      repositoryUrl: "https://github.com/modelcontextprotocol/servers",
-      isActive: true,
-      isVerified: true,
-    },
-    {
-      id: "filesystem",
-      name: "Filesystem",
-      description: "Read, write, and manage files on the local filesystem with configurable access controls.",
-      endpoint: "stdio://filesystem",
-      transport: "stdio" as const,
-      authType: "none" as const,
-      categories: ["filesystem", "local"],
-      isActive: true,
-      isVerified: true,
-    },
-    {
-      id: "git",
-      name: "Git",
-      description: "Execute git commands, manage repositories, branches, and commits.",
-      endpoint: "stdio://git",
-      transport: "stdio" as const,
-      authType: "none" as const,
-      categories: ["code", "local"],
-      isActive: true,
-      isVerified: true,
-    },
-    {
-      id: "postgresql",
-      name: "PostgreSQL",
-      description: "Connect to and query PostgreSQL databases with full SQL support.",
-      endpoint: "stdio://postgresql",
-      transport: "stdio" as const,
-      authType: "api_key" as const,
-      categories: ["database"],
-      isActive: true,
-      isVerified: true,
-    },
-    {
-      id: "context7",
-      name: "Context7",
-      description: "Access up-to-date documentation and code examples for any programming library.",
-      endpoint: "https://mcp.context7.com",
-      transport: "streamable-http" as const,
-      authType: "none" as const,
-      categories: ["code", "api"],
-      homepageUrl: "https://context7.com",
-      isActive: true,
-      isVerified: true,
-    },
-    {
-      id: "playwright",
-      name: "Playwright",
-      description: "Control headless browsers for web scraping, testing, and automation.",
-      endpoint: "stdio://playwright",
-      transport: "stdio" as const,
-      authType: "none" as const,
-      categories: ["browser", "automation"],
-      isActive: true,
-      isVerified: true,
-    },
-  ];
+  const results = {
+    created: 0,
+    skipped: 0,
+    queued: 0,
+    errors: [] as string[],
+  };
 
-  // Demo tools for each server
-  const demoTools = [
-    // GitHub tools
-    { serverId: "github", namespace: "github", name: "create_repository", description: "Create a new GitHub repository", inputSchema: { type: "object", properties: { name: { type: "string" }, description: { type: "string" }, private: { type: "boolean" } }, required: ["name"] } },
-    { serverId: "github", namespace: "github", name: "create_issue", description: "Create a new issue in a repository", inputSchema: { type: "object", properties: { repo: { type: "string" }, title: { type: "string" }, body: { type: "string" } }, required: ["repo", "title"] } },
-    { serverId: "github", namespace: "github", name: "create_pull_request", description: "Create a new pull request", inputSchema: { type: "object", properties: { repo: { type: "string" }, title: { type: "string" }, head: { type: "string" }, base: { type: "string" } }, required: ["repo", "title", "head", "base"] } },
-    { serverId: "github", namespace: "github", name: "list_repositories", description: "List repositories for a user or organization", inputSchema: { type: "object", properties: { user: { type: "string" }, org: { type: "string" } } } },
-    { serverId: "github", namespace: "github", name: "get_file_contents", description: "Get the contents of a file from a repository", inputSchema: { type: "object", properties: { repo: { type: "string" }, path: { type: "string" } }, required: ["repo", "path"] } },
-    { serverId: "github", namespace: "github", name: "search_repositories", description: "Search for repositories matching a query", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
-    { serverId: "github", namespace: "github", name: "create_branch", description: "Create a new branch in a repository", inputSchema: { type: "object", properties: { repo: { type: "string" }, branch: { type: "string" }, from: { type: "string" } }, required: ["repo", "branch"] } },
-    { serverId: "github", namespace: "github", name: "push_files", description: "Push multiple files to a repository in a single commit", inputSchema: { type: "object", properties: { repo: { type: "string" }, branch: { type: "string" }, files: { type: "array" }, message: { type: "string" } }, required: ["repo", "files", "message"] } },
+  for (const lib of SEED_LIBRARIES) {
+    try {
+      // Check if library already exists
+      const [existing] = await db
+        .select({ id: libraries.id })
+        .from(libraries)
+        .where(eq(libraries.id, lib.id))
+        .limit(1);
 
-    // Cloudflare tools
-    { serverId: "cloudflare", namespace: "cloudflare", name: "deploy_worker", description: "Deploy a Cloudflare Worker", inputSchema: { type: "object", properties: { name: { type: "string" }, script: { type: "string" } }, required: ["name", "script"] } },
-    { serverId: "cloudflare", namespace: "cloudflare", name: "list_workers", description: "List all Cloudflare Workers", inputSchema: { type: "object", properties: {} } },
-    { serverId: "cloudflare", namespace: "cloudflare", name: "kv_get", description: "Get a value from KV storage", inputSchema: { type: "object", properties: { namespace: { type: "string" }, key: { type: "string" } }, required: ["namespace", "key"] } },
-    { serverId: "cloudflare", namespace: "cloudflare", name: "kv_put", description: "Store a value in KV storage", inputSchema: { type: "object", properties: { namespace: { type: "string" }, key: { type: "string" }, value: { type: "string" } }, required: ["namespace", "key", "value"] } },
-    { serverId: "cloudflare", namespace: "cloudflare", name: "d1_query", description: "Execute a query on a D1 database", inputSchema: { type: "object", properties: { database: { type: "string" }, sql: { type: "string" } }, required: ["database", "sql"] } },
+      if (existing) {
+        results.skipped++;
+        continue;
+      }
 
-    // Brave Search tools
-    { serverId: "brave-search", namespace: "brave", name: "web_search", description: "Search the web using Brave Search", inputSchema: { type: "object", properties: { query: { type: "string" }, count: { type: "number" } }, required: ["query"] } },
-    { serverId: "brave-search", namespace: "brave", name: "local_search", description: "Search for local businesses and places", inputSchema: { type: "object", properties: { query: { type: "string" }, location: { type: "string" } }, required: ["query"] } },
+      // Insert library with pending status
+      await db.insert(libraries).values({
+        id: lib.id,
+        name: lib.name,
+        description: lib.description,
+        sourceType: lib.sourceType,
+        sourceUrl: lib.sourceUrl,
+        repositoryUrl: lib.repositoryUrl || null,
+        homepageUrl: lib.homepageUrl || null,
+        iconUrl: lib.iconUrl || null,
+        categories: lib.categories,
+        isFeatured: lib.isFeatured || false,
+        indexStatus: "pending",
+        createdAt: now,
+        updatedAt: now,
+      });
 
-    // Filesystem tools
-    { serverId: "filesystem", namespace: "filesystem", name: "read_file", description: "Read the contents of a file", inputSchema: { type: "object", properties: { path: { type: "string" } }, required: ["path"] } },
-    { serverId: "filesystem", namespace: "filesystem", name: "write_file", description: "Write content to a file", inputSchema: { type: "object", properties: { path: { type: "string" }, content: { type: "string" } }, required: ["path", "content"] } },
-    { serverId: "filesystem", namespace: "filesystem", name: "list_directory", description: "List contents of a directory", inputSchema: { type: "object", properties: { path: { type: "string" } }, required: ["path"] } },
-    { serverId: "filesystem", namespace: "filesystem", name: "delete_file", description: "Delete a file or directory", inputSchema: { type: "object", properties: { path: { type: "string" } }, required: ["path"] } },
+      // Initialize stats
+      await db.insert(libraryStats).values({
+        libraryId: lib.id,
+        totalQueries: 0,
+        totalChunkHits: 0,
+      });
 
-    // Git tools
-    { serverId: "git", namespace: "git", name: "status", description: "Get the status of a git repository", inputSchema: { type: "object", properties: { path: { type: "string" } } } },
-    { serverId: "git", namespace: "git", name: "commit", description: "Create a git commit", inputSchema: { type: "object", properties: { message: { type: "string" }, path: { type: "string" } }, required: ["message"] } },
-    { serverId: "git", namespace: "git", name: "diff", description: "Show changes between commits or working tree", inputSchema: { type: "object", properties: { path: { type: "string" }, staged: { type: "boolean" } } } },
-    { serverId: "git", namespace: "git", name: "log", description: "Show commit history", inputSchema: { type: "object", properties: { path: { type: "string" }, count: { type: "number" } } } },
-
-    // PostgreSQL tools
-    { serverId: "postgresql", namespace: "postgresql", name: "query", description: "Execute a SQL query", inputSchema: { type: "object", properties: { sql: { type: "string" }, params: { type: "array" } }, required: ["sql"] } },
-    { serverId: "postgresql", namespace: "postgresql", name: "list_tables", description: "List all tables in the database", inputSchema: { type: "object", properties: { schema: { type: "string" } } } },
-    { serverId: "postgresql", namespace: "postgresql", name: "describe_table", description: "Get the schema of a table", inputSchema: { type: "object", properties: { table: { type: "string" } }, required: ["table"] } },
-
-    // Context7 tools
-    { serverId: "context7", namespace: "context7", name: "resolve_library", description: "Resolve a library name to its Context7 ID", inputSchema: { type: "object", properties: { name: { type: "string" } }, required: ["name"] } },
-    { serverId: "context7", namespace: "context7", name: "query_docs", description: "Query documentation for a library", inputSchema: { type: "object", properties: { libraryId: { type: "string" }, query: { type: "string" } }, required: ["libraryId", "query"] } },
-
-    // Playwright tools
-    { serverId: "playwright", namespace: "playwright", name: "navigate", description: "Navigate to a URL", inputSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } },
-    { serverId: "playwright", namespace: "playwright", name: "screenshot", description: "Take a screenshot of the page", inputSchema: { type: "object", properties: { path: { type: "string" }, fullPage: { type: "boolean" } } } },
-    { serverId: "playwright", namespace: "playwright", name: "click", description: "Click an element on the page", inputSchema: { type: "object", properties: { selector: { type: "string" } }, required: ["selector"] } },
-    { serverId: "playwright", namespace: "playwright", name: "fill", description: "Fill a form field", inputSchema: { type: "object", properties: { selector: { type: "string" }, value: { type: "string" } }, required: ["selector", "value"] } },
-    { serverId: "playwright", namespace: "playwright", name: "get_text", description: "Get text content from an element", inputSchema: { type: "object", properties: { selector: { type: "string" } }, required: ["selector"] } },
-  ];
-
-  // Clear existing data
-  await db.delete(serverStats);
-  await db.delete(tools);
-  await db.delete(servers);
-
-  // Insert servers
-  for (const server of demoServers) {
-    await db.insert(servers).values({
-      ...server,
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    // Initialize stats
-    await db.insert(serverStats).values({
-      serverId: server.id,
-      totalCalls: Math.floor(Math.random() * 50000) + 1000,
-      successCount: Math.floor(Math.random() * 45000) + 900,
-      totalLatencyMs: Math.floor(Math.random() * 1000000) + 10000,
-      lastCalledAt: now,
-    });
+      results.created++;
+    } catch (error) {
+      results.errors.push(`${lib.id}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
-
-  // Insert tools and generate embeddings
-  const toolEmbeddings: { id: string; values: number[]; metadata: Record<string, string> }[] = [];
-
-  for (const tool of demoTools) {
-    const id = `${tool.serverId}-${tool.name}`;
-
-    await db.insert(tools).values({
-      id,
-      serverId: tool.serverId,
-      namespace: tool.namespace,
-      name: tool.name,
-      description: tool.description,
-      inputSchema: tool.inputSchema,
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    // Generate embedding for the tool
-    const textToEmbed = `${tool.name}: ${tool.description}`;
-    const embeddingResult = await c.env.AI.run("@cf/baai/bge-base-en-v1.5", {
-      text: textToEmbed,
-    });
-
-    const embedding = Array.isArray(embeddingResult)
-      ? embeddingResult[0]
-      : (embeddingResult as { data: number[][] }).data[0];
-
-    toolEmbeddings.push({
-      id,
-      values: embedding,
-      metadata: {
-        name: tool.name,
-        namespace: tool.namespace,
-        description: tool.description,
-        serverId: tool.serverId,
-      },
-    });
-  }
-
-  // Upsert embeddings to Vectorize in batches
-  const batchSize = 100;
-  for (let i = 0; i < toolEmbeddings.length; i += batchSize) {
-    const batch = toolEmbeddings.slice(i, i + batchSize);
-    await c.env.VECTORIZE.upsert(batch);
-  }
-
-  // Clear the tools list cache
-  await c.env.KV.delete("mcp:tools:list");
 
   return c.json({
-    message: "Demo data seeded successfully",
-    servers: demoServers.length,
-    tools: demoTools.length,
-    embeddings: toolEmbeddings.length,
+    message: "Seed completed",
+    ...results,
+    total: SEED_LIBRARIES.length,
   });
 });
 
-// Approve a server (make it active)
-adminRouter.post("/servers/:id/approve", async (c) => {
-  const { id } = c.req.param();
+// ============================================================================
+// POST /api/admin/index/:id - Trigger indexing for a library
+// ============================================================================
+
+adminRouter.post("/index/:id", async (c) => {
+  const id = c.req.param("id");
   const db = c.get("db");
   const now = new Date().toISOString();
 
-  const result = await db
-    .update(servers)
-    .set({ isActive: true, isVerified: true, updatedAt: now })
-    .where(eq(servers.id, id));
+  // Get the library
+  const [library] = await db
+    .select()
+    .from(libraries)
+    .where(eq(libraries.id, id))
+    .limit(1);
 
-  // Clear tools cache
-  await c.env.KV.delete("mcp:tools:list");
-
-  return c.json({ message: "Server approved", id });
-});
-
-// Regenerate embeddings for all tools
-adminRouter.post("/reindex", async (c) => {
-  const db = c.get("db");
-
-  const allTools = await db
-    .select({
-      id: tools.id,
-      name: tools.name,
-      description: tools.description,
-      namespace: tools.namespace,
-      serverId: tools.serverId,
-    })
-    .from(tools);
-
-  const embeddings: { id: string; values: number[]; metadata: Record<string, string> }[] = [];
-
-  for (const tool of allTools) {
-    const textToEmbed = `${tool.name}: ${tool.description}`;
-    const embeddingResult = await c.env.AI.run("@cf/baai/bge-base-en-v1.5", {
-      text: textToEmbed,
-    });
-
-    const embedding = Array.isArray(embeddingResult)
-      ? embeddingResult[0]
-      : (embeddingResult as { data: number[][] }).data[0];
-
-    embeddings.push({
-      id: tool.id,
-      values: embedding,
-      metadata: {
-        name: tool.name,
-        namespace: tool.namespace,
-        description: tool.description,
-        serverId: tool.serverId,
-      },
-    });
+  if (!library) {
+    return c.json({ error: "Library not found" }, 404);
   }
 
-  // Upsert all embeddings
-  const batchSize = 100;
-  for (let i = 0; i < embeddings.length; i += batchSize) {
-    const batch = embeddings.slice(i, i + batchSize);
-    await c.env.VECTORIZE.upsert(batch);
+  if (library.indexStatus === "indexing") {
+    return c.json({ error: "Library is already being indexed" }, 400);
+  }
+
+  // Update status to indexing
+  await db
+    .update(libraries)
+    .set({ indexStatus: "indexing", updatedAt: now })
+    .where(eq(libraries.id, id));
+
+  // Queue the ingestion job
+  const job: IngestionJob = {
+    libraryId: library.id,
+    sourceUrl: library.sourceUrl,
+    sourceType: library.sourceType,
+  };
+
+  await c.env.INGESTION_QUEUE.send(job);
+
+  return c.json({
+    message: "Indexing started",
+    libraryId: id,
+    sourceUrl: library.sourceUrl,
+  });
+});
+
+// ============================================================================
+// POST /api/admin/index-all - Trigger indexing for all pending libraries
+// ============================================================================
+
+adminRouter.post("/index-all", async (c) => {
+  const db = c.get("db");
+  const now = new Date().toISOString();
+
+  // Get all pending libraries
+  const pendingLibraries = await db
+    .select()
+    .from(libraries)
+    .where(eq(libraries.indexStatus, "pending"));
+
+  const results = {
+    queued: 0,
+    errors: [] as string[],
+  };
+
+  for (const library of pendingLibraries) {
+    try {
+      // Update status to indexing
+      await db
+        .update(libraries)
+        .set({ indexStatus: "indexing", updatedAt: now })
+        .where(eq(libraries.id, library.id));
+
+      // Queue the ingestion job
+      const job: IngestionJob = {
+        libraryId: library.id,
+        sourceUrl: library.sourceUrl,
+        sourceType: library.sourceType,
+      };
+
+      await c.env.INGESTION_QUEUE.send(job);
+      results.queued++;
+    } catch (error) {
+      results.errors.push(
+        `${library.id}: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   return c.json({
-    message: "Reindexed all tools",
-    count: embeddings.length,
+    message: "Indexing jobs queued",
+    ...results,
+    total: pendingLibraries.length,
+  });
+});
+
+// ============================================================================
+// POST /api/admin/submissions/:id/approve - Approve a submission
+// ============================================================================
+
+adminRouter.post("/submissions/:id/approve", async (c) => {
+  const id = c.req.param("id");
+  const db = c.get("db");
+  const now = new Date().toISOString();
+
+  // Get the submission
+  const [submission] = await db
+    .select()
+    .from(submissions)
+    .where(eq(submissions.id, id))
+    .limit(1);
+
+  if (!submission) {
+    return c.json({ error: "Submission not found" }, 404);
+  }
+
+  if (submission.status !== "pending") {
+    return c.json({ error: `Submission already ${submission.status}` }, 400);
+  }
+
+  // Generate a library ID from the name
+  const libraryId = submission.libraryName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  // Check if library already exists
+  const [existingLibrary] = await db
+    .select({ id: libraries.id })
+    .from(libraries)
+    .where(eq(libraries.id, libraryId))
+    .limit(1);
+
+  if (existingLibrary) {
+    // Link to existing library
+    await db
+      .update(submissions)
+      .set({
+        status: "indexed",
+        libraryId: existingLibrary.id,
+        processedAt: now,
+      })
+      .where(eq(submissions.id, id));
+
+    return c.json({
+      message: "Submission linked to existing library",
+      submissionId: id,
+      libraryId: existingLibrary.id,
+    });
+  }
+
+  // Create new library
+  await db.insert(libraries).values({
+    id: libraryId,
+    name: submission.libraryName,
+    description: submission.description || null,
+    sourceType: "github", // Assume GitHub for now
+    sourceUrl: submission.sourceUrl,
+    categories: [],
+    indexStatus: "pending",
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  // Initialize stats
+  await db.insert(libraryStats).values({
+    libraryId,
+    totalQueries: 0,
+    totalChunkHits: 0,
+  });
+
+  // Update submission
+  await db
+    .update(submissions)
+    .set({
+      status: "approved",
+      libraryId,
+      processedAt: now,
+    })
+    .where(eq(submissions.id, id));
+
+  // Queue indexing
+  const job: IngestionJob = {
+    libraryId,
+    sourceUrl: submission.sourceUrl,
+    sourceType: "github",
+  };
+
+  await c.env.INGESTION_QUEUE.send(job);
+
+  // Update library status
+  await db
+    .update(libraries)
+    .set({ indexStatus: "indexing", updatedAt: now })
+    .where(eq(libraries.id, libraryId));
+
+  return c.json({
+    message: "Submission approved and indexing started",
+    submissionId: id,
+    libraryId,
+  });
+});
+
+// ============================================================================
+// POST /api/admin/submissions/:id/reject - Reject a submission
+// ============================================================================
+
+adminRouter.post("/submissions/:id/reject", async (c) => {
+  const id = c.req.param("id");
+  const db = c.get("db");
+  const now = new Date().toISOString();
+
+  const [submission] = await db
+    .select()
+    .from(submissions)
+    .where(eq(submissions.id, id))
+    .limit(1);
+
+  if (!submission) {
+    return c.json({ error: "Submission not found" }, 404);
+  }
+
+  if (submission.status !== "pending") {
+    return c.json({ error: `Submission already ${submission.status}` }, 400);
+  }
+
+  await db
+    .update(submissions)
+    .set({
+      status: "rejected",
+      processedAt: now,
+    })
+    .where(eq(submissions.id, id));
+
+  return c.json({
+    message: "Submission rejected",
+    submissionId: id,
+  });
+});
+
+// ============================================================================
+// DELETE /api/admin/libraries/:id - Delete a library and all its data
+// ============================================================================
+
+adminRouter.delete("/libraries/:id", async (c) => {
+  const id = c.req.param("id");
+  const db = c.get("db");
+
+  // Get the library
+  const [library] = await db
+    .select()
+    .from(libraries)
+    .where(eq(libraries.id, id))
+    .limit(1);
+
+  if (!library) {
+    return c.json({ error: "Library not found" }, 404);
+  }
+
+  // Get all chunk IDs for this library
+  const libraryChunks = await db
+    .select({ id: chunks.id, r2Key: chunks.r2Key })
+    .from(chunks)
+    .where(eq(chunks.libraryId, id));
+
+  // Delete from Vectorize
+  if (libraryChunks.length > 0) {
+    const chunkIds = libraryChunks.map((c) => c.id);
+    // Vectorize delete in batches of 1000
+    for (let i = 0; i < chunkIds.length; i += 1000) {
+      const batch = chunkIds.slice(i, i + 1000);
+      await c.env.VECTORIZE.deleteByIds(batch);
+    }
+
+    // Delete from R2
+    for (const chunk of libraryChunks) {
+      try {
+        await c.env.DOCS_BUCKET.delete(chunk.r2Key);
+      } catch (error) {
+        console.warn(`Failed to delete R2 object ${chunk.r2Key}:`, error);
+      }
+    }
+  }
+
+  // Delete from D1 (cascade will handle chunks)
+  await db.delete(libraryStats).where(eq(libraryStats.libraryId, id));
+  await db.delete(libraries).where(eq(libraries.id, id));
+
+  return c.json({
+    message: "Library deleted",
+    libraryId: id,
+    chunksDeleted: libraryChunks.length,
+  });
+});
+
+// ============================================================================
+// POST /api/admin/reindex/:id - Re-index a library (delete chunks, re-fetch)
+// ============================================================================
+
+adminRouter.post("/reindex/:id", async (c) => {
+  const id = c.req.param("id");
+  const db = c.get("db");
+  const now = new Date().toISOString();
+
+  // Get the library
+  const [library] = await db
+    .select()
+    .from(libraries)
+    .where(eq(libraries.id, id))
+    .limit(1);
+
+  if (!library) {
+    return c.json({ error: "Library not found" }, 404);
+  }
+
+  // Get all chunk IDs for this library
+  const libraryChunks = await db
+    .select({ id: chunks.id, r2Key: chunks.r2Key })
+    .from(chunks)
+    .where(eq(chunks.libraryId, id));
+
+  // Delete from Vectorize
+  if (libraryChunks.length > 0) {
+    const chunkIds = libraryChunks.map((c) => c.id);
+    for (let i = 0; i < chunkIds.length; i += 1000) {
+      const batch = chunkIds.slice(i, i + 1000);
+      await c.env.VECTORIZE.deleteByIds(batch);
+    }
+
+    // Delete from R2
+    for (const chunk of libraryChunks) {
+      try {
+        await c.env.DOCS_BUCKET.delete(chunk.r2Key);
+      } catch (error) {
+        console.warn(`Failed to delete R2 object ${chunk.r2Key}:`, error);
+      }
+    }
+  }
+
+  // Delete chunks from D1
+  await db.delete(chunks).where(eq(chunks.libraryId, id));
+
+  // Reset library stats
+  await db
+    .update(libraries)
+    .set({
+      totalChunks: 0,
+      totalTokens: 0,
+      indexStatus: "indexing",
+      indexError: null,
+      updatedAt: now,
+    })
+    .where(eq(libraries.id, id));
+
+  // Queue new indexing job
+  const job: IngestionJob = {
+    libraryId: library.id,
+    sourceUrl: library.sourceUrl,
+    sourceType: library.sourceType,
+  };
+
+  await c.env.INGESTION_QUEUE.send(job);
+
+  return c.json({
+    message: "Re-indexing started",
+    libraryId: id,
+    previousChunks: libraryChunks.length,
   });
 });
 

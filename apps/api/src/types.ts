@@ -10,7 +10,10 @@ export interface AppContext {
   };
 }
 
-// MCP Protocol types
+// ============================================================================
+// MCP Protocol Types
+// ============================================================================
+
 export interface MCPRequest {
   jsonrpc: "2.0";
   id: string | number;
@@ -22,11 +25,13 @@ export interface MCPResponse {
   jsonrpc: "2.0";
   id: string | number;
   result?: unknown;
-  error?: {
-    code: number;
-    message: string;
-    data?: unknown;
-  };
+  error?: MCPError;
+}
+
+export interface MCPError {
+  code: number;
+  message: string;
+  data?: unknown;
 }
 
 export interface MCPToolDefinition {
@@ -37,4 +42,92 @@ export interface MCPToolDefinition {
     properties: Record<string, unknown>;
     required?: string[];
   };
+}
+
+// ============================================================================
+// Documentation Types
+// ============================================================================
+
+export interface DocChunk {
+  id: string;
+  libraryId: string;
+  title: string | null;
+  content: string;
+  contentType: "text" | "code" | "mixed";
+  sourceFile: string | null;
+  sourceUrl: string | null;
+  tokenCount: number;
+  score?: number;
+}
+
+export interface SearchResult {
+  chunks: DocChunk[];
+  library: {
+    id: string;
+    name: string;
+    version: string | null;
+  };
+  totalResults: number;
+}
+
+export interface LibraryInfo {
+  id: string;
+  name: string;
+  description: string | null;
+  sourceType: "github" | "website" | "npm";
+  sourceUrl: string;
+  repositoryUrl: string | null;
+  homepageUrl: string | null;
+  iconUrl: string | null;
+  version: string | null;
+  categories: string[];
+  totalChunks: number;
+  totalTokens: number;
+  indexStatus: "pending" | "indexing" | "indexed" | "failed";
+  lastIndexedAt: string | null;
+  isFeatured: boolean;
+}
+
+// ============================================================================
+// Ingestion Types
+// ============================================================================
+
+export interface IngestionJob {
+  libraryId: string;
+  sourceUrl: string;
+  sourceType: "github" | "website" | "npm";
+}
+
+export interface ChunkData {
+  id: string;
+  title: string | null;
+  content: string;
+  contentType: "text" | "code" | "mixed";
+  sourceFile: string | null;
+  tokenCount: number;
+}
+
+export interface GitHubContent {
+  path: string;
+  content: string;
+}
+
+// ============================================================================
+// API Response Types
+// ============================================================================
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+    hasMore: boolean;
+  };
+}
+
+export interface ApiError {
+  error: string;
+  code?: string;
+  details?: unknown;
 }
