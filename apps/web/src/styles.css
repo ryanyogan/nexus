@@ -1,15 +1,53 @@
 @import "tailwindcss";
 
+@theme {
+  /* Nexus color palette */
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #1e1b4b;
+  --color-secondary-foreground: #e0e7ff;
+  --color-accent: #06b6d4;
+  --color-accent-foreground: #ffffff;
+  --color-muted: #374151;
+  --color-muted-foreground: #9ca3af;
+  --color-background: #0f0f23;
+  --color-foreground: #f8fafc;
+  --color-card: #1a1a2e;
+  --color-card-foreground: #f8fafc;
+  --color-border: #2d2d44;
+  --color-input: #2d2d44;
+  --color-ring: #8b5cf6;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+}
+
 body {
-  @apply m-0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  @apply m-0 bg-background text-foreground antialiased;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: "JetBrains Mono", source-code-pro, Menlo, Monaco, Consolas,
+    "Courier New", monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
 }

@@ -1,118 +1,289 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  Layers,
   Zap,
-  Server,
-  Route as RouteIcon,
+  Search,
+  Puzzle,
   Shield,
-  Waves,
+  Globe,
+  ArrowRight,
+  Github,
+  Terminal,
   Sparkles,
-} from 'lucide-react'
+} from "lucide-react";
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute("/")({ component: HomePage });
 
-function App() {
-  const features = [
-    {
-      icon: <Zap className="w-12 h-12 text-cyan-400" />,
-      title: 'Powerful Server Functions',
-      description:
-        'Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.',
-    },
-    {
-      icon: <Server className="w-12 h-12 text-cyan-400" />,
-      title: 'Flexible Server Side Rendering',
-      description:
-        'Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.',
-    },
-    {
-      icon: <RouteIcon className="w-12 h-12 text-cyan-400" />,
-      title: 'API Routes',
-      description:
-        'Build type-safe API endpoints alongside your application. No separate backend needed.',
-    },
-    {
-      icon: <Shield className="w-12 h-12 text-cyan-400" />,
-      title: 'Strongly Typed Everything',
-      description:
-        'End-to-end type safety from server to client. Catch errors before they reach production.',
-    },
-    {
-      icon: <Waves className="w-12 h-12 text-cyan-400" />,
-      title: 'Full Streaming Support',
-      description:
-        'Stream data from server to client progressively. Perfect for AI applications and real-time updates.',
-    },
-    {
-      icon: <Sparkles className="w-12 h-12 text-cyan-400" />,
-      title: 'Next Generation Ready',
-      description:
-        'Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.',
-    },
-  ]
-
+function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <section className="relative py-20 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <img
-              src="/tanstack-circle-logo.png"
-              alt="TanStack Logo"
-              className="w-24 h-24 md:w-32 md:h-32"
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden py-20 sm:py-32">
+        {/* Background gradient */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/10" />
+          <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 blur-3xl">
+            <div
+              className="aspect-[1155/678] w-[72rem] bg-gradient-to-tr from-primary to-accent opacity-20"
+              style={{
+                clipPath:
+                  "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
+              }}
             />
-            <h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-              <span className="text-gray-300">TANSTACK</span>{' '}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="mb-8 flex items-center justify-center gap-3">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
+                <Layers className="h-8 w-8 text-primary-foreground" />
+              </div>
+            </div>
+
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+              One MCP Server to{" "}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Rule Them All
               </span>
             </h1>
+
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
+              Discover, compose, and invoke MCP servers from one unified
+              endpoint. The universal registry for Model Context Protocol
+              servers.
+            </p>
+
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link
+                to="/explore"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30"
+              >
+                Explore Servers
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border bg-card px-8 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                <Github className="h-5 w-5" />
+                View on GitHub
+              </a>
+            </div>
+
+            {/* Code snippet preview */}
+            <div className="mx-auto mt-16 max-w-2xl">
+              <div className="rounded-xl border border-border bg-card p-1 shadow-2xl">
+                <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+                  <div className="h-3 w-3 rounded-full bg-red-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-green-500/80" />
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    Connect to Nexus
+                  </span>
+                </div>
+                <pre className="overflow-x-auto p-4 text-left text-sm">
+                  <code className="text-muted-foreground">
+                    <span className="text-accent">const</span>{" "}
+                    <span className="text-foreground">nexus</span> ={" "}
+                    <span className="text-accent">new</span>{" "}
+                    <span className="text-primary">MCPClient</span>(
+                    <span className="text-green-400">
+                      "https://nexus.yogan.dev/mcp"
+                    </span>
+                    );{"\n\n"}
+                    <span className="text-muted-foreground/60">
+                      // Access 100+ tools from one endpoint
+                    </span>
+                    {"\n"}
+                    <span className="text-accent">const</span>{" "}
+                    <span className="text-foreground">result</span> ={" "}
+                    <span className="text-accent">await</span>{" "}
+                    <span className="text-foreground">nexus</span>.
+                    <span className="text-primary">call</span>(
+                    <span className="text-green-400">
+                      "nexus.github.create_pr"
+                    </span>
+                    , {"{"}{"\n"}
+                    {"  "}title:{" "}
+                    <span className="text-green-400">"feat: add feature"</span>,
+                    {"\n"}
+                    {"}"});
+                  </code>
+                </pre>
+              </div>
+            </div>
           </div>
-          <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
-            The framework for next generation AI applications
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Full-stack framework powered by TanStack Router for React and Solid.
-            Build modern applications with server functions, streaming, and type
-            safety.
-          </p>
-          <div className="flex flex-col items-center gap-4">
-            <a
-              href="https://tanstack.com/start"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50"
-            >
-              Documentation
-            </a>
-            <p className="text-gray-400 text-sm mt-2">
-              Begin your TanStack Start journey by editing{' '}
-              <code className="px-2 py-1 bg-slate-700 rounded text-cyan-400">
-                /src/routes/index.tsx
-              </code>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="border-t border-border bg-card/50 py-20 sm:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Why Nexus?
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+              Everything you need to discover, compose, and use MCP servers
+            </p>
+          </div>
+
+          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              icon={<Search className="h-6 w-6" />}
+              title="Universal Registry"
+              description="Browse and search all registered MCP servers with rich metadata, capability tags, and quality signals."
+            />
+            <FeatureCard
+              icon={<Zap className="h-6 w-6" />}
+              title="Intelligent Routing"
+              description="Just call the tool you need. Nexus figures out which server handles it and routes automatically."
+            />
+            <FeatureCard
+              icon={<Puzzle className="h-6 w-6" />}
+              title="Compose Stacks"
+              description="Combine multiple MCP servers into one endpoint. Create your perfect dev stack."
+            />
+            <FeatureCard
+              icon={<Sparkles className="h-6 w-6" />}
+              title="Semantic Matching"
+              description="Ask for 'read a PDF' and Nexus finds the right tool, even if it's named differently."
+            />
+            <FeatureCard
+              icon={<Shield className="h-6 w-6" />}
+              title="Auth Aggregation"
+              description="Store credentials once. Nexus handles authentication to all your connected servers."
+            />
+            <FeatureCard
+              icon={<Globe className="h-6 w-6" />}
+              title="Edge Powered"
+              description="Built on Cloudflare Workers for ultra-low latency responses worldwide."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="py-20 sm:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              How It Works
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+              Connect once, access everything
+            </p>
+          </div>
+
+          <div className="mt-16 grid gap-8 lg:grid-cols-3">
+            <StepCard
+              number="1"
+              title="Connect to Nexus"
+              description="Point your MCP client to the Nexus endpoint. One connection gives you access to all registered servers."
+            />
+            <StepCard
+              number="2"
+              title="Discover Tools"
+              description="Browse the registry or let Nexus's semantic search find the perfect tool for your task."
+            />
+            <StepCard
+              number="3"
+              title="Call Any Tool"
+              description="Invoke tools from any server through the unified Nexus endpoint. We handle the routing."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="border-t border-border bg-gradient-to-b from-card/50 to-background py-20 sm:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Ready to get started?
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+              Explore the registry and start using MCP servers in seconds.
+            </p>
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link
+                to="/explore"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90"
+              >
+                Browse Registry
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/docs"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border bg-card px-8 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                <Terminal className="h-5 w-5" />
+                Read the Docs
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <Layers className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="font-semibold text-foreground">Nexus</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Built with Cloudflare Workers, Hono, and TanStack Start
             </p>
           </div>
         </div>
-      </section>
-
-      <section className="py-16 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
-            >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      </footer>
     </div>
-  )
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
+      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+        {icon}
+      </div>
+      <h3 className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function StepCard({
+  number,
+  title,
+  description,
+}: {
+  number: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="relative rounded-xl border border-border bg-card p-6">
+      <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
+        {number}
+      </div>
+      <h3 className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
+    </div>
+  );
 }
