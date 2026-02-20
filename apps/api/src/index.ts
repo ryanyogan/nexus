@@ -6,6 +6,7 @@ import { authRouter } from "./routes/auth";
 import { mcpRouter } from "./routes/mcp";
 import { serversRouter } from "./routes/servers";
 import { toolsRouter } from "./routes/tools";
+import { adminRouter } from "./routes/admin";
 import type { AppContext } from "./types";
 
 const app = new Hono<AppContext>();
@@ -48,6 +49,7 @@ app.route("/api/auth", authRouter);
 // API routes
 app.route("/api/servers", serversRouter);
 app.route("/api/tools", toolsRouter);
+app.route("/api/admin", adminRouter);
 
 // MCP Protocol endpoint (Streamable HTTP)
 app.route("/mcp", mcpRouter);
