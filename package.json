@@ -6,7 +6,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "deploy": "turbo deploy",
+    "ship": "turbo deploy",
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate"
   },
