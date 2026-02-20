@@ -11,8 +11,12 @@ import {
   Copy,
   Play,
   ChevronRight,
+  Zap,
+  Shield,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { FloatingParticles } from "../../components/FloatingParticles";
 
 export const Route = createFileRoute("/servers/$serverId")({
   component: ServerDetailPage,
@@ -92,9 +96,84 @@ const MOCK_SERVER = {
 function ServerDetailPage() {
   const { serverId: _serverId } = Route.useParams();
   const [copiedEndpoint, setCopiedEndpoint] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const toolsRef = useRef<HTMLDivElement>(null);
 
   // TODO: Fetch server data based on _serverId
   const server = MOCK_SERVER;
+
+  useEffect(() => {
+    // Header animation
+    const tl = gsap.timeline();
+
+    tl.fromTo(
+      ".back-link",
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }
+    )
+      .fromTo(
+        ".server-icon",
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+        "-=0.2"
+      )
+      .fromTo(
+        ".server-info",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        "-=0.3"
+      )
+      .fromTo(
+        ".action-buttons",
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+        "-=0.2"
+      );
+
+    // Stats cards animation
+    gsap.fromTo(
+      ".stat-card",
+      { opacity: 0, y: 20, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: "power3.out",
+        delay: 0.4,
+      }
+    );
+
+    // Tools animation
+    gsap.fromTo(
+      ".tool-item",
+      { opacity: 0, x: -20 },
+      {
+        opacity: 1,
+        x: 0,
+        duration: 0.4,
+        stagger: 0.05,
+        ease: "power2.out",
+        delay: 0.6,
+      }
+    );
+
+    // Sidebar animation
+    gsap.fromTo(
+      ".sidebar-card",
+      { opacity: 0, y: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: "power3.out",
+        delay: 0.5,
+      }
+    );
+  }, []);
 
   const copyEndpoint = () => {
     navigator.clipboard.writeText(server.endpoint);
@@ -103,13 +182,23 @@ function ServerDetailPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen">
+      {/* Background effects */}
+      <FloatingParticles />
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-accent/10 blur-[120px]" />
+      </div>
+
       {/* Header */}
-      <div className="border-b border-border bg-card/50">
+      <div
+        ref={headerRef}
+        className="relative border-b border-border/50 bg-card/30 backdrop-blur-sm"
+      >
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <Link
             to="/explore"
-            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="back-link mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Explore
@@ -118,27 +207,49 @@ function ServerDetailPage() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
               {server.iconUrl ? (
-                <img
-                  src={server.iconUrl}
-                  alt={server.name}
-                  className="h-16 w-16 rounded-xl"
-                />
+                <div
+                  className="server-icon flex h-16 w-16 items-center justify-center rounded-xl bg-card p-2"
+                  style={{
+                    boxShadow: "0 0 30px rgba(139, 92, 246, 0.2)",
+                  }}
+                >
+                  <img
+                    src={server.iconUrl}
+                    alt={server.name}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
               ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
+                <div
+                  className="server-icon flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10"
+                  style={{
+                    boxShadow: "0 0 30px rgba(139, 92, 246, 0.3)",
+                  }}
+                >
                   <Server className="h-8 w-8 text-primary" />
                 </div>
               )}
-              <div>
+              <div className="server-info">
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl font-bold text-foreground">
                     {server.name}
                   </h1>
                   {server.isVerified && (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+                    <div
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
+                      style={{
+                        boxShadow: "0 0 15px rgba(139, 92, 246, 0.5)",
+                      }}
+                    >
                       <Check className="h-4 w-4 text-primary-foreground" />
                     </div>
                   )}
-                  <span className="rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-500">
+                  <span
+                    className="rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-400"
+                    style={{
+                      boxShadow: "0 0 10px rgba(34, 197, 94, 0.2)",
+                    }}
+                  >
                     Active
                   </span>
                 </div>
@@ -149,7 +260,7 @@ function ServerDetailPage() {
                   {server.categories.map((cat) => (
                     <span
                       key={cat}
-                      className="rounded-lg bg-muted px-2.5 py-1 text-xs font-medium capitalize text-muted-foreground"
+                      className="rounded-lg bg-muted/50 px-2.5 py-1 text-xs font-medium capitalize text-muted-foreground"
                     >
                       {cat}
                     </span>
@@ -159,7 +270,7 @@ function ServerDetailPage() {
                       href={server.homepageUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                      className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                     >
                       <Globe className="h-3.5 w-3.5" />
                       Website
@@ -170,7 +281,7 @@ function ServerDetailPage() {
                       href={server.repositoryUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                      className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                     >
                       <Github className="h-3.5 w-3.5" />
                       Source
@@ -180,35 +291,45 @@ function ServerDetailPage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+            <div className="action-buttons flex gap-3">
+              <button
+                className="group relative inline-flex h-10 items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-all"
+                style={{
+                  boxShadow: "0 0 20px rgba(139, 92, 246, 0.3)",
+                }}
+              >
                 <Play className="h-4 w-4" />
                 Try in Playground
+                <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary via-accent to-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               </button>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div ref={statsRef} className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard
               icon={<Wrench className="h-5 w-5" />}
               label="Tools"
               value={server.tools.length.toString()}
+              color="purple"
             />
             <StatCard
               icon={<TrendingUp className="h-5 w-5" />}
               label="Total Calls"
               value={`${(server.stats.totalCalls / 1000).toFixed(1)}k`}
+              color="cyan"
             />
             <StatCard
-              icon={<Check className="h-5 w-5" />}
+              icon={<Shield className="h-5 w-5" />}
               label="Success Rate"
               value={`${server.stats.successRate}%`}
+              color="green"
             />
             <StatCard
               icon={<Clock className="h-5 w-5" />}
               label="Avg Latency"
               value={`${server.stats.avgLatency}ms`}
+              color="yellow"
             />
           </div>
         </div>
@@ -217,28 +338,14 @@ function ServerDetailPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Tools List */}
-          <div className="lg:col-span-2">
-            <h2 className="mb-4 text-lg font-semibold text-foreground">
+          <div ref={toolsRef} className="lg:col-span-2">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
+              <Zap className="h-5 w-5 text-primary" />
               Available Tools ({server.tools.length})
             </h2>
-            <div className="divide-y divide-border rounded-xl border border-border bg-card">
+            <div className="divide-y divide-border/50 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
               {server.tools.map((tool) => (
-                <div
-                  key={tool.id}
-                  className="group flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <code className="rounded bg-primary/10 px-2 py-0.5 text-sm font-medium text-primary">
-                        {tool.namespace}.{tool.name}
-                      </code>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {tool.description}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                </div>
+                <ToolItem key={tool.id} tool={tool} />
               ))}
             </div>
           </div>
@@ -246,25 +353,36 @@ function ServerDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Connection */}
-            <div className="rounded-xl border border-border bg-card p-5">
-              <h3 className="mb-4 font-semibold text-foreground">
+            <div
+              className="sidebar-card rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm"
+              style={{
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <h3 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+                <Globe className="h-4 w-4 text-primary" />
                 Connect via Nexus
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-xs text-muted-foreground">
                     Endpoint
                   </label>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 truncate rounded-lg bg-muted px-3 py-2 text-sm text-foreground">
+                    <code className="flex-1 truncate rounded-lg bg-muted/50 px-3 py-2 text-sm text-foreground">
                       {server.endpoint}
                     </code>
                     <button
                       onClick={copyEndpoint}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/50 transition-all hover:border-primary/50 hover:bg-muted"
+                      style={
+                        copiedEndpoint
+                          ? { boxShadow: "0 0 15px rgba(34, 197, 94, 0.3)" }
+                          : {}
+                      }
                     >
                       {copiedEndpoint ? (
-                        <Check className="h-4 w-4 text-green-500" />
+                        <Check className="h-4 w-4 text-green-400" />
                       ) : (
                         <Copy className="h-4 w-4 text-muted-foreground" />
                       )}
@@ -275,24 +393,54 @@ function ServerDetailPage() {
                   <label className="mb-1.5 block text-xs text-muted-foreground">
                     Transport
                   </label>
-                  <p className="text-sm text-foreground">{server.transport}</p>
+                  <p className="rounded-lg bg-muted/50 px-3 py-2 text-sm text-foreground">
+                    {server.transport}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Quick Start */}
-            <div className="rounded-xl border border-border bg-card p-5">
-              <h3 className="mb-4 font-semibold text-foreground">
+            <div
+              className="sidebar-card rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm"
+              style={{
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <h3 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+                <Play className="h-4 w-4 text-accent" />
                 Quick Start
               </h3>
-              <div className="rounded-lg bg-muted p-3">
-                <pre className="overflow-x-auto text-xs text-muted-foreground">
+              <div
+                className="rounded-lg border border-border/50 bg-muted/30 p-4"
+                style={{
+                  boxShadow: "inset 0 0 30px rgba(139, 92, 246, 0.05)",
+                }}
+              >
+                <pre className="overflow-x-auto font-mono text-xs">
                   <code>
-                    {`// Call a tool through Nexus
-await nexus.call(
-  "nexus.${server.tools[0]?.namespace}.${server.tools[0]?.name}",
-  { /* args */ }
-);`}
+                    <span className="text-muted-foreground/60">
+                      {"// Call a tool through Nexus"}
+                    </span>
+                    {"\n"}
+                    <span className="text-accent">await</span>{" "}
+                    <span className="text-foreground">nexus</span>
+                    <span className="text-muted-foreground">.</span>
+                    <span className="text-primary">call</span>
+                    <span className="text-muted-foreground">(</span>
+                    {"\n"}
+                    {"  "}
+                    <span className="text-green-400">
+                      "nexus.{server.tools[0]?.namespace}.{server.tools[0]?.name}"
+                    </span>
+                    <span className="text-muted-foreground">,</span>
+                    {"\n"}
+                    {"  "}
+                    <span className="text-muted-foreground">{"{ "}</span>
+                    <span className="text-muted-foreground/60">/* args */</span>
+                    <span className="text-muted-foreground">{" }"}</span>
+                    {"\n"}
+                    <span className="text-muted-foreground">);</span>
                   </code>
                 </pre>
               </div>
@@ -304,19 +452,106 @@ await nexus.call(
   );
 }
 
+function ToolItem({
+  tool,
+}: {
+  tool: { id: string; name: string; description: string; namespace: string };
+}) {
+  const itemRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseEnter = () => {
+    gsap.to(itemRef.current, {
+      x: 4,
+      duration: 0.2,
+      ease: "power2.out",
+    });
+  };
+
+  const handleMouseLeave = () => {
+    gsap.to(itemRef.current, {
+      x: 0,
+      duration: 0.2,
+      ease: "power2.out",
+    });
+  };
+
+  return (
+    <div
+      ref={itemRef}
+      className="tool-item group flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/30"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div>
+        <div className="flex items-center gap-2">
+          <code
+            className="rounded-md bg-primary/10 px-2 py-0.5 text-sm font-medium text-primary"
+            style={{
+              boxShadow: "0 0 10px rgba(139, 92, 246, 0.1)",
+            }}
+          >
+            {tool.namespace}.{tool.name}
+          </code>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">{tool.description}</p>
+      </div>
+      <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100" />
+    </div>
+  );
+}
+
 function StatCard({
   icon,
   label,
   value,
+  color,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  color: "purple" | "cyan" | "green" | "yellow";
 }) {
+  const colorMap = {
+    purple: {
+      bg: "bg-primary/10",
+      text: "text-primary",
+      glow: "rgba(139, 92, 246, 0.2)",
+    },
+    cyan: {
+      bg: "bg-accent/10",
+      text: "text-accent",
+      glow: "rgba(6, 182, 212, 0.2)",
+    },
+    green: {
+      bg: "bg-green-500/10",
+      text: "text-green-400",
+      glow: "rgba(34, 197, 94, 0.2)",
+    },
+    yellow: {
+      bg: "bg-yellow-500/10",
+      text: "text-yellow-400",
+      glow: "rgba(234, 179, 8, 0.2)",
+    },
+  };
+
+  const colors = colorMap[color];
+
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="mb-2 text-muted-foreground">{icon}</div>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
+    <div
+      className="stat-card rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm transition-all duration-300 hover:border-primary/30"
+      style={{
+        boxShadow: `0 4px 20px rgba(0, 0, 0, 0.1)`,
+      }}
+    >
+      <div className={`mb-2 ${colors.text}`}>{icon}</div>
+      <p
+        className="text-2xl font-bold text-foreground"
+        style={{
+          textShadow: `0 0 20px ${colors.glow}`,
+        }}
+      >
+        {value}
+      </p>
       <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   );
