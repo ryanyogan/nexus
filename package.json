@@ -8,7 +8,10 @@
     "typecheck": "turbo typecheck",
     "ship": "turbo deploy",
     "db:generate": "turbo db:generate",
-    "db:migrate": "turbo db:migrate"
+    "db:migrate": "pnpm --filter api exec wrangler d1 migrations apply nexus-db --remote",
+    "deploy": "pnpm run typecheck && pnpm run build && pnpm run db:migrate && pnpm run deploy:api && pnpm run deploy:web",
+    "deploy:api": "pnpm --filter api deploy",
+    "deploy:web": "pnpm --filter web deploy"
   },
   "devDependencies": {
     "turbo": "^2.4.0",

@@ -1,9 +1,7 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useCallback } from "react";
 import { Play, Copy, Check, Loader2, ChevronDown } from "lucide-react";
 import { CodeBlock } from "./CodeBlock";
-
-const API_BASE = "https://api.nexus.yogan.dev";
+import { API_URL } from "../../lib/api";
 
 interface Endpoint {
   id: string;
@@ -79,15 +77,24 @@ const ENDPOINTS: Endpoint[] = [
   },
 ];
 
+interface ResponseData {
+  status: number;
+  statusText: string;
+  duration: number;
+  data: unknown;
+}
+
 export function ApiPlayground() {
   const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint>(ENDPOINTS[0]);
   const [params, setParams] = useState<Record<string, string>>({});
   const [body, setBody] = useState(selectedEndpoint.body || "");
-  const [shouldFetch, setShouldFetch] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<ResponseData | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   // Build URL with parameters
-  const buildUrl = () => {
+  const buildUrl = useCallback(() => {
     let url = selectedEndpoint.path;
     const queryParams = new URLSearchParams();
 
@@ -104,8 +111,8 @@ export function ApiPlayground() {
     }
 
     const queryString = queryParams.toString();
-    return `${API_BASE}${url}${queryString ? `?${queryString}` : ""}`;
-  };
+    return `${API_URL}${url}${queryString ? `?${queryString}` : ""}`;
+  }, [selectedEndpoint.path, params]);
 
   // Generate cURL command
   const getCurlCommand = () => {
@@ -116,10 +123,22 @@ export function ApiPlayground() {
     return `curl "${url}"`;
   };
 
-  // Execute request
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["playground", selectedEndpoint.id, params, body],
-    queryFn: async () => {
+  const handleEndpointChange = (endpointId: string) => {
+    const endpoint = ENDPOINTS.find((e) => e.id === endpointId);
+    if (endpoint) {
+      setSelectedEndpoint(endpoint);
+      setParams({});
+      setBody(endpoint.body || "");
+      setData(null);
+      setError(null);
+    }
+  };
+
+  const handleSend = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
       const url = buildUrl();
       const options: RequestInit = {
         method: selectedEndpoint.method,
@@ -138,30 +157,17 @@ export function ApiPlayground() {
       const duration = Math.round(endTime - startTime);
 
       const json = await response.json();
-      return {
+      setData({
         status: response.status,
         statusText: response.statusText,
         duration,
         data: json,
-      };
-    },
-    enabled: shouldFetch,
-    retry: false,
-  });
-
-  const handleEndpointChange = (endpointId: string) => {
-    const endpoint = ENDPOINTS.find((e) => e.id === endpointId);
-    if (endpoint) {
-      setSelectedEndpoint(endpoint);
-      setParams({});
-      setBody(endpoint.body || "");
-      setShouldFetch(false);
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Request failed"));
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleSend = () => {
-    setShouldFetch(true);
-    refetch();
   };
 
   const handleCopy = async () => {

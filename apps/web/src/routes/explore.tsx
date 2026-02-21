@@ -16,6 +16,7 @@ import {
 import { FloatingParticles } from "../components/FloatingParticles";
 import { ExplorePageSkeleton } from "../components/skeletons";
 import { getLibraries } from "../lib/queries";
+import { LIBRARY_CATEGORIES } from "../lib/api";
 import type { LibraryListResult } from "../lib/types";
 
 // ============================================================================
@@ -26,8 +27,6 @@ const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
   category: z.string().optional().catch(undefined),
 });
-
-type SearchParams = z.infer<typeof searchSchema>;
 
 // ============================================================================
 // Route Definition
@@ -53,19 +52,12 @@ export const Route = createFileRoute("/explore")({
 });
 
 // ============================================================================
-// Categories
+// Categories (with "All" option for filtering)
 // ============================================================================
 
 const CATEGORIES = [
   { id: "all", label: "All" },
-  { id: "frontend", label: "Frontend" },
-  { id: "backend", label: "Backend" },
-  { id: "fullstack", label: "Full Stack" },
-  { id: "database", label: "Database" },
-  { id: "cloud", label: "Cloud" },
-  { id: "ai", label: "AI / ML" },
-  { id: "testing", label: "Testing" },
-  { id: "utilities", label: "Utilities" },
+  ...LIBRARY_CATEGORIES,
 ];
 
 // ============================================================================

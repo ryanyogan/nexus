@@ -1,13 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { Layers, Github, ArrowLeft } from "lucide-react";
+import { Layers, Github, ArrowLeft, Loader2 } from "lucide-react";
 import { NeuralNetwork } from "../components/NeuralNetwork";
+import { signIn, useSession } from "@nexus/auth/client";
 
 export const Route = createFileRoute("/sign-in")({ component: SignInPage });
 
 function SignInPage() {
   const cardRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { data: session, isPending } = useSession();
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (session?.user) {
+      navigate({ to: "/" });
+    }
+  }, [session, navigate]);
 
   useEffect(() => {
     // Card entrance animation
@@ -52,15 +62,28 @@ function SignInPage() {
     );
   }, []);
 
-  const handleGoogleSignIn = () => {
-    // Will integrate with Better Auth
-    window.location.href = "/api/auth/signin/google";
+  const handleGoogleSignIn = async () => {
+    await signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
   };
 
-  const handleGitHubSignIn = () => {
-    // Will integrate with Better Auth
-    window.location.href = "/api/auth/signin/github";
+  const handleGitHubSignIn = async () => {
+    await signIn.social({
+      provider: "github",
+      callbackURL: "/",
+    });
   };
+
+  // Show loading state while checking session
+  if (isPending) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">

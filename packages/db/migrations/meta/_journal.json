@@ -15,6 +15,20 @@
       "when": 1771560513974,
       "tag": "0001_bitter_mister_fear",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771610000000,
+      "tag": "0002_fresh_oracle",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1771620000000,
+      "tag": "0003_auth_tables",
+      "breakpoints": true
     }
   ]
 }

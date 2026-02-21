@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { createDb } from "@nexus/db";
-import { authRouter } from "./routes/auth";
 import { mcpRouter } from "./routes/mcp";
 import { librariesRouter } from "./routes/libraries";
 import { submissionsRouter } from "./routes/submissions";
 import { adminRouter } from "./routes/admin";
 import { statsRouter } from "./routes/stats";
+import { analyzeRouter } from "./routes/analyze";
+import { adminAuth } from "./middleware/admin";
 import type { AppContext, IngestionJob } from "./types";
 
 const app = new Hono<AppContext>();
@@ -19,7 +20,7 @@ app.use(
   cors({
     origin: ["http://localhost:3000", "https://nexus.yogan.dev"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Admin-Key"],
     credentials: true,
   })
 );
@@ -44,16 +45,17 @@ app.get("/health", (c) => {
   return c.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Auth routes (Better Auth)
-app.route("/api/auth", authRouter);
-
-// API routes
+// Public API routes
 app.route("/api/libraries", librariesRouter);
 app.route("/api/submissions", submissionsRouter);
 app.route("/api/stats", statsRouter);
+app.route("/api/analyze", analyzeRouter);
+
+// Protected admin routes (require X-Admin-Key header)
+app.use("/api/admin/*", adminAuth);
 app.route("/api/admin", adminRouter);
 
-// MCP Protocol endpoint (Streamable HTTP)
+// MCP Protocol endpoint (Streamable HTTP) - public
 app.route("/mcp", mcpRouter);
 
 // Export for Cloudflare Workers

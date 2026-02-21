@@ -1,9 +1,29 @@
 import { Link } from "@tanstack/react-router";
-import { Layers, Search, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Layers, Search, Menu, X, LogOut, User, Settings } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useSession, signOut } from "@nexus/auth/client";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUserMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
@@ -45,18 +65,80 @@ export default function Header() {
           <button className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
             <Search className="h-5 w-5" />
           </button>
-          <Link
-            to="/sign-in"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/explore"
-            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Get Started
-          </Link>
+          
+          {session?.user ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-muted"
+              >
+                {session.user.image ? (
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || "User"}
+                    className="h-8 w-8 rounded-full"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+                    {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
+                  </div>
+                )}
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-border bg-card p-1 shadow-lg">
+                  <div className="border-b border-border px-3 py-2">
+                    <p className="text-sm font-medium text-foreground">{session.user.name}</p>
+                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                  </div>
+                  <div className="py-1">
+                    <Link
+                      to="/submit"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                    >
+                      <User className="h-4 w-4" />
+                      Submit Library
+                    </Link>
+                    {(session.user as any).role === "admin" && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Admin
+                      </Link>
+                    )}
+                  </div>
+                  <div className="border-t border-border py-1">
+                    <button
+                      onClick={handleSignOut}
+                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link
+                to="/sign-in"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/explore"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -99,20 +181,70 @@ export default function Header() {
               GitHub
             </a>
             <hr className="border-border" />
-            <Link
-              to="/sign-in"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/explore"
-              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Get Started
-            </Link>
+            
+            {session?.user ? (
+              <>
+                <div className="flex items-center gap-3 py-2">
+                  {session.user.image ? (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || "User"}
+                      className="h-8 w-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+                      {session.user.name?.charAt(0) || "U"}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{session.user.name}</p>
+                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                  </div>
+                </div>
+                <Link
+                  to="/submit"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Submit Library
+                </Link>
+                {(session.user as any).role === "admin" && (
+                  <Link
+                    to="/admin"
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-left text-sm font-medium text-destructive transition-colors hover:text-destructive/80"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/sign-in"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/explore"
+                  className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       )}

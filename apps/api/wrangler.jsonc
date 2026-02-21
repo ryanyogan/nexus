@@ -62,18 +62,9 @@
   // AI for embeddings
   "ai": {
     "binding": "AI"
-  },
-
-  // Public environment variables only
-  "vars": {
-    "BETTER_AUTH_URL": "https://api.nexus.yogan.dev"
   }
 
   // Secrets (set via .dev.vars locally, wrangler secret put for production):
-  // - BETTER_AUTH_SECRET
-  // - GOOGLE_CLIENT_ID
-  // - GOOGLE_CLIENT_SECRET
-  // - GITHUB_CLIENT_ID
-  // - GITHUB_CLIENT_SECRET
-  // - GITHUB_TOKEN (for fetching repo contents)
+  // - ADMIN_API_KEY (for protecting /api/admin/* routes)
+  // - GITHUB_TOKEN (for fetching repo contents during indexing)
 }

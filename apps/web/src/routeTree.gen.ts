@@ -9,14 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
 import { Route as DocsWebUiRouteImport } from './routes/docs/web-ui'
 import { Route as DocsSubmitRouteImport } from './routes/docs/submit'
 import { Route as DocsGettingStartedRouteImport } from './routes/docs/getting-started'
+import { Route as AdminSubmissionsRouteImport } from './routes/admin/submissions'
+import { Route as AdminLibrariesRouteImport } from './routes/admin/libraries'
 import { Route as DocsMcpToolsIndexRouteImport } from './routes/docs/mcp-tools/index'
 import { Route as DocsApiIndexRouteImport } from './routes/docs/api/index'
 import { Route as DocsMcpToolsResolveLibraryRouteImport } from './routes/docs/mcp-tools/resolve-library'
@@ -26,7 +30,13 @@ import { Route as DocsMcpToolsGetLibraryInfoRouteImport } from './routes/docs/mc
 import { Route as DocsApiSubmissionsRouteImport } from './routes/docs/api/submissions'
 import { Route as DocsApiStatsRouteImport } from './routes/docs/api/stats'
 import { Route as DocsApiLibrariesRouteImport } from './routes/docs/api/libraries'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const SubmitRoute = SubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
@@ -47,6 +57,11 @@ const DocsIndexRoute = DocsIndexRouteImport.update({
   path: '/docs/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LibrariesLibraryIdRoute = LibrariesLibraryIdRouteImport.update({
   id: '/libraries/$libraryId',
   path: '/libraries/$libraryId',
@@ -65,6 +80,16 @@ const DocsSubmitRoute = DocsSubmitRouteImport.update({
 const DocsGettingStartedRoute = DocsGettingStartedRouteImport.update({
   id: '/docs/getting-started',
   path: '/docs/getting-started',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSubmissionsRoute = AdminSubmissionsRouteImport.update({
+  id: '/admin/submissions',
+  path: '/admin/submissions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLibrariesRoute = AdminLibrariesRouteImport.update({
+  id: '/admin/libraries',
+  path: '/admin/libraries',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsMcpToolsIndexRoute = DocsMcpToolsIndexRouteImport.update({
@@ -115,16 +140,26 @@ const DocsApiLibrariesRoute = DocsApiLibrariesRouteImport.update({
   path: '/docs/api/libraries',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/explore': typeof ExploreRoute
   '/sign-in': typeof SignInRoute
+  '/submit': typeof SubmitRoute
+  '/admin/libraries': typeof AdminLibrariesRoute
+  '/admin/submissions': typeof AdminSubmissionsRoute
   '/docs/getting-started': typeof DocsGettingStartedRoute
   '/docs/submit': typeof DocsSubmitRoute
   '/docs/web-ui': typeof DocsWebUiRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/docs/api/libraries': typeof DocsApiLibrariesRoute
   '/docs/api/stats': typeof DocsApiStatsRoute
   '/docs/api/submissions': typeof DocsApiSubmissionsRoute
@@ -139,11 +174,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/explore': typeof ExploreRoute
   '/sign-in': typeof SignInRoute
+  '/submit': typeof SubmitRoute
+  '/admin/libraries': typeof AdminLibrariesRoute
+  '/admin/submissions': typeof AdminSubmissionsRoute
   '/docs/getting-started': typeof DocsGettingStartedRoute
   '/docs/submit': typeof DocsSubmitRoute
   '/docs/web-ui': typeof DocsWebUiRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
+  '/admin': typeof AdminIndexRoute
   '/docs': typeof DocsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/docs/api/libraries': typeof DocsApiLibrariesRoute
   '/docs/api/stats': typeof DocsApiStatsRoute
   '/docs/api/submissions': typeof DocsApiSubmissionsRoute
@@ -159,11 +199,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/explore': typeof ExploreRoute
   '/sign-in': typeof SignInRoute
+  '/submit': typeof SubmitRoute
+  '/admin/libraries': typeof AdminLibrariesRoute
+  '/admin/submissions': typeof AdminSubmissionsRoute
   '/docs/getting-started': typeof DocsGettingStartedRoute
   '/docs/submit': typeof DocsSubmitRoute
   '/docs/web-ui': typeof DocsWebUiRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/docs/api/libraries': typeof DocsApiLibrariesRoute
   '/docs/api/stats': typeof DocsApiStatsRoute
   '/docs/api/submissions': typeof DocsApiSubmissionsRoute
@@ -180,11 +225,16 @@ export interface FileRouteTypes {
     | '/'
     | '/explore'
     | '/sign-in'
+    | '/submit'
+    | '/admin/libraries'
+    | '/admin/submissions'
     | '/docs/getting-started'
     | '/docs/submit'
     | '/docs/web-ui'
     | '/libraries/$libraryId'
+    | '/admin/'
     | '/docs/'
+    | '/api/auth/$'
     | '/docs/api/libraries'
     | '/docs/api/stats'
     | '/docs/api/submissions'
@@ -199,11 +249,16 @@ export interface FileRouteTypes {
     | '/'
     | '/explore'
     | '/sign-in'
+    | '/submit'
+    | '/admin/libraries'
+    | '/admin/submissions'
     | '/docs/getting-started'
     | '/docs/submit'
     | '/docs/web-ui'
     | '/libraries/$libraryId'
+    | '/admin'
     | '/docs'
+    | '/api/auth/$'
     | '/docs/api/libraries'
     | '/docs/api/stats'
     | '/docs/api/submissions'
@@ -218,11 +273,16 @@ export interface FileRouteTypes {
     | '/'
     | '/explore'
     | '/sign-in'
+    | '/submit'
+    | '/admin/libraries'
+    | '/admin/submissions'
     | '/docs/getting-started'
     | '/docs/submit'
     | '/docs/web-ui'
     | '/libraries/$libraryId'
+    | '/admin/'
     | '/docs/'
+    | '/api/auth/$'
     | '/docs/api/libraries'
     | '/docs/api/stats'
     | '/docs/api/submissions'
@@ -238,11 +298,16 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ExploreRoute: typeof ExploreRoute
   SignInRoute: typeof SignInRoute
+  SubmitRoute: typeof SubmitRoute
+  AdminLibrariesRoute: typeof AdminLibrariesRoute
+  AdminSubmissionsRoute: typeof AdminSubmissionsRoute
   DocsGettingStartedRoute: typeof DocsGettingStartedRoute
   DocsSubmitRoute: typeof DocsSubmitRoute
   DocsWebUiRoute: typeof DocsWebUiRoute
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   DocsApiLibrariesRoute: typeof DocsApiLibrariesRoute
   DocsApiStatsRoute: typeof DocsApiStatsRoute
   DocsApiSubmissionsRoute: typeof DocsApiSubmissionsRoute
@@ -256,6 +321,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/submit': {
+      id: '/submit'
+      path: '/submit'
+      fullPath: '/submit'
+      preLoaderRoute: typeof SubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sign-in': {
       id: '/sign-in'
       path: '/sign-in'
@@ -284,6 +356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/libraries/$libraryId': {
       id: '/libraries/$libraryId'
       path: '/libraries/$libraryId'
@@ -310,6 +389,20 @@ declare module '@tanstack/react-router' {
       path: '/docs/getting-started'
       fullPath: '/docs/getting-started'
       preLoaderRoute: typeof DocsGettingStartedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/submissions': {
+      id: '/admin/submissions'
+      path: '/admin/submissions'
+      fullPath: '/admin/submissions'
+      preLoaderRoute: typeof AdminSubmissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/libraries': {
+      id: '/admin/libraries'
+      path: '/admin/libraries'
+      fullPath: '/admin/libraries'
+      preLoaderRoute: typeof AdminLibrariesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/mcp-tools/': {
@@ -375,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsApiLibrariesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -382,11 +482,16 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExploreRoute: ExploreRoute,
   SignInRoute: SignInRoute,
+  SubmitRoute: SubmitRoute,
+  AdminLibrariesRoute: AdminLibrariesRoute,
+  AdminSubmissionsRoute: AdminSubmissionsRoute,
   DocsGettingStartedRoute: DocsGettingStartedRoute,
   DocsSubmitRoute: DocsSubmitRoute,
   DocsWebUiRoute: DocsWebUiRoute,
   LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   DocsApiLibrariesRoute: DocsApiLibrariesRoute,
   DocsApiStatsRoute: DocsApiStatsRoute,
   DocsApiSubmissionsRoute: DocsApiSubmissionsRoute,

@@ -11,8 +11,8 @@
     "generate": "npx @better-auth/cli generate --config ./src/index.ts"
   },
   "dependencies": {
+    "@nexus/db": "workspace:*",
     "better-auth": "^1.2.0",
-    "better-auth-cloudflare": "^0.2.9",
     "drizzle-orm": "^0.44.0"
   },
   "devDependencies": {

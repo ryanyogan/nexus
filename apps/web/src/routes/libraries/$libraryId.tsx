@@ -314,9 +314,9 @@ function LibraryDetailPage() {
                       Source
                     </a>
                   )}
-                  {library.docsUrl && (
+                  {library.sourceUrl && (
                     <a
-                      href={library.docsUrl}
+                      href={library.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"

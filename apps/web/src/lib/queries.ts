@@ -129,7 +129,7 @@ export const getLibrary = createServerFn({ method: "GET" })
         iconUrl: library.iconUrl,
         homepageUrl: library.homepageUrl,
         repositoryUrl: library.repositoryUrl,
-        docsUrl: library.docsUrl,
+        sourceUrl: library.sourceUrl,
         totalChunks: library.totalChunks,
         totalTokens: library.totalTokens,
         indexStatus: library.indexStatus,

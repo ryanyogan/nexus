@@ -45,7 +45,7 @@ export interface LibraryDetailResult {
     iconUrl: string | null;
     homepageUrl: string | null;
     repositoryUrl: string | null;
-    docsUrl: string | null;
+    sourceUrl: string;
     totalChunks: number;
     totalTokens: number;
     indexStatus: "pending" | "indexing" | "indexed" | "failed";
@@ -65,7 +65,7 @@ export interface ChunkListResult {
     title: string | null;
     contentType: string;
     tokenCount: number;
-    sourceFile: string;
+    sourceFile: string | null;
     createdAt: string;
   }>;
   pagination: {

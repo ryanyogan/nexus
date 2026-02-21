@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
@@ -20,8 +19,21 @@ const config = defineConfig({
   optimizeDeps: {
     include: ['zod'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Shiki is large (~1MB), keep it in a separate chunk
+          shiki: ['shiki', 'shiki/core', 'shiki/engine/javascript'],
+          // GSAP for animations
+          gsap: ['gsap', 'gsap/ScrollTrigger'],
+        },
+      },
+    },
+  },
   plugins: [
-    devtools(),
+    // TanStack devtools disabled - causes port conflicts
+    // devtools(),
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({

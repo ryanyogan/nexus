@@ -8,15 +8,25 @@
     { "pattern": "nexus.yogan.dev", "custom_domain": true }
   ],
 
-  // D1 Database - direct access from web worker
-  // Using remote: true to connect to production D1 during development
+  // D1 Database - shared with API
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "nexus-db",
       "database_id": "bf8148c0-b43e-4d09-bcee-d79d4760650e",
-      "migrations_dir": "../../packages/db/migrations",
-      "remote": true
+      "migrations_dir": "../../packages/db/migrations"
     }
-  ]
+  ],
+
+  // Public environment variables
+  "vars": {
+    "BETTER_AUTH_URL": "https://nexus.yogan.dev"
+  }
+
+  // Secrets (set via .dev.vars locally, wrangler secret put for production):
+  // - BETTER_AUTH_SECRET
+  // - GOOGLE_CLIENT_ID
+  // - GOOGLE_CLIENT_SECRET
+  // - GITHUB_CLIENT_ID
+  // - GITHUB_CLIENT_SECRET
 }
