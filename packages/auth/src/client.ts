@@ -1,9 +1,9 @@
 import { createAuthClient } from "better-auth/react";
 
-// Auth client for React/TanStack Start
-// Now same-origin since auth is handled by TanStack Start, not the API
+// Auth client for React - connects to the API
+// baseURL is set dynamically based on environment
 export const authClient = createAuthClient({
-  // No baseURL needed - defaults to same origin
+  baseURL: "https://api.nexus.yogan.dev",
 });
 
 export const { signIn, signOut, useSession } = authClient;

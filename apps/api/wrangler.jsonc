@@ -8,6 +8,11 @@
     { "pattern": "api.nexus.yogan.dev", "custom_domain": true }
   ],
 
+  // Environment variables (non-secret)
+  "vars": {
+    "BETTER_AUTH_URL": "https://api.nexus.yogan.dev"
+  },
+
   // D1 Database
   "d1_databases": [
     {

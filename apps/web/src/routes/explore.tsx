@@ -2,14 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import {
   Search,
-  Filter,
   ExternalLink,
   BookOpen,
   FileText,
   Clock,
   Star,
-  Sparkles,
   X,
+  Server,
+  ArrowRight,
 } from "lucide-react";
 import { ExplorePageSkeleton } from "../components/skeletons";
 import { getLibraries } from "../lib/queries";
@@ -23,6 +23,7 @@ import type { LibraryListResult } from "../lib/types";
 const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
   category: z.string().optional().catch(undefined),
+  tab: z.enum(["docs", "servers"]).optional().catch("docs"),
 });
 
 // ============================================================================
@@ -69,12 +70,13 @@ type Library = LibraryListResult["libraries"][number];
 
 function ExplorePage() {
   const navigate = useNavigate({ from: "/explore" });
-  const { q, category } = Route.useSearch();
+  const { q, category, tab } = Route.useSearch();
   const data = Route.useLoaderData();
 
   // Derive state from URL params
   const searchQuery = q || "";
   const selectedCategory = category || "all";
+  const activeTab = tab || "docs";
   const libraries = data.libraries;
 
   // Update search params (URL-based filtering)
@@ -86,6 +88,20 @@ function ExplorePage() {
         category: newCategory === "all" ? undefined : newCategory,
       }),
     });
+  };
+
+  // Handle tab change
+  const handleTabChange = (newTab: "docs" | "servers") => {
+    if (newTab === "servers") {
+      navigate({ to: "/explore/servers" });
+    } else {
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          tab: undefined, // docs is default
+        }),
+      });
+    }
   };
 
   // Handle search input
@@ -113,136 +129,194 @@ function ExplorePage() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Header */}
+      {/* Header with Tabs */}
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Documentation Library
-              </h1>
-              <p className="text-muted-foreground">
-                Browse {libraries.length} indexed libraries with semantic search
+              <h1 className="text-3xl font-bold text-foreground">Explore</h1>
+              <p className="mt-1 text-muted-foreground">
+                Discover documentation libraries and MCP servers
               </p>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search libraries by name..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="h-12 w-full rounded-lg border border-border bg-background pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <button className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
-              <Filter className="h-4 w-4" />
-              Filters
+          {/* Tab Navigation */}
+          <div className="mt-6 flex gap-1 rounded-lg bg-muted p-1">
+            <button
+              onClick={() => handleTabChange("docs")}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === "docs"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              Documentation Libraries
+            </button>
+            <button
+              onClick={() => handleTabChange("servers")}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === "servers"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Server className="h-4 w-4" />
+              MCP Servers
             </button>
           </div>
+
+          {/* Search (for docs tab) */}
+          {activeTab === "docs" && (
+            <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search documentation libraries..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="h-12 w-full rounded-lg border border-border bg-background pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Sidebar */}
-          <aside className="w-full shrink-0 lg:w-56">
-            <h2 className="mb-4 text-sm font-semibold text-foreground">
-              Categories
-            </h2>
-            <nav className="flex flex-row flex-wrap gap-2 lg:flex-col lg:gap-1">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategoryChange(cat.id)}
-                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                    selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  <span>{cat.label}</span>
-                </button>
-              ))}
-            </nav>
-          </aside>
+      {/* Content Area */}
+      {activeTab === "docs" ? (
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-8 lg:flex-row">
+            {/* Sidebar */}
+            <aside className="w-full shrink-0 lg:w-56">
+              <h2 className="mb-4 text-sm font-semibold text-foreground">
+                Categories
+              </h2>
+              <nav className="flex flex-row flex-wrap gap-2 lg:flex-col lg:gap-1">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategoryChange(cat.id)}
+                    className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                      selectedCategory === cat.id
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <span>{cat.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </aside>
 
-          {/* Library Grid */}
-          <div className="flex-1">
-            {/* Indexed Libraries */}
-            {indexedLibraries.length > 0 && (
-              <>
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">
-                      {indexedLibraries.length}
-                    </span>{" "}
-                    indexed librar{indexedLibraries.length !== 1 ? "ies" : "y"}
-                  </p>
-                  <select className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
-                    <option>Most Popular</option>
-                    <option>Recently Indexed</option>
-                    <option>Alphabetical</option>
-                  </select>
+            {/* Library Grid */}
+            <div className="flex-1">
+              {/* Info banner */}
+              <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/50 dark:bg-blue-900/20">
+                <div className="flex items-start gap-3">
+                  <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <h3 className="font-medium text-blue-900 dark:text-blue-100">
+                      Documentation Libraries
+                    </h3>
+                    <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                      Pre-indexed documentation with semantic search. Ask your AI assistant 
+                      questions and get relevant code examples instantly.
+                    </p>
+                  </div>
                 </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {indexedLibraries.map((library) => (
-                    <LibraryCard key={library.id} library={library} />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* Pending Libraries */}
-            {pendingLibraries.length > 0 && (
-              <>
-                <h3 className="mb-4 mt-8 text-lg font-semibold text-foreground">
-                  Coming Soon
-                </h3>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {pendingLibraries.map((library) => (
-                    <PendingLibraryCard key={library.id} library={library} />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {libraries.length === 0 && (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
-                <BookOpen className="mb-4 h-12 w-12 text-muted-foreground" />
-                <p className="text-lg font-medium text-foreground">
-                  No libraries found
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  Try adjusting your search or filters
-                </p>
-                <button
-                  onClick={clearAllFilters}
-                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Clear filters
-                </button>
               </div>
-            )}
+
+              {/* Indexed Libraries */}
+              {indexedLibraries.length > 0 && (
+                <>
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium text-foreground">
+                        {indexedLibraries.length}
+                      </span>{" "}
+                      indexed librar{indexedLibraries.length !== 1 ? "ies" : "y"}
+                    </p>
+                    <select className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
+                      <option>Most Popular</option>
+                      <option>Recently Indexed</option>
+                      <option>Alphabetical</option>
+                    </select>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {indexedLibraries.map((library) => (
+                      <LibraryCard key={library.id} library={library} />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Pending Libraries */}
+              {pendingLibraries.length > 0 && (
+                <>
+                  <h3 className="mb-4 mt-8 text-lg font-semibold text-foreground">
+                    Coming Soon
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {pendingLibraries.map((library) => (
+                      <PendingLibraryCard key={library.id} library={library} />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {libraries.length === 0 && (
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
+                  <BookOpen className="mb-4 h-12 w-12 text-muted-foreground" />
+                  <p className="text-lg font-medium text-foreground">
+                    No libraries found
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    Try adjusting your search or filters
+                  </p>
+                  <button
+                    onClick={clearAllFilters}
+                    className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* Redirect to servers page */
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <Server className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h2 className="mt-4 text-xl font-semibold text-foreground">
+              MCP Server Registry
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Discover and install MCP servers with ready-to-use configurations
+            </p>
+            <Link
+              to="/explore/servers"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Browse MCP Servers
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

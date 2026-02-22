@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { createDb } from "@nexus/db";
+import { createAuth } from "@nexus/auth";
 import { mcpRouter } from "./routes/mcp";
 import { librariesRouter } from "./routes/libraries";
 import { submissionsRouter } from "./routes/submissions";
@@ -59,6 +60,20 @@ app.route("/api/admin", adminRouter);
 
 // MCP Protocol endpoint (Streamable HTTP) - public
 app.route("/mcp", mcpRouter);
+
+// Better Auth routes
+app.on(["POST", "GET"], "/api/auth/*", (c) => {
+  const auth = createAuth({
+    DB: c.env.DB,
+    GOOGLE_CLIENT_ID: c.env.GOOGLE_CLIENT_ID || "",
+    GOOGLE_CLIENT_SECRET: c.env.GOOGLE_CLIENT_SECRET || "",
+    GITHUB_CLIENT_ID: c.env.GITHUB_CLIENT_ID || "",
+    GITHUB_CLIENT_SECRET: c.env.GITHUB_CLIENT_SECRET || "",
+    BETTER_AUTH_SECRET: c.env.BETTER_AUTH_SECRET || "",
+    BETTER_AUTH_URL: c.env.BETTER_AUTH_URL || "https://api.nexus.yogan.dev",
+  });
+  return auth.handler(c.req.raw);
+});
 
 // Export for Cloudflare Workers
 export default {
