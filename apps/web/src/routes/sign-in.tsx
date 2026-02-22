@@ -1,14 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
+import { useEffect } from "react";
 import { Layers, Github, ArrowLeft, Loader2 } from "lucide-react";
-import { NeuralNetwork } from "../components/NeuralNetwork";
 import { signIn, useSession } from "@nexus/auth/client";
 
 export const Route = createFileRoute("/sign-in")({ component: SignInPage });
 
 function SignInPage() {
-  const cardRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { data: session, isPending } = useSession();
 
@@ -18,49 +15,6 @@ function SignInPage() {
       navigate({ to: "/" });
     }
   }, [session, navigate]);
-
-  useEffect(() => {
-    // Card entrance animation
-    gsap.fromTo(
-      cardRef.current,
-      { opacity: 0, y: 30, scale: 0.95 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" }
-    );
-
-    // Logo animation
-    gsap.fromTo(
-      ".auth-logo",
-      { opacity: 0, scale: 0.8, rotate: -10 },
-      { opacity: 1, scale: 1, rotate: 0, duration: 0.5, ease: "back.out(1.7)", delay: 0.2 }
-    );
-
-    // Text animations
-    gsap.fromTo(
-      ".auth-title",
-      { opacity: 0, y: 10 },
-      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", delay: 0.3 }
-    );
-
-    gsap.fromTo(
-      ".auth-subtitle",
-      { opacity: 0, y: 10 },
-      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", delay: 0.4 }
-    );
-
-    // Buttons animation
-    gsap.fromTo(
-      ".auth-button",
-      { opacity: 0, y: 15 },
-      { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, ease: "power2.out", delay: 0.5 }
-    );
-
-    // Footer animation
-    gsap.fromTo(
-      ".auth-footer",
-      { opacity: 0 },
-      { opacity: 1, duration: 0.5, delay: 0.7 }
-    );
-  }, []);
 
   const handleGoogleSignIn = async () => {
     await signIn.social({
@@ -86,47 +40,17 @@ function SignInPage() {
   }
 
   return (
-    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
-      {/* Neural network background */}
-      <div className="absolute inset-0 -z-10">
-        <NeuralNetwork />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/90" />
-      </div>
-
-      {/* Glow effects */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-primary/20 blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-accent/20 blur-[100px]" />
-      </div>
-
-      <div
-        ref={cardRef}
-        className="relative w-full max-w-sm rounded-2xl border border-border/50 bg-card/80 p-8 backdrop-blur-xl"
-        style={{
-          boxShadow: `
-            0 0 60px rgba(139, 92, 246, 0.1),
-            0 25px 50px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05)
-          `,
-        }}
-      >
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
+      <div className="w-full max-w-sm rounded-lg border border-border bg-card p-8">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div
-            className="auth-logo mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary"
-            style={{
-              boxShadow: `
-                0 0 30px rgba(139, 92, 246, 0.4),
-                0 0 60px rgba(139, 92, 246, 0.2)
-              `,
-            }}
-          >
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
             <Layers className="h-7 w-7 text-primary-foreground" />
           </div>
-          <h1 className="auth-title text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-foreground">
             Sign in to Nexus
           </h1>
-          <p className="auth-subtitle mt-2 text-muted-foreground">
+          <p className="mt-2 text-muted-foreground">
             Connect your account to get started
           </p>
         </div>
@@ -135,12 +59,8 @@ function SignInPage() {
         <div className="space-y-3">
           <button
             onClick={handleGoogleSignIn}
-            className="auth-button group relative flex h-12 w-full items-center justify-center gap-3 overflow-hidden rounded-xl border border-border/50 bg-card text-sm font-medium text-foreground transition-all hover:border-primary/50"
-            style={{
-              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-            }}
+            className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
@@ -164,12 +84,8 @@ function SignInPage() {
 
           <button
             onClick={handleGitHubSignIn}
-            className="auth-button group relative flex h-12 w-full items-center justify-center gap-3 overflow-hidden rounded-xl border border-border/50 bg-card text-sm font-medium text-foreground transition-all hover:border-primary/50"
-            style={{
-              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-            }}
+            className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <Github className="h-5 w-5" />
             Continue with GitHub
           </button>
@@ -177,21 +93,21 @@ function SignInPage() {
 
         {/* Divider */}
         <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border/50" />
+          <div className="h-px flex-1 bg-border" />
           <span className="text-xs text-muted-foreground">or</span>
-          <div className="h-px flex-1 bg-border/50" />
+          <div className="h-px flex-1 bg-border" />
         </div>
 
         {/* Email option (future) */}
         <button
           disabled
-          className="auth-button flex h-12 w-full items-center justify-center rounded-xl border border-dashed border-border/50 text-sm text-muted-foreground transition-colors hover:border-border hover:text-foreground"
+          className="flex h-12 w-full items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground"
         >
           Continue with Email (coming soon)
         </button>
 
         {/* Terms */}
-        <p className="auth-footer mt-6 text-center text-xs text-muted-foreground">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           By signing in, you agree to our{" "}
           <a href="#" className="text-primary hover:underline">
             Terms of Service
@@ -203,7 +119,7 @@ function SignInPage() {
         </p>
 
         {/* Back link */}
-        <div className="auth-footer mt-6 text-center">
+        <div className="mt-6 text-center">
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

@@ -1,10 +1,68 @@
 import { Sparkles } from "lucide-react";
 
-function Skeleton({ className = "" }: { className?: string }) {
+export function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
       className={`animate-pulse rounded-md bg-muted/50 ${className}`}
     />
+  );
+}
+
+// ============================================================================
+// Stats Skeleton (Landing Page)
+// ============================================================================
+
+export function StatsSkeleton() {
+  return (
+    <div className="mx-auto mt-16 max-w-3xl">
+      <div className="grid grid-cols-2 gap-6 rounded-lg border border-border bg-card p-6 sm:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="text-center">
+            <Skeleton className="mx-auto h-7 w-16 mb-1" />
+            <Skeleton className="mx-auto h-3 w-12" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Server Card Skeleton
+// ============================================================================
+
+export function ServerCardSkeleton() {
+  return (
+    <div className="flex flex-col rounded-lg border border-border bg-card p-5">
+      <div className="mb-4 flex items-start gap-3">
+        <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+        <div className="flex-1">
+          <Skeleton className="h-5 w-32 mb-1.5" />
+          <Skeleton className="h-3 w-20" />
+        </div>
+      </div>
+      <Skeleton className="mb-4 h-10 w-full" />
+      <div className="flex items-center gap-2 mt-auto">
+        <Skeleton className="h-5 w-16 rounded-full" />
+        <Skeleton className="h-5 w-20 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Server Preview Card Skeleton (Smaller, for landing page)
+// ============================================================================
+
+export function ServerPreviewCardSkeleton() {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+      <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+      <div className="flex-1 min-w-0">
+        <Skeleton className="h-4 w-24 mb-1" />
+        <Skeleton className="h-3 w-full max-w-[200px]" />
+      </div>
+    </div>
   );
 }
 

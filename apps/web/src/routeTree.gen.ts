@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
+import { Route as ExploreServersRouteImport } from './routes/explore/servers'
 import { Route as DocsWebUiRouteImport } from './routes/docs/web-ui'
 import { Route as DocsSubmitRouteImport } from './routes/docs/submit'
 import { Route as DocsGettingStartedRouteImport } from './routes/docs/getting-started'
@@ -23,6 +24,7 @@ import { Route as AdminSubmissionsRouteImport } from './routes/admin/submissions
 import { Route as AdminLibrariesRouteImport } from './routes/admin/libraries'
 import { Route as DocsMcpToolsIndexRouteImport } from './routes/docs/mcp-tools/index'
 import { Route as DocsApiIndexRouteImport } from './routes/docs/api/index'
+import { Route as ExploreServersServerIdRouteImport } from './routes/explore/servers.$serverId'
 import { Route as DocsMcpToolsResolveLibraryRouteImport } from './routes/docs/mcp-tools/resolve-library'
 import { Route as DocsMcpToolsQueryDocsRouteImport } from './routes/docs/mcp-tools/query-docs'
 import { Route as DocsMcpToolsListLibrariesRouteImport } from './routes/docs/mcp-tools/list-libraries'
@@ -67,6 +69,11 @@ const LibrariesLibraryIdRoute = LibrariesLibraryIdRouteImport.update({
   path: '/libraries/$libraryId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExploreServersRoute = ExploreServersRouteImport.update({
+  id: '/servers',
+  path: '/servers',
+  getParentRoute: () => ExploreRoute,
+} as any)
 const DocsWebUiRoute = DocsWebUiRouteImport.update({
   id: '/docs/web-ui',
   path: '/docs/web-ui',
@@ -101,6 +108,11 @@ const DocsApiIndexRoute = DocsApiIndexRouteImport.update({
   id: '/docs/api/',
   path: '/docs/api/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreServersServerIdRoute = ExploreServersServerIdRouteImport.update({
+  id: '/$serverId',
+  path: '/$serverId',
+  getParentRoute: () => ExploreServersRoute,
 } as any)
 const DocsMcpToolsResolveLibraryRoute =
   DocsMcpToolsResolveLibraryRouteImport.update({
@@ -148,7 +160,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRoute
+  '/explore': typeof ExploreRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/submit': typeof SubmitRoute
   '/admin/libraries': typeof AdminLibrariesRoute
@@ -156,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/docs/getting-started': typeof DocsGettingStartedRoute
   '/docs/submit': typeof DocsSubmitRoute
   '/docs/web-ui': typeof DocsWebUiRoute
+  '/explore/servers': typeof ExploreServersRouteWithChildren
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
@@ -167,12 +180,13 @@ export interface FileRoutesByFullPath {
   '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
   '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
   '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
+  '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/docs/api/': typeof DocsApiIndexRoute
   '/docs/mcp-tools/': typeof DocsMcpToolsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRoute
+  '/explore': typeof ExploreRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/submit': typeof SubmitRoute
   '/admin/libraries': typeof AdminLibrariesRoute
@@ -180,6 +194,7 @@ export interface FileRoutesByTo {
   '/docs/getting-started': typeof DocsGettingStartedRoute
   '/docs/submit': typeof DocsSubmitRoute
   '/docs/web-ui': typeof DocsWebUiRoute
+  '/explore/servers': typeof ExploreServersRouteWithChildren
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/admin': typeof AdminIndexRoute
   '/docs': typeof DocsIndexRoute
@@ -191,13 +206,14 @@ export interface FileRoutesByTo {
   '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
   '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
   '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
+  '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/docs/api': typeof DocsApiIndexRoute
   '/docs/mcp-tools': typeof DocsMcpToolsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRoute
+  '/explore': typeof ExploreRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/submit': typeof SubmitRoute
   '/admin/libraries': typeof AdminLibrariesRoute
@@ -205,6 +221,7 @@ export interface FileRoutesById {
   '/docs/getting-started': typeof DocsGettingStartedRoute
   '/docs/submit': typeof DocsSubmitRoute
   '/docs/web-ui': typeof DocsWebUiRoute
+  '/explore/servers': typeof ExploreServersRouteWithChildren
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
@@ -216,6 +233,7 @@ export interface FileRoutesById {
   '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
   '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
   '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
+  '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/docs/api/': typeof DocsApiIndexRoute
   '/docs/mcp-tools/': typeof DocsMcpToolsIndexRoute
 }
@@ -231,6 +249,7 @@ export interface FileRouteTypes {
     | '/docs/getting-started'
     | '/docs/submit'
     | '/docs/web-ui'
+    | '/explore/servers'
     | '/libraries/$libraryId'
     | '/admin/'
     | '/docs/'
@@ -242,6 +261,7 @@ export interface FileRouteTypes {
     | '/docs/mcp-tools/list-libraries'
     | '/docs/mcp-tools/query-docs'
     | '/docs/mcp-tools/resolve-library'
+    | '/explore/servers/$serverId'
     | '/docs/api/'
     | '/docs/mcp-tools/'
   fileRoutesByTo: FileRoutesByTo
@@ -255,6 +275,7 @@ export interface FileRouteTypes {
     | '/docs/getting-started'
     | '/docs/submit'
     | '/docs/web-ui'
+    | '/explore/servers'
     | '/libraries/$libraryId'
     | '/admin'
     | '/docs'
@@ -266,6 +287,7 @@ export interface FileRouteTypes {
     | '/docs/mcp-tools/list-libraries'
     | '/docs/mcp-tools/query-docs'
     | '/docs/mcp-tools/resolve-library'
+    | '/explore/servers/$serverId'
     | '/docs/api'
     | '/docs/mcp-tools'
   id:
@@ -279,6 +301,7 @@ export interface FileRouteTypes {
     | '/docs/getting-started'
     | '/docs/submit'
     | '/docs/web-ui'
+    | '/explore/servers'
     | '/libraries/$libraryId'
     | '/admin/'
     | '/docs/'
@@ -290,13 +313,14 @@ export interface FileRouteTypes {
     | '/docs/mcp-tools/list-libraries'
     | '/docs/mcp-tools/query-docs'
     | '/docs/mcp-tools/resolve-library'
+    | '/explore/servers/$serverId'
     | '/docs/api/'
     | '/docs/mcp-tools/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ExploreRoute: typeof ExploreRoute
+  ExploreRoute: typeof ExploreRouteWithChildren
   SignInRoute: typeof SignInRoute
   SubmitRoute: typeof SubmitRoute
   AdminLibrariesRoute: typeof AdminLibrariesRoute
@@ -370,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibrariesLibraryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explore/servers': {
+      id: '/explore/servers'
+      path: '/servers'
+      fullPath: '/explore/servers'
+      preLoaderRoute: typeof ExploreServersRouteImport
+      parentRoute: typeof ExploreRoute
+    }
     '/docs/web-ui': {
       id: '/docs/web-ui'
       path: '/docs/web-ui'
@@ -418,6 +449,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/api/'
       preLoaderRoute: typeof DocsApiIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/explore/servers/$serverId': {
+      id: '/explore/servers/$serverId'
+      path: '/$serverId'
+      fullPath: '/explore/servers/$serverId'
+      preLoaderRoute: typeof ExploreServersServerIdRouteImport
+      parentRoute: typeof ExploreServersRoute
     }
     '/docs/mcp-tools/resolve-library': {
       id: '/docs/mcp-tools/resolve-library'
@@ -478,9 +516,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ExploreServersRouteChildren {
+  ExploreServersServerIdRoute: typeof ExploreServersServerIdRoute
+}
+
+const ExploreServersRouteChildren: ExploreServersRouteChildren = {
+  ExploreServersServerIdRoute: ExploreServersServerIdRoute,
+}
+
+const ExploreServersRouteWithChildren = ExploreServersRoute._addFileChildren(
+  ExploreServersRouteChildren,
+)
+
+interface ExploreRouteChildren {
+  ExploreServersRoute: typeof ExploreServersRouteWithChildren
+}
+
+const ExploreRouteChildren: ExploreRouteChildren = {
+  ExploreServersRoute: ExploreServersRouteWithChildren,
+}
+
+const ExploreRouteWithChildren =
+  ExploreRoute._addFileChildren(ExploreRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ExploreRoute: ExploreRoute,
+  ExploreRoute: ExploreRouteWithChildren,
   SignInRoute: SignInRoute,
   SubmitRoute: SubmitRoute,
   AdminLibrariesRoute: AdminLibrariesRoute,

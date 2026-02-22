@@ -3,7 +3,6 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, Menu, BookOpen } from "lucide-react";
 import { DocsSidebar, MobileDocsSidebar } from "./DocsSidebar";
 import { getPrevNext } from "./navigation";
-import { FloatingParticles } from "../FloatingParticles";
 
 interface DocsLayoutProps {
   children: React.ReactNode;
@@ -19,12 +18,6 @@ export function DocsLayout({ children, title, description, toc }: DocsLayoutProp
 
   return (
     <div className="relative min-h-screen">
-      {/* Background effects */}
-      <FloatingParticles />
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-accent/10 blur-[120px]" />
-      </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Mobile nav toggle */}
@@ -65,10 +58,7 @@ export function DocsLayout({ children, title, description, toc }: DocsLayoutProp
               </Link>
               
               <div className="flex items-center gap-3 mt-4">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"
-                  style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.2)" }}
-                >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                   <BookOpen className="h-5 w-5 text-primary" />
                 </div>
                 <div>

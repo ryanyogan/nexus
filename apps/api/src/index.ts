@@ -8,6 +8,7 @@ import { submissionsRouter } from "./routes/submissions";
 import { adminRouter } from "./routes/admin";
 import { statsRouter } from "./routes/stats";
 import { analyzeRouter } from "./routes/analyze";
+import { serversRouter } from "./routes/servers";
 import { adminAuth } from "./middleware/admin";
 import type { AppContext, IngestionJob } from "./types";
 
@@ -47,6 +48,7 @@ app.get("/health", (c) => {
 
 // Public API routes
 app.route("/api/libraries", librariesRouter);
+app.route("/api/servers", serversRouter);
 app.route("/api/submissions", submissionsRouter);
 app.route("/api/stats", statsRouter);
 app.route("/api/analyze", analyzeRouter);

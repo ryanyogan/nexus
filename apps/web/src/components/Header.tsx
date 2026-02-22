@@ -1,13 +1,32 @@
 import { Link } from "@tanstack/react-router";
-import { Layers, Search, Menu, X, LogOut, User, Settings } from "lucide-react";
+import { Layers, Menu, X, LogOut, User, Settings, Sun, Moon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "@nexus/auth/client";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
+
+  // Initialize theme from localStorage/system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  }, []);
+
+  // Toggle theme
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -26,7 +45,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
@@ -51,7 +70,7 @@ export default function Header() {
             Docs
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/ryanyogan/nexus"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -61,11 +80,16 @@ export default function Header() {
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden items-center gap-4 md:flex">
-          <button className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-            <Search className="h-5 w-5" />
+        <div className="hidden items-center gap-2 md:flex">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Toggle theme"
+          >
+            {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </button>
-          
+
           {session?.user ? (
             <div className="relative" ref={userMenuRef}>
               <button
@@ -132,8 +156,8 @@ export default function Header() {
                 Sign In
               </Link>
               <Link
-                to="/explore"
-                className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                to="/docs/getting-started"
+                className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Get Started
               </Link>
@@ -141,17 +165,25 @@ export default function Header() {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </button>
+        {/* Mobile Actions */}
+        <div className="flex items-center gap-2 md:hidden">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Toggle theme"
+          >
+            {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </button>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -173,7 +205,7 @@ export default function Header() {
               Docs
             </Link>
             <a
-              href="https://github.com"
+              href="https://github.com/ryanyogan/nexus"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -181,7 +213,7 @@ export default function Header() {
               GitHub
             </a>
             <hr className="border-border" />
-            
+
             {session?.user ? (
               <>
                 <div className="flex items-center gap-3 py-2">
@@ -237,8 +269,8 @@ export default function Header() {
                   Sign In
                 </Link>
                 <Link
-                  to="/explore"
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  to="/docs/getting-started"
+                  className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Get Started

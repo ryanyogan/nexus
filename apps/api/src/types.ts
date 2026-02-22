@@ -74,8 +74,9 @@ export interface LibraryInfo {
   id: string;
   name: string;
   description: string | null;
-  sourceType: "github" | "website" | "npm";
+  sourceType: "github" | "website" | "npm" | "context7";
   sourceUrl: string;
+  context7Id: string | null;
   repositoryUrl: string | null;
   homepageUrl: string | null;
   iconUrl: string | null;
@@ -95,7 +96,8 @@ export interface LibraryInfo {
 export interface IngestionJob {
   libraryId: string;
   sourceUrl: string;
-  sourceType: "github" | "website" | "npm";
+  sourceType: "github" | "website" | "npm" | "context7";
+  context7Id?: string;
 }
 
 export interface ChunkData {
@@ -110,6 +112,42 @@ export interface ChunkData {
 export interface GitHubContent {
   path: string;
   content: string;
+}
+
+// ============================================================================
+// Memory Types
+// ============================================================================
+
+export type MemoryType =
+  | "project_context"
+  | "session_summary"
+  | "decision"
+  | "correction";
+
+export type MemoryScope = "global" | "user";
+
+export interface MemoryMetadata {
+  id: string;
+  scope: MemoryScope;
+  type: MemoryType;
+  project: string | null;
+  userId: string | null;
+  title: string;
+  tags: string[];
+}
+
+export interface MemoryResult {
+  memoryId: string;
+  title: string;
+  type: MemoryType;
+  content: string;
+  summary: string | null;
+  tags: string[];
+  project: string | null;
+  importance: number;
+  relevanceScore?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ============================================================================

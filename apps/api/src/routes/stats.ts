@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { sql, eq, desc } from "drizzle-orm";
-import { libraries, libraryStats } from "@nexus/db";
+import { libraries, libraryStats, mcpServers } from "@nexus/db";
 import type { AppContext } from "../types";
 
 const statsRouter = new Hono<AppContext>();
@@ -44,6 +44,12 @@ statsRouter.get("/", async (c) => {
     })
     .from(libraryStats);
 
+  // Get MCP server count
+  const serverCount = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(mcpServers)
+    .where(eq(mcpServers.isActive, true));
+
   return c.json({
     libraries: {
       total: indexedCount + pendingCount + indexingCount,
@@ -54,6 +60,9 @@ statsRouter.get("/", async (c) => {
     documentation: {
       totalChunks: totals[0]?.totalChunks || 0,
       totalTokens: totals[0]?.totalTokens || 0,
+    },
+    servers: {
+      total: serverCount[0]?.count || 0,
     },
     usage: {
       totalQueries: queryStats[0]?.totalQueries || 0,

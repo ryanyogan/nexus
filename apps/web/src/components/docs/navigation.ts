@@ -3,18 +3,18 @@
 export interface NavItem {
   title: string;
   href: string;
-  icon?: string;
-  items?: NavItem[];
 }
 
 export interface NavSection {
   title: string;
+  icon: string; // Icon name from lucide-react
   items: NavItem[];
 }
 
 export const docsNavigation: NavSection[] = [
   {
     title: "Getting Started",
+    icon: "Rocket",
     items: [
       { title: "Overview", href: "/docs" },
       { title: "Quick Start", href: "/docs/getting-started" },
@@ -22,6 +22,7 @@ export const docsNavigation: NavSection[] = [
   },
   {
     title: "MCP Tools",
+    icon: "Wrench",
     items: [
       { title: "Overview", href: "/docs/mcp-tools" },
       { title: "resolve-library", href: "/docs/mcp-tools/resolve-library" },
@@ -32,6 +33,7 @@ export const docsNavigation: NavSection[] = [
   },
   {
     title: "REST API",
+    icon: "Server",
     items: [
       { title: "Overview", href: "/docs/api" },
       { title: "Libraries", href: "/docs/api/libraries" },
@@ -41,6 +43,7 @@ export const docsNavigation: NavSection[] = [
   },
   {
     title: "Guides",
+    icon: "BookOpen",
     items: [
       { title: "Using the Web UI", href: "/docs/web-ui" },
       { title: "Submit a Library", href: "/docs/submit" },

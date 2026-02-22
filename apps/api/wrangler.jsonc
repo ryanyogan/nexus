@@ -18,11 +18,15 @@
     }
   ],
 
-  // R2 Bucket for documentation chunks
+  // R2 Buckets
   "r2_buckets": [
     {
       "binding": "DOCS_BUCKET",
       "bucket_name": "nexus-docs"
+    },
+    {
+      "binding": "MEMORY_BUCKET",
+      "bucket_name": "nexus-memories"
     }
   ],
 
@@ -39,6 +43,10 @@
     {
       "binding": "VECTORIZE",
       "index_name": "nexus-docs"
+    },
+    {
+      "binding": "MEMORY_VECTORIZE",
+      "index_name": "nexus-memories"
     }
   ],
 

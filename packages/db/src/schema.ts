@@ -14,8 +14,10 @@ export const libraries = sqliteTable(
 
     // Source information
     sourceType: text("source_type", {
-      enum: ["github", "website", "npm"],
+      enum: ["github", "website", "npm", "context7"],
     }).notNull(),
+    // Context7 library ID (e.g., "/vercel/next.js") - used when sourceType is "context7"
+    context7Id: text("context7_id"),
     sourceUrl: text("source_url").notNull(),
     repositoryUrl: text("repository_url"),
     homepageUrl: text("homepage_url"),
@@ -263,6 +265,245 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 }));
 
 // ============================================================================
+// Memories - Persistent AI assistant context
+// ============================================================================
+
+export const MEMORY_TYPES = [
+  "project_context",
+  "session_summary",
+  "decision",
+  "correction",
+] as const;
+export type MemoryType = (typeof MEMORY_TYPES)[number];
+
+export const MEMORY_SCOPES = ["global", "user"] as const;
+export type MemoryScope = (typeof MEMORY_SCOPES)[number];
+
+export const memories = sqliteTable(
+  "memories",
+  {
+    id: text("id").primaryKey(),
+
+    // Ownership & scope
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // NULL = global
+    scope: text("scope", { enum: MEMORY_SCOPES }).notNull().default("global"),
+
+    // Classification
+    type: text("type", { enum: MEMORY_TYPES }).notNull(),
+    tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
+
+    // Content
+    title: text("title").notNull(),
+    summary: text("summary"), // Short summary for listing
+    r2Key: text("r2_key").notNull(), // Full content in R2
+
+    // Context
+    project: text("project"), // Optional project name (e.g., "nexus")
+    importance: integer("importance").notNull().default(5), // 1-10
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    expiresAt: text("expires_at"), // Optional TTL
+  },
+  (table) => [
+    index("memories_user_id_idx").on(table.userId),
+    index("memories_scope_idx").on(table.scope),
+    index("memories_type_idx").on(table.type),
+    index("memories_project_idx").on(table.project),
+    index("memories_created_at_idx").on(table.createdAt),
+  ]
+);
+
+export const memoriesRelations = relations(memories, ({ one }) => ({
+  user: one(users, {
+    fields: [memories.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// API Tokens - For MCP authentication
+// ============================================================================
+
+export const API_TOKEN_SCOPES = [
+  "read:docs",
+  "read:memories",
+  "write:memories",
+  "read:servers",
+] as const;
+export type ApiTokenScope = (typeof API_TOKEN_SCOPES)[number];
+
+export const apiTokens = sqliteTable(
+  "api_tokens",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    tokenPrefix: text("token_prefix").notNull(), // First 8 chars for display
+    scopes: text("scopes", { mode: "json" }).$type<ApiTokenScope[]>().notNull().default([]),
+    lastUsedAt: text("last_used_at"),
+    expiresAt: text("expires_at"),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("api_tokens_user_idx").on(table.userId),
+    index("api_tokens_hash_idx").on(table.tokenHash),
+    index("api_tokens_active_idx").on(table.isActive),
+  ]
+);
+
+export const apiTokensRelations = relations(apiTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [apiTokens.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// MCP Servers - Registry of MCP servers
+// ============================================================================
+
+export const TRANSPORT_TYPES = ["stdio", "http", "sse"] as const;
+export type TransportType = (typeof TRANSPORT_TYPES)[number];
+
+export const PACKAGE_TYPES = ["npm", "pypi", "docker", "binary", "remote"] as const;
+export type PackageType = (typeof PACKAGE_TYPES)[number];
+
+export const mcpServers = sqliteTable(
+  "mcp_servers",
+  {
+    id: text("id").primaryKey(), // e.g., "filesystem", "postgres", "github"
+    
+    // Identity
+    namespace: text("namespace").notNull(), // e.g., "modelcontextprotocol", "anthropic"
+    name: text("name").notNull(), // e.g., "server-filesystem"
+    displayName: text("display_name"), // e.g., "Filesystem"
+    description: text("description"),
+    
+    // Version
+    version: text("version"),
+    
+    // Transport & Installation
+    transportType: text("transport_type", { enum: TRANSPORT_TYPES }).notNull().default("stdio"),
+    packageType: text("package_type", { enum: PACKAGE_TYPES }).notNull().default("npm"),
+    packageName: text("package_name"), // e.g., "@modelcontextprotocol/server-filesystem"
+    
+    // Installation command parts (stored as JSON for flexibility)
+    installCommand: text("install_command"), // e.g., "npx"
+    installArgs: text("install_args", { mode: "json" }).$type<string[]>().default([]),
+    
+    // Environment variables required (JSON object)
+    envVars: text("env_vars", { mode: "json" }).$type<Record<string, string>>().default({}),
+    
+    // Capabilities (discovered or declared) - JSON objects
+    tools: text("tools", { mode: "json" }).$type<Array<{name: string; description?: string}>>().default([]),
+    resources: text("resources", { mode: "json" }).$type<Array<{uri: string; name?: string}>>().default([]),
+    prompts: text("prompts", { mode: "json" }).$type<Array<{name: string; description?: string}>>().default([]),
+    
+    // Capability flags for easy filtering
+    hasTools: integer("has_tools", { mode: "boolean" }).notNull().default(false),
+    hasResources: integer("has_resources", { mode: "boolean" }).notNull().default(false),
+    hasPrompts: integer("has_prompts", { mode: "boolean" }).notNull().default(false),
+    
+    // Links
+    repositoryUrl: text("repository_url"),
+    documentationUrl: text("documentation_url"),
+    homepageUrl: text("homepage_url"),
+    iconUrl: text("icon_url"),
+    
+    // Auth requirements
+    requiresAuth: integer("requires_auth", { mode: "boolean" }).notNull().default(false),
+    authType: text("auth_type", { enum: ["oauth", "api_key", "env", "none"] }).default("none"),
+    
+    // Metadata
+    author: text("author"),
+    license: text("license"),
+    keywords: text("keywords", { mode: "json" }).$type<string[]>().default([]),
+    categories: text("categories", { mode: "json" }).$type<string[]>().default([]),
+    
+    // Stats
+    weeklyDownloads: integer("weekly_downloads").notNull().default(0),
+    githubStars: integer("github_stars").notNull().default(0),
+    
+    // Verification & Status
+    isVerified: integer("is_verified", { mode: "boolean" }).notNull().default(false),
+    verifiedAt: text("verified_at"),
+    isOfficial: integer("is_official", { mode: "boolean" }).notNull().default(false), // From modelcontextprotocol org
+    isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("mcp_servers_namespace_idx").on(table.namespace),
+    index("mcp_servers_name_idx").on(table.name),
+    index("mcp_servers_transport_idx").on(table.transportType),
+    index("mcp_servers_package_idx").on(table.packageType),
+    index("mcp_servers_has_tools_idx").on(table.hasTools),
+    index("mcp_servers_has_resources_idx").on(table.hasResources),
+    index("mcp_servers_official_idx").on(table.isOfficial),
+    index("mcp_servers_featured_idx").on(table.isFeatured),
+    index("mcp_servers_active_idx").on(table.isActive),
+  ]
+);
+
+// Link MCP servers to their documentation (if indexed)
+export const mcpServerDocs = sqliteTable(
+  "mcp_server_docs",
+  {
+    serverId: text("server_id")
+      .notNull()
+      .references(() => mcpServers.id, { onDelete: "cascade" }),
+    libraryId: text("library_id")
+      .notNull()
+      .references(() => libraries.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    index("mcp_server_docs_server_idx").on(table.serverId),
+    index("mcp_server_docs_library_idx").on(table.libraryId),
+  ]
+);
+
+// MCP Server Stats
+export const mcpServerStats = sqliteTable("mcp_server_stats", {
+  serverId: text("server_id")
+    .primaryKey()
+    .references(() => mcpServers.id, { onDelete: "cascade" }),
+  totalDiscoveries: integer("total_discoveries").notNull().default(0),
+  totalConfigCopies: integer("total_config_copies").notNull().default(0),
+  lastDiscoveredAt: text("last_discovered_at"),
+});
+
+export const mcpServersRelations = relations(mcpServers, ({ many, one }) => ({
+  docs: many(mcpServerDocs),
+  stats: one(mcpServerStats),
+}));
+
+export const mcpServerDocsRelations = relations(mcpServerDocs, ({ one }) => ({
+  server: one(mcpServers, {
+    fields: [mcpServerDocs.serverId],
+    references: [mcpServers.id],
+  }),
+  library: one(libraries, {
+    fields: [mcpServerDocs.libraryId],
+    references: [libraries.id],
+  }),
+}));
+
+export const mcpServerStatsRelations = relations(mcpServerStats, ({ one }) => ({
+  server: one(mcpServers, {
+    fields: [mcpServerStats.serverId],
+    references: [mcpServers.id],
+  }),
+}));
+
+// ============================================================================
 // Type exports
 // ============================================================================
 
@@ -276,3 +517,11 @@ export type NewSubmission = typeof submissions.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Account = typeof accounts.$inferSelect;
+export type Memory = typeof memories.$inferSelect;
+export type NewMemory = typeof memories.$inferInsert;
+export type McpServer = typeof mcpServers.$inferSelect;
+export type NewMcpServer = typeof mcpServers.$inferInsert;
+export type McpServerDocs = typeof mcpServerDocs.$inferSelect;
+export type McpServerStats = typeof mcpServerStats.$inferSelect;
+export type ApiToken = typeof apiTokens.$inferSelect;
+export type NewApiToken = typeof apiTokens.$inferInsert;

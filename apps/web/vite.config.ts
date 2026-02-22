@@ -23,24 +23,41 @@ const config = defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Shiki is large (~1MB), keep it in a separate chunk
+          // Shiki is large (~1MB), keep it in a separate chunk (lazy-loaded)
           shiki: ['shiki', 'shiki/core', 'shiki/engine/javascript'],
-          // GSAP for animations
-          gsap: ['gsap', 'gsap/ScrollTrigger'],
         },
       },
     },
   },
   plugins: [
-    // TanStack devtools disabled - causes port conflicts
-    // devtools(),
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
-    // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
     }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      // Pre-render docs pages at build time
+      prerender: {
+        enabled: true,
+        crawlLinks: false, // Don't crawl - we specify pages explicitly
+      },
+      // Specify which pages to prerender
+      pages: [
+        { path: '/docs', prerender: { enabled: true } },
+        { path: '/docs/getting-started', prerender: { enabled: true } },
+        { path: '/docs/mcp-tools', prerender: { enabled: true } },
+        { path: '/docs/mcp-tools/resolve-library', prerender: { enabled: true } },
+        { path: '/docs/mcp-tools/query-docs', prerender: { enabled: true } },
+        { path: '/docs/mcp-tools/get-library-info', prerender: { enabled: true } },
+        { path: '/docs/mcp-tools/list-libraries', prerender: { enabled: true } },
+        { path: '/docs/api', prerender: { enabled: true } },
+        { path: '/docs/api/libraries', prerender: { enabled: true } },
+        { path: '/docs/api/submissions', prerender: { enabled: true } },
+        { path: '/docs/api/stats', prerender: { enabled: true } },
+        { path: '/docs/web-ui', prerender: { enabled: true } },
+        { path: '/docs/submit', prerender: { enabled: true } },
+      ],
+    }),
     viteReact(),
   ],
 })

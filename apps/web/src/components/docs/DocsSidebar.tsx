@@ -1,20 +1,56 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown, Rocket, Wrench, Server, BookOpen } from "lucide-react";
+import { useState, useEffect } from "react";
 import { docsNavigation, type NavSection, type NavItem } from "./navigation";
+
+// Icon mapping
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Rocket,
+  Wrench,
+  Server,
+  BookOpen,
+};
 
 export function DocsSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
 
+  // Load collapsed state from localStorage
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const saved = localStorage.getItem("docs-sidebar-collapsed");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Save collapsed state to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("docs-sidebar-collapsed", JSON.stringify(collapsedSections));
+    }
+  }, [collapsedSections]);
+
+  const toggleSection = (title: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
+
   return (
     <aside className="hidden lg:block w-64 shrink-0">
       <div className="sticky top-24 overflow-y-auto max-h-[calc(100vh-8rem)] pb-8">
-        <nav className="space-y-6">
+        <nav className="space-y-2">
           {docsNavigation.map((section) => (
             <SidebarSection
               key={section.title}
               section={section}
               currentPath={currentPath}
+              isCollapsed={collapsedSections[section.title] || false}
+              onToggle={() => toggleSection(section.title)}
             />
           ))}
         </nav>
@@ -26,20 +62,44 @@ export function DocsSidebar() {
 function SidebarSection({
   section,
   currentPath,
+  isCollapsed,
+  onToggle,
 }: {
   section: NavSection;
   currentPath: string;
+  isCollapsed: boolean;
+  onToggle: () => void;
 }) {
+  const Icon = iconMap[section.icon] || BookOpen;
+
   return (
     <div>
-      <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {section.title}
-      </h3>
-      <ul className="space-y-1">
-        {section.items.map((item) => (
-          <SidebarItem key={item.href} item={item} currentPath={currentPath} />
-        ))}
-      </ul>
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-muted-foreground" />
+          <span>{section.title}</span>
+        </div>
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform ${
+            isCollapsed ? "-rotate-90" : ""
+          }`}
+        />
+      </button>
+      
+      <div
+        className={`overflow-hidden transition-all duration-200 ${
+          isCollapsed ? "max-h-0" : "max-h-96"
+        }`}
+      >
+        <ul className="mt-1 space-y-1 pl-6">
+          {section.items.map((item) => (
+            <SidebarItem key={item.href} item={item} currentPath={currentPath} />
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -52,33 +112,18 @@ function SidebarItem({
   currentPath: string;
 }) {
   const isActive = currentPath === item.href;
-  const isParentActive = currentPath.startsWith(item.href) && item.href !== "/docs";
 
   return (
     <li>
       <Link
         to={item.href}
-        className={`group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+        className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
           isActive
             ? "bg-primary text-primary-foreground font-medium"
-            : isParentActive
-              ? "text-foreground bg-muted/50"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
         }`}
-        style={
-          isActive
-            ? { boxShadow: "0 0 15px rgba(139, 92, 246, 0.3)" }
-            : {}
-        }
       >
-        {item.items && (
-          <ChevronRight
-            className={`h-3 w-3 transition-transform ${
-              isParentActive ? "rotate-90" : ""
-            }`}
-          />
-        )}
-        <span>{item.title}</span>
+        {item.title}
       </Link>
     </li>
   );
@@ -95,6 +140,27 @@ export function MobileDocsSidebar({
   const location = useLocation();
   const currentPath = location.pathname;
 
+  // Load collapsed state from localStorage
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const saved = localStorage.getItem("docs-sidebar-collapsed");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const toggleSection = (title: string) => {
+    setCollapsedSections((prev) => {
+      const newState = { ...prev, [title]: !prev[title] };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("docs-sidebar-collapsed", JSON.stringify(newState));
+      }
+      return newState;
+    });
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -106,7 +172,7 @@ export function MobileDocsSidebar({
       />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border/50 p-6 lg:hidden overflow-y-auto">
+      <div className="fixed inset-y-0 left-0 z-50 w-72 border-r border-border bg-background p-6 lg:hidden overflow-y-auto">
         <div className="mb-6 flex items-center justify-between">
           <span className="text-lg font-semibold text-foreground">Documentation</span>
           <button
@@ -120,14 +186,54 @@ export function MobileDocsSidebar({
           </button>
         </div>
 
-        <nav className="space-y-6">
-          {docsNavigation.map((section) => (
-            <SidebarSection
-              key={section.title}
-              section={section}
-              currentPath={currentPath}
-            />
-          ))}
+        <nav className="space-y-2">
+          {docsNavigation.map((section) => {
+            const Icon = iconMap[section.icon] || BookOpen;
+            const isCollapsed = collapsedSections[section.title] || false;
+
+            return (
+              <div key={section.title}>
+                <button
+                  onClick={() => toggleSection(section.title)}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    <span>{section.title}</span>
+                  </div>
+                  <ChevronDown
+                    className={`h-4 w-4 text-muted-foreground transition-transform ${
+                      isCollapsed ? "-rotate-90" : ""
+                    }`}
+                  />
+                </button>
+
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    isCollapsed ? "max-h-0" : "max-h-96"
+                  }`}
+                >
+                  <ul className="mt-1 space-y-1 pl-6">
+                    {section.items.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          to={item.href}
+                          onClick={onClose}
+                          className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+                            currentPath === item.href
+                              ? "bg-primary text-primary-foreground font-medium"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {item.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })}
         </nav>
       </div>
     </>

@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { libraries, chunks, libraryStats, type Database } from "@nexus/db";
 import { fetchGitHubDocs, getGitHubRepoMetadata } from "./fetchers/github";
+import { fetchContext7Docs } from "./fetchers/context7";
 import { chunkFiles } from "./chunker";
 import { generateEmbeddings } from "./embeddings";
 import type { IngestionJob, ChunkData } from "../types";
@@ -42,7 +43,15 @@ export async function processIngestionJob(
     // Step 2: Fetch documentation from source
     let files: Array<{ path: string; content: string }>;
     
-    if (sourceType === "github") {
+    if (sourceType === "context7") {
+      // Fetch from Context7 API
+      const context7Id = job.context7Id;
+      if (!context7Id) {
+        throw new Error("context7Id is required for context7 source type");
+      }
+      files = await fetchContext7Docs(context7Id);
+      console.log(`Fetched ${files.length} docs from Context7 for ${libraryId}`);
+    } else if (sourceType === "github") {
       // Try to get GitHub token from env for higher rate limits
       const token = (env as unknown as { GITHUB_TOKEN?: string }).GITHUB_TOKEN;
       files = await fetchGitHubDocs(sourceUrl, token);

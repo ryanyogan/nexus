@@ -1,6 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useEffect } from "react";
-import { gsap } from "gsap";
 import { z } from "zod";
 import {
   Search,
@@ -13,7 +11,6 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { FloatingParticles } from "../components/FloatingParticles";
 import { ExplorePageSkeleton } from "../components/skeletons";
 import { getLibraries } from "../lib/queries";
 import { LIBRARY_CATEGORIES } from "../lib/api";
@@ -74,10 +71,6 @@ function ExplorePage() {
   const navigate = useNavigate({ from: "/explore" });
   const { q, category } = Route.useSearch();
   const data = Route.useLoaderData();
-  
-  const headerRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Derive state from URL params
   const searchQuery = q || "";
@@ -108,7 +101,6 @@ function ExplorePage() {
   // Clear search
   const clearSearch = () => {
     updateSearch("", selectedCategory);
-    searchInputRef.current?.focus();
   };
 
   // Clear all filters
@@ -116,73 +108,16 @@ function ExplorePage() {
     updateSearch("", "all");
   };
 
-  // Animations
-  useEffect(() => {
-    // Header animation
-    gsap.fromTo(
-      headerRef.current,
-      { opacity: 0, y: -20 },
-      { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
-    );
-
-    // Categories animation
-    gsap.fromTo(
-      ".category-btn",
-      { opacity: 0, x: -20 },
-      {
-        opacity: 1,
-        x: 0,
-        duration: 0.4,
-        stagger: 0.05,
-        ease: "power2.out",
-        delay: 0.3,
-      }
-    );
-  }, []);
-
-  // Re-animate cards when data changes
-  useEffect(() => {
-    if (libraries.length > 0) {
-      gsap.fromTo(
-        ".library-card",
-        { opacity: 0, y: 20, scale: 0.98 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.4,
-          stagger: 0.05,
-          ease: "power2.out",
-        }
-      );
-    }
-  }, [libraries]);
-
   const indexedLibraries = libraries.filter((lib) => lib.indexStatus === "indexed");
   const pendingLibraries = libraries.filter((lib) => lib.indexStatus !== "indexed");
 
   return (
     <div className="relative min-h-screen">
-      {/* Background effects */}
-      <FloatingParticles />
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/10 blur-[120px]" />
-      </div>
-
       {/* Header */}
-      <div
-        ref={headerRef}
-        className="relative border-b border-border/50 bg-card/30 backdrop-blur-sm"
-      >
+      <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"
-              style={{
-                boxShadow: "0 0 20px rgba(139, 92, 246, 0.2)",
-              }}
-            >
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
             <div>
@@ -200,12 +135,11 @@ function ExplorePage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <input
-                ref={searchInputRef}
                 type="text"
                 placeholder="Search libraries by name..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="h-12 w-full rounded-xl border border-border/50 bg-card/50 pl-10 pr-10 text-foreground backdrop-blur-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="h-12 w-full rounded-lg border border-border bg-background pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
               {searchQuery && (
                 <button
@@ -216,7 +150,7 @@ function ExplorePage() {
                 </button>
               )}
             </div>
-            <button className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border/50 bg-card/50 px-5 text-sm font-medium text-foreground backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-card">
+            <button className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
               <Filter className="h-4 w-4" />
               Filters
             </button>
@@ -236,16 +170,11 @@ function ExplorePage() {
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`category-btn flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
+                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
                     selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                      : "text-muted-foreground hover:bg-card hover:text-foreground"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
-                  style={
-                    selectedCategory === cat.id
-                      ? { boxShadow: "0 0 20px rgba(139, 92, 246, 0.3)" }
-                      : {}
-                  }
                 >
                   <span>{cat.label}</span>
                 </button>
@@ -265,14 +194,14 @@ function ExplorePage() {
                     </span>{" "}
                     indexed librar{indexedLibraries.length !== 1 ? "ies" : "y"}
                   </p>
-                  <select className="rounded-lg border border-border/50 bg-card/50 px-3 py-2 text-sm text-foreground backdrop-blur-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
+                  <select className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
                     <option>Most Popular</option>
                     <option>Recently Indexed</option>
                     <option>Alphabetical</option>
                   </select>
                 </div>
 
-                <div ref={gridRef} className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {indexedLibraries.map((library) => (
                     <LibraryCard key={library.id} library={library} />
                   ))}
@@ -295,12 +224,7 @@ function ExplorePage() {
             )}
 
             {libraries.length === 0 && (
-              <div
-                className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/50 bg-card/30 py-16 backdrop-blur-sm"
-                style={{
-                  boxShadow: "inset 0 0 60px rgba(139, 92, 246, 0.05)",
-                }}
-              >
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
                 <BookOpen className="mb-4 h-12 w-12 text-muted-foreground" />
                 <p className="text-lg font-medium text-foreground">
                   No libraries found
@@ -310,7 +234,7 @@ function ExplorePage() {
                 </p>
                 <button
                   onClick={clearAllFilters}
-                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90"
+                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Clear filters
                 </button>
@@ -328,63 +252,25 @@ function ExplorePage() {
 // ============================================================================
 
 function LibraryCard({ library }: { library: Library }) {
-  const cardRef = useRef<HTMLAnchorElement>(null);
-
-  const handleMouseEnter = () => {
-    gsap.to(cardRef.current, {
-      scale: 1.02,
-      duration: 0.2,
-      ease: "power2.out",
-    });
-  };
-
-  const handleMouseLeave = () => {
-    gsap.to(cardRef.current, {
-      scale: 1,
-      duration: 0.2,
-      ease: "power2.out",
-    });
-  };
-
   return (
     <Link
-      ref={cardRef}
       to="/libraries/$libraryId"
       params={{ libraryId: library.id }}
-      className="library-card group relative flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/50"
-      style={{
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      className="group flex flex-col rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
     >
-      {/* Glow effect on hover */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.1) 0%, transparent 70%)",
-        }}
-      />
-
-      <div className="relative mb-4 flex items-start justify-between">
+      <div className="mb-4 flex items-start justify-between">
         <div className="flex items-center gap-3">
           {library.iconUrl ? (
             <img
               src={library.iconUrl}
               alt={library.name}
-              className="h-10 w-10 rounded-lg bg-card object-contain p-1"
+              className="h-10 w-10 rounded-lg bg-muted object-contain p-1"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
               }}
             />
           ) : (
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"
-              style={{
-                boxShadow: "0 0 15px rgba(139, 92, 246, 0.2)",
-              }}
-            >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
               <BookOpen className="h-5 w-5 text-primary" />
             </div>
           )}
@@ -392,12 +278,7 @@ function LibraryCard({ library }: { library: Library }) {
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-foreground">{library.name}</h3>
               {library.isFeatured && (
-                <div
-                  className="flex h-5 w-5 items-center justify-center rounded-full bg-primary"
-                  style={{
-                    boxShadow: "0 0 10px rgba(139, 92, 246, 0.4)",
-                  }}
-                >
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary">
                   <Star className="h-3 w-3 text-primary-foreground" />
                 </div>
               )}
@@ -406,7 +287,7 @@ function LibraryCard({ library }: { library: Library }) {
               {library.categories.slice(0, 2).map((cat) => (
                 <span
                   key={cat}
-                  className="rounded-md bg-muted/50 px-1.5 py-0.5 capitalize text-muted-foreground"
+                  className="rounded-md bg-muted px-1.5 py-0.5 capitalize text-muted-foreground"
                 >
                   {cat}
                 </span>
@@ -414,25 +295,25 @@ function LibraryCard({ library }: { library: Library }) {
             </div>
           </div>
         </div>
-        <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
+        <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
 
-      <p className="relative mb-4 line-clamp-2 flex-1 text-sm text-muted-foreground">
+      <p className="mb-4 line-clamp-2 flex-1 text-sm text-muted-foreground">
         {library.description || "No description available"}
       </p>
 
-      <div className="relative flex items-center gap-4 border-t border-border/50 pt-4 text-xs text-muted-foreground">
+      <div className="flex items-center gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5 text-primary/70" />
+          <FileText className="h-3.5 w-3.5 text-primary" />
           <span>{library.totalChunks} chunks</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-accent/70">~</span>
+          <span>~</span>
           <span>{(library.totalTokens / 1000).toFixed(1)}k tokens</span>
         </div>
         {library.lastIndexedAt && (
           <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-green-500/70" />
+            <Clock className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
             <span>Updated {new Date(library.lastIndexedAt).toLocaleDateString()}</span>
           </div>
         )}
@@ -447,22 +328,22 @@ function LibraryCard({ library }: { library: Library }) {
 
 function PendingLibraryCard({ library }: { library: Library }) {
   return (
-    <div className="library-card flex flex-col rounded-xl border border-border/30 bg-card/30 p-4 backdrop-blur-sm">
+    <div className="flex flex-col rounded-lg border border-border bg-card p-4 opacity-60">
       <div className="flex items-center gap-3">
-        {library.iconUrl ? (
-          <img
-            src={library.iconUrl}
-            alt={library.name}
-            className="h-8 w-8 rounded-lg bg-card object-contain p-1 opacity-50"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50">
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </div>
-        )}
+          {library.iconUrl ? (
+            <img
+              src={library.iconUrl}
+              alt={library.name}
+              className="h-8 w-8 rounded-lg bg-muted object-contain p-1"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </div>
+          )}
         <div>
           <h3 className="font-medium text-muted-foreground">{library.name}</h3>
           <div className="flex items-center gap-1.5 text-xs">
