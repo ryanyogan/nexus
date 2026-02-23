@@ -5,6 +5,7 @@ import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import langJson from "shiki/langs/json.mjs";
 import langTypescript from "shiki/langs/typescript.mjs";
 import langJavascript from "shiki/langs/javascript.mjs";
+import langTsx from "shiki/langs/tsx.mjs";
 import langBash from "shiki/langs/bash.mjs";
 import langHttp from "shiki/langs/http.mjs";
 
@@ -14,13 +15,13 @@ import themeDracula from "shiki/themes/dracula.mjs";
 // Create highlighter synchronously
 const highlighter = createHighlighterCoreSync({
   themes: [themeDracula],
-  langs: [langJson, langTypescript, langJavascript, langBash, langHttp],
+  langs: [langJson, langTypescript, langJavascript, langTsx, langBash, langHttp],
   engine: createJavaScriptRegexEngine(),
 });
 
 interface ShikiHighlighterProps {
   code: string;
-  language: "json" | "typescript" | "javascript" | "bash" | "http" | "text";
+  language: "json" | "typescript" | "javascript" | "tsx" | "bash" | "http" | "text";
 }
 
 export default function ShikiHighlighter({ code, language }: ShikiHighlighterProps) {

@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexus-code",
+  "compatibility_date": "2025-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "code.nexus.yogan.dev", "custom_domain": true }
+  ],
+
+  // KV for connection history
+  "kv_namespaces": [
+    {
+      "binding": "CODE_EDITOR_KV",
+      "id": "c91d3cc550b342679a4f9d417aee8f2a"
+    }
+  ],
+
+  // Public environment variables
+  "vars": {
+    "BETTER_AUTH_URL": "https://code.nexus.yogan.dev"
+  }
+
+  // Secrets (set via .dev.vars locally, wrangler secret put for production):
+  // - BETTER_AUTH_SECRET
+}

@@ -1,6 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { bearer, customSession } from "better-auth/plugins";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "@nexus/db";
 
@@ -55,6 +56,36 @@ export function createAuth(env: AuthEnv) {
         },
       },
     },
+    plugins: [
+      // Enable bearer token auth for cross-domain API calls
+      bearer(),
+      // Include role in session response so getSession returns it
+      customSession(async ({ user, session }) => {
+        return {
+          user: {
+            ...user,
+            role: (user as any).role || "user",
+          },
+          session,
+        };
+      }),
+    ],
+    // Cross-subdomain cookie settings - both nexus.yogan.dev and api.nexus.yogan.dev share .yogan.dev
+    advanced: {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: ".yogan.dev", // Shared parent domain
+      },
+      // Use Lax for same-site subdomains (more compatible than None+Partitioned)
+      defaultCookieAttributes: {
+        sameSite: "lax",
+        secure: true,
+      },
+    },
+    trustedOrigins: [
+      "https://nexus.yogan.dev",
+      "https://code.nexus.yogan.dev",
+    ],
   });
 }
 
@@ -80,6 +111,17 @@ export const auth = betterAuth({
       clientSecret: "placeholder",
     },
   },
+  plugins: [
+    customSession(async ({ user, session }) => {
+      return {
+        user: {
+          ...user,
+          role: (user as any).role || "user",
+        },
+        session,
+      };
+    }),
+  ],
   user: {
     additionalFields: {
       role: {

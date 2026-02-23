@@ -161,6 +161,68 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
 }));
 
 // ============================================================================
+// MCP Server Submissions - User-submitted server requests
+// ============================================================================
+
+export const SERVER_SUBMISSION_STATUSES = ["pending", "approved", "rejected"] as const;
+export type ServerSubmissionStatus = (typeof SERVER_SUBMISSION_STATUSES)[number];
+
+export const serverSubmissions = sqliteTable(
+  "server_submissions",
+  {
+    id: text("id").primaryKey(),
+
+    // Server identity
+    name: text("name").notNull(), // e.g., "my-awesome-server"
+    displayName: text("display_name"), // e.g., "My Awesome Server"
+    description: text("description"),
+
+    // Source information
+    repositoryUrl: text("repository_url").notNull(),
+    packageName: text("package_name"), // e.g., "@myorg/server-name"
+    packageType: text("package_type", { 
+      enum: ["npm", "pypi", "docker", "binary", "remote"] 
+    }).default("npm"),
+    transportType: text("transport_type", { 
+      enum: ["stdio", "http", "sse"] 
+    }).default("stdio"),
+
+    // Submitter info
+    submitterEmail: text("submitter_email"),
+    submitterUserId: text("submitter_user_id").references(() => users.id),
+
+    // Review status
+    status: text("status", { enum: SERVER_SUBMISSION_STATUSES })
+      .notNull()
+      .default("pending"),
+    rejectionReason: text("rejection_reason"),
+
+    // If approved, link to created server
+    serverId: text("server_id").references(() => mcpServers.id),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    processedAt: text("processed_at"),
+  },
+  (table) => [
+    index("server_submissions_status_idx").on(table.status),
+    index("server_submissions_created_at_idx").on(table.createdAt),
+    index("server_submissions_user_idx").on(table.submitterUserId),
+  ]
+);
+
+export const serverSubmissionsRelations = relations(serverSubmissions, ({ one }) => ({
+  server: one(mcpServers, {
+    fields: [serverSubmissions.serverId],
+    references: [mcpServers.id],
+  }),
+  submitter: one(users, {
+    fields: [serverSubmissions.submitterUserId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
 // Auth Tables (Better Auth)
 // ============================================================================
 
@@ -364,6 +426,68 @@ export const apiTokensRelations = relations(apiTokens, ({ one }) => ({
 }));
 
 // ============================================================================
+// User Secrets - Encrypted credential vault for API keys
+// ============================================================================
+
+export const SECRET_PROVIDERS = [
+  "openai",
+  "anthropic",
+  "google",
+  "azure",
+  "aws",
+  "github",
+  "cloudflare",
+  "custom",
+] as const;
+export type SecretProvider = (typeof SECRET_PROVIDERS)[number];
+
+export const userSecrets = sqliteTable(
+  "user_secrets",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Secret identity
+    name: text("name").notNull(), // User-friendly name, e.g., "My OpenAI Key"
+    provider: text("provider", { enum: SECRET_PROVIDERS }).notNull(),
+
+    // Encrypted value (AES-GCM encrypted, base64 encoded)
+    encryptedValue: text("encrypted_value").notNull(),
+    iv: text("iv").notNull(), // Initialization vector for AES-GCM
+
+    // Metadata (not encrypted)
+    description: text("description"),
+    keyPrefix: text("key_prefix"), // First 4 chars for display, e.g., "sk-a..."
+
+    // Usage tracking
+    lastUsedAt: text("last_used_at"),
+    usageCount: integer("usage_count").notNull().default(0),
+
+    // Status
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    expiresAt: text("expires_at"), // Optional expiration
+  },
+  (table) => [
+    index("user_secrets_user_idx").on(table.userId),
+    index("user_secrets_provider_idx").on(table.provider),
+    index("user_secrets_active_idx").on(table.isActive),
+  ]
+);
+
+export const userSecretsRelations = relations(userSecrets, ({ one }) => ({
+  user: one(users, {
+    fields: [userSecrets.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
 // MCP Servers - Registry of MCP servers
 // ============================================================================
 
@@ -504,6 +628,283 @@ export const mcpServerStatsRelations = relations(mcpServerStats, ({ one }) => ({
 }));
 
 // ============================================================================
+// Subscriptions - User billing and plans
+// ============================================================================
+
+export const SUBSCRIPTION_PLANS = ["free", "pro", "team"] as const;
+export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
+
+export const SUBSCRIPTION_STATUSES = [
+  "active",
+  "canceled",
+  "past_due",
+  "trialing",
+  "paused",
+] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+
+export const subscriptions = sqliteTable(
+  "subscriptions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Plan info
+    plan: text("plan", { enum: SUBSCRIPTION_PLANS }).notNull().default("free"),
+    status: text("status", { enum: SUBSCRIPTION_STATUSES })
+      .notNull()
+      .default("active"),
+
+    // Stripe integration
+    stripeCustomerId: text("stripe_customer_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    stripePriceId: text("stripe_price_id"),
+
+    // Billing cycle
+    currentPeriodStart: text("current_period_start"),
+    currentPeriodEnd: text("current_period_end"),
+
+    // Usage limits (NULL = unlimited)
+    apiCallsLimit: integer("api_calls_limit"), // Monthly limit
+    apiCallsUsed: integer("api_calls_used").notNull().default(0),
+    apiKeysLimit: integer("api_keys_limit").notNull().default(1),
+
+    // Team reference (if team plan)
+    teamId: text("team_id").references(() => teams.id),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    canceledAt: text("canceled_at"),
+  },
+  (table) => [
+    index("subscriptions_user_idx").on(table.userId),
+    index("subscriptions_stripe_customer_idx").on(table.stripeCustomerId),
+    index("subscriptions_stripe_sub_idx").on(table.stripeSubscriptionId),
+    index("subscriptions_team_idx").on(table.teamId),
+  ]
+);
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [subscriptions.teamId],
+    references: [teams.id],
+  }),
+}));
+
+// ============================================================================
+// Teams - Collaborative workspaces
+// ============================================================================
+
+export const TEAM_ROLES = ["owner", "admin", "member"] as const;
+export type TeamRole = (typeof TEAM_ROLES)[number];
+
+export const teams = sqliteTable(
+  "teams",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(), // URL-friendly identifier
+    description: text("description"),
+    iconUrl: text("icon_url"),
+
+    // Owner
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => users.id),
+
+    // Settings
+    settings: text("settings", { mode: "json" })
+      .$type<{
+        allowMemberInvites?: boolean;
+        defaultMemorySharing?: boolean;
+      }>()
+      .default({}),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("teams_slug_idx").on(table.slug),
+    index("teams_owner_idx").on(table.ownerId),
+  ]
+);
+
+export const teamMembers = sqliteTable(
+  "team_members",
+  {
+    id: text("id").primaryKey(),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: text("role", { enum: TEAM_ROLES }).notNull().default("member"),
+
+    // Timestamps
+    joinedAt: text("joined_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("team_members_team_idx").on(table.teamId),
+    index("team_members_user_idx").on(table.userId),
+  ]
+);
+
+export const teamsRelations = relations(teams, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [teams.ownerId],
+    references: [users.id],
+  }),
+  members: many(teamMembers),
+  subscription: one(subscriptions),
+}));
+
+export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
+  team: one(teams, {
+    fields: [teamMembers.teamId],
+    references: [teams.id],
+  }),
+  user: one(users, {
+    fields: [teamMembers.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// Skills - Agent skills registry (like Anthropic skills)
+// ============================================================================
+
+export const SKILL_TYPES = [
+  "analysis",
+  "generation",
+  "transformation",
+  "integration",
+  "utility",
+] as const;
+export type SkillType = (typeof SKILL_TYPES)[number];
+
+export const SKILL_FORMATS = ["markdown", "yaml", "json"] as const;
+export type SkillFormat = (typeof SKILL_FORMATS)[number];
+
+export const skills = sqliteTable(
+  "skills",
+  {
+    id: text("id").primaryKey(), // e.g., "pdf", "code-review", "react-best-practices"
+
+    // Identity
+    name: text("name").notNull(), // Display name
+    slug: text("slug").notNull().unique(), // URL-friendly
+    description: text("description"),
+
+    // Source
+    sourceUrl: text("source_url"), // GitHub URL or original source
+    sourceRepo: text("source_repo"), // e.g., "anthropics/skills"
+    author: text("author"),
+    version: text("version"),
+
+    // Classification
+    type: text("type", { enum: SKILL_TYPES }).notNull().default("utility"),
+    categories: text("categories", { mode: "json" })
+      .$type<string[]>()
+      .notNull()
+      .default([]),
+    tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
+
+    // Content
+    format: text("format", { enum: SKILL_FORMATS }).notNull().default("markdown"),
+    r2Key: text("r2_key").notNull(), // Full content stored in R2
+    contentPreview: text("content_preview"), // First 500 chars for display
+
+    // Requirements
+    requiredTools: text("required_tools", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+    requiredMcpServers: text("required_mcp_servers", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+
+    // Usage stats
+    installCount: integer("install_count").notNull().default(0),
+    usageCount: integer("usage_count").notNull().default(0),
+    rating: integer("rating"), // 1-5 average
+
+    // Flags
+    isOfficial: integer("is_official", { mode: "boolean" })
+      .notNull()
+      .default(false), // From official repos
+    isFeatured: integer("is_featured", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    isVerified: integer("is_verified", { mode: "boolean" })
+      .notNull()
+      .default(false),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("skills_slug_idx").on(table.slug),
+    index("skills_type_idx").on(table.type),
+    index("skills_source_repo_idx").on(table.sourceRepo),
+    index("skills_official_idx").on(table.isOfficial),
+    index("skills_featured_idx").on(table.isFeatured),
+    index("skills_active_idx").on(table.isActive),
+    index("skills_install_count_idx").on(table.installCount),
+  ]
+);
+
+// Track skill installations per user
+export const userSkills = sqliteTable(
+  "user_skills",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    skillId: text("skill_id")
+      .notNull()
+      .references(() => skills.id, { onDelete: "cascade" }),
+
+    // Installation config (user overrides)
+    customConfig: text("custom_config", { mode: "json" }).$type<Record<string, unknown>>(),
+
+    // Timestamps
+    installedAt: text("installed_at").notNull(),
+    lastUsedAt: text("last_used_at"),
+  },
+  (table) => [
+    index("user_skills_user_idx").on(table.userId),
+    index("user_skills_skill_idx").on(table.skillId),
+  ]
+);
+
+export const skillsRelations = relations(skills, ({ many }) => ({
+  userSkills: many(userSkills),
+}));
+
+export const userSkillsRelations = relations(userSkills, ({ one }) => ({
+  user: one(users, {
+    fields: [userSkills.userId],
+    references: [users.id],
+  }),
+  skill: one(skills, {
+    fields: [userSkills.skillId],
+    references: [skills.id],
+  }),
+}));
+
+// ============================================================================
 // Type exports
 // ============================================================================
 
@@ -525,3 +926,17 @@ export type McpServerDocs = typeof mcpServerDocs.$inferSelect;
 export type McpServerStats = typeof mcpServerStats.$inferSelect;
 export type ApiToken = typeof apiTokens.$inferSelect;
 export type NewApiToken = typeof apiTokens.$inferInsert;
+export type UserSecret = typeof userSecrets.$inferSelect;
+export type NewUserSecret = typeof userSecrets.$inferInsert;
+export type ServerSubmission = typeof serverSubmissions.$inferSelect;
+export type NewServerSubmission = typeof serverSubmissions.$inferInsert;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
+export type Team = typeof teams.$inferSelect;
+export type NewTeam = typeof teams.$inferInsert;
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type NewTeamMember = typeof teamMembers.$inferInsert;
+export type Skill = typeof skills.$inferSelect;
+export type NewSkill = typeof skills.$inferInsert;
+export type UserSkill = typeof userSkills.$inferSelect;
+export type NewUserSkill = typeof userSkills.$inferInsert;

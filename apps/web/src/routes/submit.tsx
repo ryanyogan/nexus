@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -49,7 +49,6 @@ interface AnalysisResult {
 }
 
 function SubmitPage() {
-  const navigate = useNavigate();
   const { data: session, isPending: sessionPending } = useSession();
 
   const [repoUrl, setRepoUrl] = useState("");
@@ -66,9 +65,9 @@ function SubmitPage() {
   // Redirect to sign-in if not authenticated
   useEffect(() => {
     if (!sessionPending && !session?.user) {
-      navigate({ to: "/sign-in" });
+      window.location.href = "/sign-in";
     }
-  }, [session, sessionPending, navigate]);
+  }, [session, sessionPending]);
 
   // Update selected categories when analysis suggests some
   useEffect(() => {

@@ -213,8 +213,8 @@ function QueryDocsDocs() {
         </h2>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4">
-            <h4 className="mb-2 font-semibold text-green-400">Good Queries</h4>
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-500/30 dark:bg-green-500/10">
+            <h4 className="mb-2 font-semibold text-green-700 dark:text-green-400">Good Queries</h4>
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
               <li>"How to set up authentication with JWT in Express.js"</li>
               <li>"React useEffect cleanup function examples"</li>
@@ -222,8 +222,8 @@ function QueryDocsDocs() {
             </ul>
           </div>
 
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-            <h4 className="mb-2 font-semibold text-red-400">Bad Queries</h4>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
+            <h4 className="mb-2 font-semibold text-red-700 dark:text-red-400">Bad Queries</h4>
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
               <li>"auth" (too vague)</li>
               <li>"hooks" (too broad)</li>

@@ -70,14 +70,14 @@ function SubmissionsApiDocs() {
             <tbody>
               <tr className="border-b border-border/30 bg-card/30">
                 <td className="px-4 py-3 font-mono text-primary">libraryName</td>
-                <td className="px-4 py-3 text-green-400">Yes</td>
+                <td className="px-4 py-3 text-green-600 dark:text-green-400">Yes</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   Name of the library (max 100 characters)
                 </td>
               </tr>
               <tr className="border-b border-border/30 bg-card/10">
                 <td className="px-4 py-3 font-mono text-primary">sourceUrl</td>
-                <td className="px-4 py-3 text-green-400">Yes</td>
+                <td className="px-4 py-3 text-green-600 dark:text-green-400">Yes</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   GitHub repository URL
                 </td>
@@ -214,25 +214,25 @@ function SubmissionsApiDocs() {
             </thead>
             <tbody>
               <tr className="border-b border-border/30 bg-card/30">
-                <td className="px-4 py-3 font-mono text-blue-400">pending</td>
+                <td className="px-4 py-3 font-mono text-blue-600 dark:text-blue-400">pending</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   Waiting for review
                 </td>
               </tr>
               <tr className="border-b border-border/30 bg-card/10">
-                <td className="px-4 py-3 font-mono text-green-400">approved</td>
+                <td className="px-4 py-3 font-mono text-green-600 dark:text-green-400">approved</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   Approved and queued for indexing
                 </td>
               </tr>
               <tr className="border-b border-border/30 bg-card/30">
-                <td className="px-4 py-3 font-mono text-green-400">indexed</td>
+                <td className="px-4 py-3 font-mono text-green-600 dark:text-green-400">indexed</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   Successfully indexed and available
                 </td>
               </tr>
               <tr className="bg-card/10">
-                <td className="px-4 py-3 font-mono text-red-400">rejected</td>
+                <td className="px-4 py-3 font-mono text-red-600 dark:text-red-400">rejected</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   Not accepted (may include reason)
                 </td>

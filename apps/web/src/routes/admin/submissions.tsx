@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, Check, X, ExternalLink, Clock } from "lucide-react";
 import { useSession } from "@nexus/auth/client";
@@ -19,7 +19,6 @@ interface Submission {
 export const Route = createFileRoute("/admin/submissions")({ component: AdminSubmissionsPage });
 
 function AdminSubmissionsPage() {
-  const navigate = useNavigate();
   const { data: session, isPending } = useSession();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,12 +29,12 @@ function AdminSubmissionsPage() {
   useEffect(() => {
     if (!isPending) {
       if (!session?.user) {
-        navigate({ to: "/sign-in" });
+        window.location.href = "/sign-in";
       } else if ((session.user as any).role !== "admin") {
-        navigate({ to: "/" });
+        window.location.href = "/";
       }
     }
-  }, [session, isPending, navigate]);
+  }, [session, isPending]);
 
   // Fetch submissions
   useEffect(() => {

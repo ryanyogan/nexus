@@ -6,7 +6,7 @@ const ShikiHighlighter = lazy(() => import("./ShikiHighlighter"));
 
 interface CodeBlockProps {
   children: string;
-  language?: "json" | "typescript" | "javascript" | "bash" | "http" | "text";
+  language?: "json" | "typescript" | "javascript" | "tsx" | "bash" | "http" | "text";
   filename?: string;
   showLineNumbers?: boolean;
 }

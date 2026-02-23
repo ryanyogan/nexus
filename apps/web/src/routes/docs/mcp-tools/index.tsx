@@ -13,6 +13,7 @@ function McpToolsOverview() {
     { id: "overview", title: "Overview", level: 2 },
     { id: "documentation-tools", title: "Documentation Tools", level: 2 },
     { id: "memory-tools", title: "Memory Tools", level: 2 },
+    { id: "server-tools", title: "Server Registry Tools", level: 2 },
     { id: "protocol", title: "MCP Protocol", level: 2 },
     { id: "error-handling", title: "Error Handling", level: 2 },
   ];
@@ -31,9 +32,9 @@ function McpToolsOverview() {
 
         <p className="mb-4 text-muted-foreground">
           Nexus exposes its functionality through the Model Context Protocol (MCP),
-          allowing AI coding assistants to access library documentation and persistent
-          memory. The MCP endpoint provides <strong className="text-foreground">10 tools</strong>:
-          4 for documentation search and 6 for memory management.
+          allowing AI coding assistants to access library documentation, persistent
+          memory, and MCP server discovery. The MCP endpoint provides <strong className="text-foreground">14 tools</strong>:
+          4 for documentation search, 6 for memory management, and 4 for MCP server discovery.
         </p>
 
         <CodeBlock language="text">
@@ -104,29 +105,10 @@ Protocol Version: 2024-11-05`}
         </p>
 
         <div className="space-y-4">
-          <ToolCardSimple
-            name="save-memory"
-            description="Store a memory for later retrieval. Supports different memory types: project_context, session_summary, decision, and correction."
-          />
-          <ToolCardSimple
-            name="recall-memories"
-            description="Semantic search across stored memories. Find relevant context, decisions, and past work using natural language queries."
-          />
-          <ToolCardSimple
-            name="get-project-context"
-            description="Get all stored context for a specific project. Returns architecture, conventions, recent decisions, and lessons learned."
-          />
-          <ToolCardSimple
-            name="list-memories"
-            description="Browse stored memories with filtering by type, project, or recency."
-          />
-          <ToolCardSimple
-            name="update-memory"
-            description="Update an existing memory's content, title, or metadata."
-          />
-          <ToolCardSimple
-            name="delete-memory"
-            description="Remove a stored memory by ID."
+          <ToolCard
+            name="Memory Tools (6)"
+            description="Store and retrieve project context, architectural decisions, session summaries, and lessons learned. Includes save-memory, recall-memories, get-project-context, list-memories, update-memory, and delete-memory."
+            href="/docs/mcp-tools/memory"
           />
         </div>
 
@@ -138,6 +120,29 @@ Protocol Version: 2024-11-05`}
             <li><code className="text-primary">decision</code> - Architectural decisions with rationale</li>
             <li><code className="text-primary">correction</code> - Lessons learned, things to avoid</li>
           </ul>
+        </div>
+      </section>
+
+      {/* Server Registry Tools */}
+      <section className="mb-12">
+        <h2 id="server-tools" className="mb-4 text-xl font-semibold text-foreground">
+          Server Registry Tools
+          <span className="ml-2 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            New
+          </span>
+        </h2>
+
+        <p className="mb-4 text-muted-foreground">
+          These tools help discover and install MCP servers that extend AI capabilities
+          with access to databases, file systems, APIs, and more.
+        </p>
+
+        <div className="space-y-4">
+          <ToolCard
+            name="Server Registry Tools (4)"
+            description="Discover MCP servers by category or capability, get server details and installation instructions. Includes discover-servers, get-server-info, get-server-config, and list-server-categories."
+            href="/docs/mcp-tools/servers"
+          />
         </div>
       </section>
 
@@ -296,17 +301,4 @@ function ToolCard({
   );
 }
 
-function ToolCardSimple({
-  name,
-  description,
-}: {
-  name: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-lg border border-border/50 bg-card/50 p-4">
-      <h3 className="font-mono font-semibold text-foreground">{name}</h3>
-      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-    </div>
-  );
-}
+

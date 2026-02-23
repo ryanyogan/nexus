@@ -27,11 +27,11 @@ interface ApiEndpointProps {
 }
 
 const methodColors: Record<HttpMethod, { bg: string; text: string }> = {
-  GET: { bg: "bg-green-500/20", text: "text-green-400" },
-  POST: { bg: "bg-blue-500/20", text: "text-blue-400" },
-  PUT: { bg: "bg-yellow-500/20", text: "text-yellow-400" },
-  DELETE: { bg: "bg-red-500/20", text: "text-red-400" },
-  PATCH: { bg: "bg-purple-500/20", text: "text-purple-400" },
+  GET: { bg: "bg-green-100 dark:bg-green-500/20", text: "text-green-700 dark:text-green-400" },
+  POST: { bg: "bg-blue-100 dark:bg-blue-500/20", text: "text-blue-700 dark:text-blue-400" },
+  PUT: { bg: "bg-amber-100 dark:bg-yellow-500/20", text: "text-amber-700 dark:text-yellow-400" },
+  DELETE: { bg: "bg-red-100 dark:bg-red-500/20", text: "text-red-700 dark:text-red-400" },
+  PATCH: { bg: "bg-purple-100 dark:bg-purple-500/20", text: "text-purple-700 dark:text-purple-400" },
 };
 
 export function ApiEndpoint({

@@ -196,10 +196,10 @@ function EndpointGroup({
   endpoints: Array<{ method: string; path: string }>;
 }) {
   const methodColors: Record<string, string> = {
-    GET: "text-green-400",
-    POST: "text-blue-400",
-    PUT: "text-yellow-400",
-    DELETE: "text-red-400",
+    GET: "text-green-600 dark:text-green-400",
+    POST: "text-blue-600 dark:text-blue-400",
+    PUT: "text-amber-600 dark:text-yellow-400",
+    DELETE: "text-red-600 dark:text-red-400",
   };
 
   return (

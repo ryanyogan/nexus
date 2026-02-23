@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronDown, Rocket, Wrench, Server, BookOpen } from "lucide-react";
+import { ChevronDown, Rocket, Wrench, Server, BookOpen, GraduationCap, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
-import { docsNavigation, type NavSection, type NavItem } from "./navigation";
+import { docsNavigation, getDefaultCollapsedState, type NavSection, type NavItem } from "./navigation";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -9,20 +9,26 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Wrench,
   Server,
   BookOpen,
+  GraduationCap,
+  Sparkles,
 };
 
 export function DocsSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // Load collapsed state from localStorage
+  // Load collapsed state from localStorage, defaulting to all collapsed except Getting Started
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
-    if (typeof window === "undefined") return {};
+    if (typeof window === "undefined") return getDefaultCollapsedState();
     try {
       const saved = localStorage.getItem("docs-sidebar-collapsed");
-      return saved ? JSON.parse(saved) : {};
+      if (saved) {
+        return JSON.parse(saved);
+      }
+      // First visit - use defaults (all collapsed except Getting Started)
+      return getDefaultCollapsedState();
     } catch {
-      return {};
+      return getDefaultCollapsedState();
     }
   });
 
@@ -117,13 +123,18 @@ function SidebarItem({
     <li>
       <Link
         to={item.href}
-        className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
           isActive
             ? "bg-primary text-primary-foreground font-medium"
             : "text-muted-foreground hover:text-foreground hover:bg-muted"
         }`}
       >
         {item.title}
+        {item.isNew && (
+          <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-medium text-purple-600 dark:text-purple-400">
+            NEW
+          </span>
+        )}
       </Link>
     </li>
   );
@@ -140,14 +151,17 @@ export function MobileDocsSidebar({
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // Load collapsed state from localStorage
+  // Load collapsed state from localStorage, defaulting to all collapsed except Getting Started
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
-    if (typeof window === "undefined") return {};
+    if (typeof window === "undefined") return getDefaultCollapsedState();
     try {
       const saved = localStorage.getItem("docs-sidebar-collapsed");
-      return saved ? JSON.parse(saved) : {};
+      if (saved) {
+        return JSON.parse(saved);
+      }
+      return getDefaultCollapsedState();
     } catch {
-      return {};
+      return getDefaultCollapsedState();
     }
   });
 

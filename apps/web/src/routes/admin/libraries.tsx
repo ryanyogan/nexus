@@ -1,5 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Loader2,
@@ -12,141 +13,319 @@ import {
   CheckCircle,
   Clock,
   Search,
+  Copy,
 } from "lucide-react";
 import { useSession } from "@nexus/auth/client";
-import { API_URL, adminFetch } from "../../lib/api";
-
-interface Library {
-  id: string;
-  name: string;
-  description: string | null;
-  sourceUrl: string;
-  iconUrl: string | null;
-  categories: string[];
-  totalChunks: number;
-  totalTokens: number;
-  indexStatus: "pending" | "indexing" | "indexed" | "failed";
-  isFeatured: boolean;
-  lastIndexedAt: string | null;
-  indexError: string | null;
-}
+import { adminFetch } from "../../lib/api";
+import { adminLibrariesQueryOptions } from "../../lib/query-options";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { ResultModal } from "@/components/ui/result-modal";
 
 export const Route = createFileRoute("/admin/libraries")({ component: AdminLibrariesPage });
 
+// ============================================================================
+// Types
+// ============================================================================
+
+interface ConfirmModalState {
+  open: boolean;
+  title: string;
+  description: string;
+  confirmText: string;
+  variant: "default" | "destructive";
+  action: () => Promise<void>;
+}
+
+interface ResultModalState {
+  open: boolean;
+  type: "success" | "error";
+  title: string;
+  description: string;
+}
+
+// ============================================================================
+// Error Display Component
+// ============================================================================
+
+function ErrorDisplay({
+  error,
+  libraryName,
+  onRetry,
+  retrying,
+}: {
+  error: string;
+  libraryName: string;
+  onRetry: () => void;
+  retrying: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`Library: ${libraryName}\nError: ${error}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+        <div className="flex-1 text-sm text-red-700 dark:text-red-400">
+          {error}
+        </div>
+      </div>
+      <div className="mt-2 flex gap-2">
+        <button
+          onClick={onRetry}
+          disabled={retrying}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/40"
+        >
+          {retrying ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3 w-3" />
+          )}
+          Retry Index
+        </button>
+        <button
+          onClick={handleCopy}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
+        >
+          <Copy className="h-3 w-3" />
+          {copied ? "Copied!" : "Copy Error"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
 function AdminLibrariesPage() {
-  const navigate = useNavigate();
-  const { data: session, isPending } = useSession();
-  const [libraries, setLibraries] = useState<Library[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: session, isPending: sessionPending } = useSession();
+
+  // Local state
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
+  const [resultModal, setResultModal] = useState<ResultModalState | null>(null);
+
+  // Check if user is admin
+  const isAdmin = session?.user && (session.user as any).role === "admin";
+
+  // TanStack Query with smart polling
+  const { data, isLoading } = useQuery({
+    ...adminLibrariesQueryOptions({ status: filter, search }),
+    refetchInterval: (query) => {
+      // Only poll if there are libraries currently indexing
+      const hasIndexing = query.state.data?.libraries?.some(
+        (lib) => lib.indexStatus === "indexing"
+      );
+      return hasIndexing ? 5000 : false;
+    },
+    enabled: !!isAdmin,
+  });
+
+  const libraries = data?.libraries ?? [];
+  const hasIndexingLibraries = libraries.some((lib) => lib.indexStatus === "indexing");
 
   // Redirect if not admin
-  useEffect(() => {
-    if (!isPending) {
-      if (!session?.user) {
-        navigate({ to: "/sign-in" });
-      } else if ((session.user as any).role !== "admin") {
-        navigate({ to: "/" });
-      }
-    }
-  }, [session, isPending, navigate]);
+  if (!sessionPending && !session?.user) {
+    window.location.href = "/sign-in";
+    return null;
+  }
 
-  // Fetch libraries
-  useEffect(() => {
-    const fetchLibraries = async () => {
-      try {
-        const params = new URLSearchParams({ limit: "100" });
-        if (filter !== "all") params.set("status", filter);
-        if (search) params.set("search", search);
-        
-        const res = await fetch(`${API_URL}/api/libraries?${params}`);
-        if (res.ok) {
-          const data = await res.json() as { libraries: Library[] };
-          setLibraries(data.libraries || []);
+  if (!sessionPending && !isAdmin) {
+    window.location.href = "/";
+    return null;
+  }
+
+  // ============================================================================
+  // Action Handlers
+  // ============================================================================
+
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "libraries"] });
+    queryClient.invalidateQueries({ queryKey: ["libraries"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+  };
+
+  const handleIndex = (id: string, name: string) => {
+    setConfirmModal({
+      open: true,
+      title: `Index "${name}"?`,
+      description: `This will fetch and index documentation for "${name}". This may take a few minutes depending on the documentation size.`,
+      confirmText: "Start Indexing",
+      variant: "default",
+      action: async () => {
+        setActionLoading(id);
+        setConfirmModal(null);
+        try {
+          const res = await adminFetch(`/api/admin/index/${id}`, { method: "POST" });
+          if (res.ok) {
+            invalidateQueries();
+            setResultModal({
+              open: true,
+              type: "success",
+              title: "Indexing Started",
+              description: `"${name}" has been queued for indexing. The status will update automatically when complete.`,
+            });
+          } else {
+            const error = (await res.json()) as { error?: string };
+            setResultModal({
+              open: true,
+              type: "error",
+              title: "Indexing Failed",
+              description: error.error || "Failed to start indexing. Please try again.",
+            });
+          }
+        } catch {
+          setResultModal({
+            open: true,
+            type: "error",
+            title: "Error",
+            description: "Failed to connect to the server. Please try again.",
+          });
+        } finally {
+          setActionLoading(null);
         }
-      } catch (error) {
-        console.error("Failed to fetch libraries:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (session?.user && (session.user as any).role === "admin") {
-      fetchLibraries();
-    }
-  }, [session, filter, search]);
-
-  const handleReindex = async (id: string) => {
-    if (!confirm("This will delete all existing chunks and re-index. Continue?")) return;
-    
-    setActionLoading(id);
-    try {
-      const res = await adminFetch(`/api/admin/reindex/${id}`, { method: "POST" });
-      if (res.ok) {
-        setLibraries(prev => prev.map(l => 
-          l.id === id ? { ...l, indexStatus: "indexing" as const } : l
-        ));
-      } else {
-        const error = await res.json() as { error?: string };
-        alert(error.error || "Failed to reindex");
-      }
-    } catch (error) {
-      alert("Failed to trigger reindex");
-    } finally {
-      setActionLoading(null);
-    }
+      },
+    });
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Delete "${name}"? This will remove all documentation chunks and cannot be undone.`)) return;
-    
-    setActionLoading(id);
-    try {
-      const res = await adminFetch(`/api/admin/libraries/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setLibraries(prev => prev.filter(l => l.id !== id));
-      } else {
-        const error = await res.json() as { error?: string };
-        alert(error.error || "Failed to delete");
-      }
-    } catch (error) {
-      alert("Failed to delete library");
-    } finally {
-      setActionLoading(null);
-    }
+  const handleReindex = (id: string, name: string) => {
+    setConfirmModal({
+      open: true,
+      title: `Re-index "${name}"?`,
+      description: `This will delete all existing documentation chunks for "${name}" only and re-fetch from the source.\n\nOther libraries will NOT be affected.\n\nThis may take a few minutes.`,
+      confirmText: "Re-index",
+      variant: "destructive",
+      action: async () => {
+        setActionLoading(id);
+        setConfirmModal(null);
+        try {
+          const res = await adminFetch(`/api/admin/reindex/${id}`, { method: "POST" });
+          if (res.ok) {
+            invalidateQueries();
+            setResultModal({
+              open: true,
+              type: "success",
+              title: "Re-indexing Started",
+              description: `"${name}" has been queued for re-indexing. The status will update automatically when complete.`,
+            });
+          } else {
+            const error = (await res.json()) as { error?: string };
+            setResultModal({
+              open: true,
+              type: "error",
+              title: "Re-indexing Failed",
+              description: error.error || "Failed to start re-indexing. Please try again.",
+            });
+          }
+        } catch {
+          setResultModal({
+            open: true,
+            type: "error",
+            title: "Error",
+            description: "Failed to connect to the server. Please try again.",
+          });
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
   };
 
-  const handleIndex = async (id: string) => {
+  const handleDelete = (id: string, name: string) => {
+    setConfirmModal({
+      open: true,
+      title: `Delete "${name}"?`,
+      description: `This will permanently delete "${name}" and all its documentation chunks.\n\nThis action cannot be undone.`,
+      confirmText: "Delete",
+      variant: "destructive",
+      action: async () => {
+        setActionLoading(id);
+        setConfirmModal(null);
+        try {
+          const res = await adminFetch(`/api/admin/libraries/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            invalidateQueries();
+            setResultModal({
+              open: true,
+              type: "success",
+              title: "Library Deleted",
+              description: `"${name}" has been permanently deleted.`,
+            });
+          } else {
+            const error = (await res.json()) as { error?: string };
+            setResultModal({
+              open: true,
+              type: "error",
+              title: "Deletion Failed",
+              description: error.error || "Failed to delete library. Please try again.",
+            });
+          }
+        } catch {
+          setResultModal({
+            open: true,
+            type: "error",
+            title: "Error",
+            description: "Failed to connect to the server. Please try again.",
+          });
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
+  };
+
+  const handleRetryIndex = async (id: string, name: string) => {
     setActionLoading(id);
     try {
       const res = await adminFetch(`/api/admin/index/${id}`, { method: "POST" });
       if (res.ok) {
-        setLibraries(prev => prev.map(l => 
-          l.id === id ? { ...l, indexStatus: "indexing" as const } : l
-        ));
+        invalidateQueries();
+        setResultModal({
+          open: true,
+          type: "success",
+          title: "Retry Started",
+          description: `"${name}" has been queued for re-indexing. The status will update automatically when complete.`,
+        });
       } else {
-        const error = await res.json() as { error?: string };
-        alert(error.error || "Failed to start indexing");
+        const error = (await res.json()) as { error?: string };
+        setResultModal({
+          open: true,
+          type: "error",
+          title: "Retry Failed",
+          description: error.error || "Failed to retry indexing. Please try again.",
+        });
       }
-    } catch (error) {
-      alert("Failed to trigger indexing");
+    } catch {
+      setResultModal({
+        open: true,
+        type: "error",
+        title: "Error",
+        description: "Failed to connect to the server. Please try again.",
+      });
     } finally {
       setActionLoading(null);
     }
   };
 
-  if (isPending || loading) {
+  // ============================================================================
+  // Render
+  // ============================================================================
+
+  if (sessionPending || isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!session?.user || (session.user as any).role !== "admin") {
-    return null;
   }
 
   const statusIcons = {
@@ -166,14 +345,24 @@ function AdminLibrariesPage() {
         Back to admin
       </Link>
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Libraries</h1>
-        <p className="text-muted-foreground">Manage indexed documentation libraries</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Libraries</h1>
+          <p className="text-muted-foreground">Manage indexed documentation libraries</p>
+        </div>
+        
+        {/* Auto-refresh indicator */}
+        {hasIndexingLibraries && (
+          <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-xs text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Auto-refreshing every 5s
+          </div>
+        )}
       </div>
 
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {["all", "indexed", "pending", "indexing", "failed"].map((status) => (
             <button
               key={status}
@@ -223,8 +412,8 @@ function AdminLibrariesPage() {
                     <BookOpen className="h-5 w-5 text-primary" />
                   </div>
                 )}
-                
-                <div className="flex-1 min-w-0">
+
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <Link
                       to="/libraries/$libraryId"
@@ -240,16 +429,18 @@ function AdminLibrariesPage() {
                       </span>
                     )}
                   </div>
-                  
-                  <a
-                    href={lib.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    {lib.sourceUrl}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+
+                  {lib.repositoryUrl && (
+                    <a
+                      href={lib.repositoryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      {lib.repositoryUrl}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
 
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -261,19 +452,27 @@ function AdminLibrariesPage() {
                       <span className="capitalize">{lib.categories.join(", ")}</span>
                     )}
                     {lib.lastIndexedAt && (
-                      <span>Last indexed: {new Date(lib.lastIndexedAt).toLocaleDateString()}</span>
+                      <span>
+                        Last indexed: {new Date(lib.lastIndexedAt).toLocaleDateString()}
+                      </span>
                     )}
                   </div>
-                  
-                  {lib.indexError && (
-                    <p className="mt-2 text-xs text-red-500">{lib.indexError}</p>
+
+                  {/* Error display with retry button */}
+                  {lib.indexStatus === "failed" && lib.indexError && (
+                    <ErrorDisplay
+                      error={lib.indexError}
+                      libraryName={lib.name}
+                      onRetry={() => handleRetryIndex(lib.id, lib.name)}
+                      retrying={actionLoading === lib.id}
+                    />
                   )}
                 </div>
-                
+
                 <div className="flex gap-2">
                   {lib.indexStatus === "pending" && (
                     <button
-                      onClick={() => handleIndex(lib.id)}
+                      onClick={() => handleIndex(lib.id, lib.name)}
                       disabled={actionLoading === lib.id}
                       className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                     >
@@ -287,7 +486,7 @@ function AdminLibrariesPage() {
                   )}
                   {(lib.indexStatus === "indexed" || lib.indexStatus === "failed") && (
                     <button
-                      onClick={() => handleReindex(lib.id)}
+                      onClick={() => handleReindex(lib.id, lib.name)}
                       disabled={actionLoading === lib.id}
                       className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
                     >
@@ -316,6 +515,31 @@ function AdminLibrariesPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <ConfirmationModal
+          open={confirmModal.open}
+          onOpenChange={(open) => !open && setConfirmModal(null)}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          confirmText={confirmModal.confirmText}
+          variant={confirmModal.variant}
+          onConfirm={confirmModal.action}
+          loading={!!actionLoading}
+        />
+      )}
+
+      {/* Result Modal */}
+      {resultModal && (
+        <ResultModal
+          open={resultModal.open}
+          onOpenChange={(open) => !open && setResultModal(null)}
+          type={resultModal.type}
+          title={resultModal.title}
+          description={resultModal.description}
+        />
       )}
     </div>
   );

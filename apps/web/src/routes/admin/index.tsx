@@ -1,5 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Settings,
@@ -10,15 +11,13 @@ import {
   TrendingUp,
   RefreshCw,
   Database,
+  Server,
 } from "lucide-react";
 import { useSession } from "@nexus/auth/client";
 import { API_URL, adminFetch } from "../../lib/api";
-
-interface Stats {
-  libraries: { total: number; indexed: number; pending: number; indexing: number };
-  documentation: { totalChunks: number; totalTokens: number };
-  usage: { totalQueries: number; totalChunkHits: number };
-}
+import { adminStatsQueryOptions } from "../../lib/query-options";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { ResultModal } from "@/components/ui/result-modal";
 
 interface Submission {
   id: string;
@@ -31,103 +30,163 @@ interface Submission {
 export const Route = createFileRoute("/admin/")({ component: AdminPage });
 
 function AdminPage() {
-  const navigate = useNavigate();
-  const { data: session, isPending } = useSession();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [pendingSubmissions, setPendingSubmissions] = useState<Submission[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: session, isPending: sessionPending } = useSession();
+
+  // Local state
   const [seeding, setSeeding] = useState(false);
   const [indexing, setIndexing] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    confirmText: string;
+    action: () => Promise<void>;
+  } | null>(null);
+  const [resultModal, setResultModal] = useState<{
+    open: boolean;
+    type: "success" | "error";
+    title: string;
+    description: string;
+  } | null>(null);
+
+  // Check if user is admin
+  const isAdmin = session?.user && (session.user as any).role === "admin";
+
+  // TanStack Query with smart polling for stats
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    ...adminStatsQueryOptions,
+    refetchInterval: (query) => {
+      // Poll if there are libraries indexing
+      const indexingCount = query.state.data?.libraries?.indexing ?? 0;
+      return indexingCount > 0 ? 5000 : false;
+    },
+    enabled: !!isAdmin,
+  });
+
+  // Fetch pending submissions
+  const { data: submissionsData, isLoading: submissionsLoading } = useQuery({
+    queryKey: ["admin", "submissions", "pending"],
+    queryFn: async (): Promise<{ submissions: Submission[] }> => {
+      const res = await fetch(`${API_URL}/api/submissions?status=pending&limit=5`);
+      if (!res.ok) throw new Error("Failed to fetch submissions");
+      return res.json();
+    },
+    staleTime: 1000 * 60, // 1 minute
+    enabled: !!isAdmin,
+  });
+
+  const pendingSubmissions = submissionsData?.submissions ?? [];
+  const hasIndexingLibraries = (stats?.libraries?.indexing ?? 0) > 0;
 
   // Redirect if not admin
-  useEffect(() => {
-    if (!isPending) {
-      if (!session?.user) {
-        navigate({ to: "/sign-in" });
-      } else if ((session.user as any).role !== "admin") {
-        navigate({ to: "/" });
-      }
-    }
-  }, [session, isPending, navigate]);
+  if (!sessionPending && !session?.user) {
+    window.location.href = "/sign-in";
+    return null;
+  }
 
-  // Fetch data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsRes, submissionsRes] = await Promise.all([
-          fetch(`${API_URL}/api/stats`),
-          fetch(`${API_URL}/api/submissions?status=pending&limit=5`),
-        ]);
+  if (!sessionPending && !isAdmin) {
+    window.location.href = "/";
+    return null;
+  }
 
-        if (statsRes.ok) {
-          const data = await statsRes.json() as Stats;
-          setStats(data);
-        }
-
-        if (submissionsRes.ok) {
-          const data = await submissionsRes.json() as { submissions: Submission[] };
-          setPendingSubmissions(data.submissions || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch admin data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (session?.user && (session.user as any).role === "admin") {
-      fetchData();
-    }
-  }, [session]);
-
-  const handleSeed = async () => {
-    setSeeding(true);
-    try {
-      const res = await adminFetch("/api/admin/seed", { method: "POST" });
-      if (!res.ok) {
-        const error = await res.json() as { error: string };
-        alert(`Failed: ${error.error}`);
-        return;
-      }
-      const data = await res.json() as { created: number; skipped: number };
-      alert(`Seed completed: ${data.created} created, ${data.skipped} skipped`);
-      window.location.reload();
-    } catch (error) {
-      alert("Failed to seed libraries");
-    } finally {
-      setSeeding(false);
-    }
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin"] });
+    queryClient.invalidateQueries({ queryKey: ["libraries"] });
   };
 
-  const handleIndexAll = async () => {
-    setIndexing(true);
-    try {
-      const res = await adminFetch("/api/admin/index-all", { method: "POST" });
-      if (!res.ok) {
-        const error = await res.json() as { error: string };
-        alert(`Failed: ${error.error}`);
-        return;
-      }
-      const data = await res.json() as { queued: number };
-      alert(`Indexing started: ${data.queued} libraries queued`);
-      window.location.reload();
-    } catch (error) {
-      alert("Failed to start indexing");
-    } finally {
-      setIndexing(false);
-    }
+  const handleSeed = () => {
+    setConfirmModal({
+      open: true,
+      title: "Seed Libraries?",
+      description: "This will add any new libraries from the seed list that don't already exist. Existing libraries will not be affected.",
+      confirmText: "Seed Libraries",
+      action: async () => {
+        setSeeding(true);
+        setConfirmModal(null);
+        try {
+          const res = await adminFetch("/api/admin/seed", { method: "POST" });
+          if (!res.ok) {
+            const error = (await res.json()) as { error: string };
+            setResultModal({
+              open: true,
+              type: "error",
+              title: "Seeding Failed",
+              description: error.error || "Failed to seed libraries.",
+            });
+            return;
+          }
+          const data = (await res.json()) as { created: number; skipped: number };
+          invalidateQueries();
+          setResultModal({
+            open: true,
+            type: "success",
+            title: "Seeding Complete",
+            description: `Created ${data.created} new libraries.\n${data.skipped} libraries were already present.`,
+          });
+        } catch {
+          setResultModal({
+            open: true,
+            type: "error",
+            title: "Error",
+            description: "Failed to connect to the server. Please try again.",
+          });
+        } finally {
+          setSeeding(false);
+        }
+      },
+    });
   };
 
-  if (isPending || loading) {
+  const handleIndexAll = () => {
+    setConfirmModal({
+      open: true,
+      title: "Index All Pending Libraries?",
+      description: `This will start indexing all ${stats?.libraries?.pending ?? 0} pending libraries.\n\nIndexing runs in the background and may take several minutes depending on the number of libraries.`,
+      confirmText: "Start Indexing",
+      action: async () => {
+        setIndexing(true);
+        setConfirmModal(null);
+        try {
+          const res = await adminFetch("/api/admin/index-all", { method: "POST" });
+          if (!res.ok) {
+            const error = (await res.json()) as { error: string };
+            setResultModal({
+              open: true,
+              type: "error",
+              title: "Indexing Failed",
+              description: error.error || "Failed to start indexing.",
+            });
+            return;
+          }
+          const data = (await res.json()) as { queued: number };
+          invalidateQueries();
+          setResultModal({
+            open: true,
+            type: "success",
+            title: "Indexing Started",
+            description: `${data.queued} libraries have been queued for indexing.\n\nThe status will update automatically as indexing progresses.`,
+          });
+        } catch {
+          setResultModal({
+            open: true,
+            type: "error",
+            title: "Error",
+            description: "Failed to connect to the server. Please try again.",
+          });
+        } finally {
+          setIndexing(false);
+        }
+      },
+    });
+  };
+
+  if (sessionPending || statsLoading || submissionsLoading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!session?.user || (session.user as any).role !== "admin") {
-    return null;
   }
 
   return (
@@ -140,7 +199,7 @@ function AdminPage() {
         Back to home
       </Link>
 
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <Settings className="h-6 w-6 text-primary" />
@@ -152,7 +211,14 @@ function AdminPage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* Auto-refresh indicator */}
+          {hasIndexingLibraries && (
+            <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Auto-refreshing
+            </div>
+          )}
           <button
             onClick={handleSeed}
             disabled={seeding}
@@ -163,7 +229,7 @@ function AdminPage() {
           </button>
           <button
             onClick={handleIndexAll}
-            disabled={indexing}
+            disabled={indexing || (stats?.libraries?.pending ?? 0) === 0}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {indexing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -194,19 +260,20 @@ function AdminPage() {
           <StatCard
             icon={<Users className="h-5 w-5" />}
             label="Pending"
-            value={stats.libraries.pending}
-            detail={stats.libraries.indexing > 0 ? `${stats.libraries.indexing} indexing` : undefined}
+            value={stats.libraries.pending ?? 0}
+            detail={(stats.libraries.indexing ?? 0) > 0 ? `${stats.libraries.indexing} indexing` : undefined}
           />
         </div>
       )}
 
       {/* Quick Links */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link
           to="/admin/submissions"
           className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg"
         >
-          <h3 className="mb-2 text-lg font-semibold text-foreground">Submissions</h3>
+          <BookOpen className="mb-3 h-6 w-6 text-primary" />
+          <h3 className="mb-2 text-lg font-semibold text-foreground">Library Submissions</h3>
           <p className="mb-4 text-sm text-muted-foreground">Review and approve pending library submissions</p>
           {pendingSubmissions.length > 0 && (
             <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
@@ -215,13 +282,23 @@ function AdminPage() {
           )}
         </Link>
         <Link
+          to="/admin/server-submissions"
+          className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg"
+        >
+          <Server className="mb-3 h-6 w-6 text-primary" />
+          <h3 className="mb-2 text-lg font-semibold text-foreground">Server Submissions</h3>
+          <p className="text-sm text-muted-foreground">Review and approve MCP server submissions</p>
+        </Link>
+        <Link
           to="/admin/libraries"
           className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg"
         >
+          <Database className="mb-3 h-6 w-6 text-primary" />
           <h3 className="mb-2 text-lg font-semibold text-foreground">Libraries</h3>
           <p className="text-sm text-muted-foreground">Manage indexed libraries, trigger re-indexing, delete</p>
         </Link>
         <div className="rounded-xl border border-dashed border-border bg-card/50 p-6">
+          <Settings className="mb-3 h-6 w-6 text-muted-foreground" />
           <h3 className="mb-2 text-lg font-semibold text-muted-foreground">Settings</h3>
           <p className="text-sm text-muted-foreground">Site configuration coming soon...</p>
         </div>
@@ -256,6 +333,31 @@ function AdminPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <ConfirmationModal
+          open={confirmModal.open}
+          onOpenChange={(open) => !open && setConfirmModal(null)}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          confirmText={confirmModal.confirmText}
+          variant="default"
+          onConfirm={confirmModal.action}
+          loading={seeding || indexing}
+        />
+      )}
+
+      {/* Result Modal */}
+      {resultModal && (
+        <ResultModal
+          open={resultModal.open}
+          onOpenChange={(open) => !open && setResultModal(null)}
+          type={resultModal.type}
+          title={resultModal.title}
+          description={resultModal.description}
+        />
       )}
     </div>
   );

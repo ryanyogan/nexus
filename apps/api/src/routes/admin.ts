@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
-import { libraries, submissions, libraryStats, chunks, mcpServers, mcpServerStats, type NewMcpServer } from "@nexus/db";
+import { libraries, submissions, libraryStats, chunks, mcpServers, mcpServerStats, serverSubmissions, type NewMcpServer } from "@nexus/db";
 import type { AppContext, IngestionJob } from "../types";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
 
 const adminRouter = new Hono<AppContext>();
 
@@ -1666,6 +1668,191 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     isFeatured: true,
   },
 ];
+
+// ============================================================================
+// POST /api/admin/seed-servers - Seed MCP servers
+// ============================================================================
+
+// ============================================================================
+// POST /api/admin/server-submissions/:id/approve - Approve a server submission
+// ============================================================================
+
+adminRouter.post(
+  "/server-submissions/:id/approve",
+  zValidator(
+    "json",
+    z.object({
+      namespace: z.string().min(1).max(100).optional(),
+      displayName: z.string().max(100).optional(),
+      categories: z.array(z.string()).optional(),
+      keywords: z.array(z.string()).optional(),
+      isFeatured: z.boolean().optional(),
+    }).optional()
+  ),
+  async (c) => {
+    const id = c.req.param("id");
+    const body = c.req.valid("json") || {};
+    const db = c.get("db");
+    const now = new Date().toISOString();
+
+    // Get the submission
+    const [submission] = await db
+      .select()
+      .from(serverSubmissions)
+      .where(eq(serverSubmissions.id, id))
+      .limit(1);
+
+    if (!submission) {
+      return c.json({ error: "Submission not found" }, 404);
+    }
+
+    if (submission.status !== "pending") {
+      return c.json({ error: `Submission already ${submission.status}` }, 400);
+    }
+
+    // Generate a server ID from the name
+    const serverId = submission.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    // Check if server already exists
+    const [existingServer] = await db
+      .select({ id: mcpServers.id })
+      .from(mcpServers)
+      .where(eq(mcpServers.id, serverId))
+      .limit(1);
+
+    if (existingServer) {
+      // Link to existing server
+      await db
+        .update(serverSubmissions)
+        .set({
+          status: "approved",
+          serverId: existingServer.id,
+          processedAt: now,
+        })
+        .where(eq(serverSubmissions.id, id));
+
+      return c.json({
+        message: "Submission linked to existing server",
+        submissionId: id,
+        serverId: existingServer.id,
+      });
+    }
+
+    // Extract namespace from repository URL or package name
+    let namespace = body.namespace || "community";
+    if (!body.namespace && submission.repositoryUrl) {
+      const match = submission.repositoryUrl.match(/github\.com\/([^\/]+)/);
+      if (match) {
+        namespace = match[1].toLowerCase();
+      }
+    }
+
+    // Create new MCP server
+    await db.insert(mcpServers).values({
+      id: serverId,
+      namespace,
+      name: submission.name,
+      displayName: body.displayName || submission.displayName || submission.name,
+      description: submission.description || null,
+      transportType: submission.transportType || "stdio",
+      packageType: submission.packageType || "npm",
+      packageName: submission.packageName || null,
+      installCommand: submission.packageType === "npm" ? "npx" : null,
+      installArgs: submission.packageName ? ["-y", submission.packageName] : [],
+      envVars: {},
+      tools: [],
+      resources: [],
+      prompts: [],
+      hasTools: true, // Assume tools by default
+      hasResources: false,
+      hasPrompts: false,
+      repositoryUrl: submission.repositoryUrl,
+      documentationUrl: submission.repositoryUrl,
+      keywords: body.keywords || [],
+      categories: body.categories || ["community"],
+      isOfficial: false,
+      isFeatured: body.isFeatured || false,
+      isVerified: false,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // Initialize stats
+    await db.insert(mcpServerStats).values({
+      serverId,
+      totalDiscoveries: 0,
+      totalConfigCopies: 0,
+    });
+
+    // Update submission
+    await db
+      .update(serverSubmissions)
+      .set({
+        status: "approved",
+        serverId,
+        processedAt: now,
+      })
+      .where(eq(serverSubmissions.id, id));
+
+    return c.json({
+      message: "Server submission approved and server created",
+      submissionId: id,
+      serverId,
+    });
+  }
+);
+
+// ============================================================================
+// POST /api/admin/server-submissions/:id/reject - Reject a server submission
+// ============================================================================
+
+adminRouter.post(
+  "/server-submissions/:id/reject",
+  zValidator(
+    "json",
+    z.object({
+      reason: z.string().max(500).optional(),
+    }).optional()
+  ),
+  async (c) => {
+    const id = c.req.param("id");
+    const body = c.req.valid("json") || {};
+    const db = c.get("db");
+    const now = new Date().toISOString();
+
+    const [submission] = await db
+      .select()
+      .from(serverSubmissions)
+      .where(eq(serverSubmissions.id, id))
+      .limit(1);
+
+    if (!submission) {
+      return c.json({ error: "Submission not found" }, 404);
+    }
+
+    if (submission.status !== "pending") {
+      return c.json({ error: `Submission already ${submission.status}` }, 400);
+    }
+
+    await db
+      .update(serverSubmissions)
+      .set({
+        status: "rejected",
+        rejectionReason: body.reason || null,
+        processedAt: now,
+      })
+      .where(eq(serverSubmissions.id, id));
+
+    return c.json({
+      message: "Server submission rejected",
+      submissionId: id,
+    });
+  }
+);
 
 // ============================================================================
 // POST /api/admin/seed-servers - Seed MCP servers

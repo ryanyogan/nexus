@@ -21,7 +21,7 @@ librariesRouter.get(
       search: z.string().optional(),
       status: z.enum(["pending", "indexing", "indexed", "failed"]).optional(),
       featured: z.enum(["true", "false"]).optional(),
-      limit: z.coerce.number().min(1).max(100).default(20),
+      limit: z.coerce.number().min(1).max(500).default(20),
       offset: z.coerce.number().min(0).default(0),
     })
   ),
@@ -58,6 +58,7 @@ librariesRouter.get(
         totalChunks: libraries.totalChunks,
         totalTokens: libraries.totalTokens,
         indexStatus: libraries.indexStatus,
+        indexError: libraries.indexError,
         isFeatured: libraries.isFeatured,
         lastIndexedAt: libraries.lastIndexedAt,
       })

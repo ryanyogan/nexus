@@ -1,0 +1,50 @@
+{
+  "name": "@nexus/sdk",
+  "version": "0.1.0",
+  "description": "Official Nexus SDK - Documentation search, memory, MCP servers, and OpenCode remote tunnel",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./tunnel": {
+      "import": "./dist/tunnel.js",
+      "types": "./dist/tunnel.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/tunnel.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts src/tunnel.ts --format esm --dts --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "nexus",
+    "mcp",
+    "documentation",
+    "ai",
+    "llm",
+    "opencode",
+    "tunnel",
+    "memory"
+  ],
+  "author": "yogan.dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryanyogan/nexus"
+  },
+  "homepage": "https://nexus.yogan.dev",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.3"
+  }
+}

@@ -48,7 +48,11 @@ function ServerDetailPage() {
 // ============================================================================
 
 function ServerDetail({ serverId }: { serverId: string }) {
-  const { data: server } = useSuspenseQuery(serverQueryOptions(serverId));
+  const { data } = useSuspenseQuery(serverQueryOptions(serverId));
+  const server = data.server;
+  const displayName = server.displayName || server.name;
+  const category = server.categories?.[0];
+  
   const [configFormat, setConfigFormat] = useState<"opencode" | "claude-desktop" | "vscode">("opencode");
   const [copied, setCopied] = useState(false);
 
@@ -57,8 +61,8 @@ function ServerDetail({ serverId }: { serverId: string }) {
       const res = await fetch(
         `${API_URL}/api/servers/${serverId}/config?format=${configFormat}`
       );
-      const data = (await res.json()) as { config: Record<string, unknown> };
-      await navigator.clipboard.writeText(JSON.stringify(data.config, null, 2));
+      const configData = (await res.json()) as { config: Record<string, unknown> };
+      await navigator.clipboard.writeText(JSON.stringify(configData.config, null, 2));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -73,7 +77,8 @@ function ServerDetail({ serverId }: { serverId: string }) {
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Back link */}
           <Link
-            to="/explore/servers"
+            to="/explore"
+            search={{ tab: "servers" }}
             className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -86,7 +91,7 @@ function ServerDetail({ serverId }: { serverId: string }) {
               {server.iconUrl ? (
                 <img
                   src={server.iconUrl}
-                  alt={server.name}
+                  alt={displayName}
                   className="h-16 w-16 rounded-xl bg-muted object-contain p-2"
                 />
               ) : (
@@ -98,7 +103,7 @@ function ServerDetail({ serverId }: { serverId: string }) {
               <div>
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl font-bold text-foreground">
-                    {server.name}
+                    {displayName}
                   </h1>
                   {server.isOfficial && (
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -115,15 +120,15 @@ function ServerDetail({ serverId }: { serverId: string }) {
 
                 {/* Meta info */}
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                  {server.category && (
+                  {category && (
                     <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 text-muted-foreground capitalize">
-                      {server.category}
+                      {category}
                     </span>
                   )}
-                  {server.npmPackage && (
+                  {server.packageName && (
                     <span className="inline-flex items-center gap-1 text-muted-foreground">
                       <Package className="h-4 w-4" />
-                      {server.npmPackage}
+                      {server.packageName}
                     </span>
                   )}
                 </div>
@@ -143,9 +148,9 @@ function ServerDetail({ serverId }: { serverId: string }) {
                   GitHub
                 </a>
               )}
-              {server.slug && (
+              {server.packageName && (
                 <a
-                  href={`https://npmjs.com/package/${server.slug}`}
+                  href={`https://npmjs.com/package/${server.packageName}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
@@ -232,11 +237,11 @@ function ServerDetail({ serverId }: { serverId: string }) {
                     </dd>
                   </div>
                 )}
-                {server.category && (
+                {category && (
                   <div>
                     <dt className="text-muted-foreground">Category</dt>
                     <dd className="mt-1 capitalize text-foreground">
-                      {server.category}
+                      {category}
                     </dd>
                   </div>
                 )}
@@ -253,7 +258,7 @@ function ServerDetail({ serverId }: { serverId: string }) {
               </p>
               <pre className="mt-3 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
                 <code className="text-muted-foreground">
-                  "Help me install the {server.name} MCP server"
+                  "Help me install the {displayName} MCP server"
                 </code>
               </pre>
             </div>

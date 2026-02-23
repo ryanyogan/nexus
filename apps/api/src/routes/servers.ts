@@ -117,7 +117,7 @@ serversRouter.get("/", async (c) => {
 });
 
 // ============================================================================
-// GET /api/servers/categories - List available categories
+// GET /api/servers/categories - List available categories with counts
 // ============================================================================
 
 serversRouter.get("/categories", async (c) => {
@@ -128,15 +128,22 @@ serversRouter.get("/categories", async (c) => {
     .from(mcpServers)
     .where(eq(mcpServers.isActive, true));
 
-  // Collect unique categories
-  const categorySet = new Set<string>();
+  // Collect categories with counts
+  const categoryCounts = new Map<string, number>();
   for (const server of servers) {
     for (const cat of server.categories || []) {
-      categorySet.add(cat);
+      categoryCounts.set(cat, (categoryCounts.get(cat) || 0) + 1);
     }
   }
 
-  const categories = Array.from(categorySet).sort();
+  // Convert to array with id, label, count
+  const categories = Array.from(categoryCounts.entries())
+    .map(([id, count]) => ({
+      id,
+      label: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+      count,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   return c.json({ categories });
 });

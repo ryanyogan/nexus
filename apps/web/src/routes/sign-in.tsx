@@ -1,32 +1,59 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo } from "react";
 import { Layers, Github, ArrowLeft, Loader2 } from "lucide-react";
 import { signIn, useSession } from "@nexus/auth/client";
 
-export const Route = createFileRoute("/sign-in")({ component: SignInPage });
+export const Route = createFileRoute("/sign-in")({
+  component: SignInPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
+});
+
+// Only allow redirects to our own subdomains for security
+function getValidRedirectUrl(redirect: string | undefined): string {
+  const defaultUrl = "https://nexus.yogan.dev/";
+  
+  if (!redirect) return defaultUrl;
+  
+  try {
+    const url = new URL(redirect);
+    // Only allow redirects to *.yogan.dev subdomains
+    if (url.hostname.endsWith(".yogan.dev") || url.hostname === "yogan.dev") {
+      return redirect;
+    }
+  } catch {
+    // Invalid URL, use default
+  }
+  
+  return defaultUrl;
+}
 
 function SignInPage() {
-  const navigate = useNavigate();
   const { data: session, isPending } = useSession();
+  const { redirect } = Route.useSearch();
+  
+  const callbackURL = useMemo(() => getValidRedirectUrl(redirect), [redirect]);
 
   // Redirect if already signed in
   useEffect(() => {
     if (session?.user) {
-      navigate({ to: "/" });
+      // Use the redirect URL if provided, otherwise go to dashboard
+      window.location.href = callbackURL;
     }
-  }, [session, navigate]);
+  }, [session, callbackURL]);
 
   const handleGoogleSignIn = async () => {
     await signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL,
     });
   };
 
   const handleGitHubSignIn = async () => {
     await signIn.social({
       provider: "github",
-      callbackURL: "/",
+      callbackURL,
     });
   };
 

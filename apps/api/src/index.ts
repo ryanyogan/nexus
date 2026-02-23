@@ -6,11 +6,17 @@ import { createAuth } from "@nexus/auth";
 import { mcpRouter } from "./routes/mcp";
 import { librariesRouter } from "./routes/libraries";
 import { submissionsRouter } from "./routes/submissions";
+import { serverSubmissionsRouter } from "./routes/server-submissions";
 import { adminRouter } from "./routes/admin";
 import { statsRouter } from "./routes/stats";
 import { analyzeRouter } from "./routes/analyze";
 import { serversRouter } from "./routes/servers";
+import { secretsRouter } from "./routes/secrets";
+import { skillsRouter } from "./routes/skills";
+import { userRouter } from "./routes/user";
 import { adminAuth } from "./middleware/admin";
+import { usageMiddleware } from "./middleware/usage";
+import { authMiddleware } from "./middleware/auth";
 import type { AppContext, IngestionJob } from "./types";
 
 const app = new Hono<AppContext>();
@@ -20,7 +26,11 @@ app.use("*", logger());
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:3000", "https://nexus.yogan.dev"],
+    origin: [
+      "http://localhost:3000",
+      "https://nexus.yogan.dev",
+      "https://code.nexus.yogan.dev",
+    ],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "X-Admin-Key"],
     credentials: true,
@@ -47,18 +57,29 @@ app.get("/health", (c) => {
   return c.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Public API routes
+// Public API routes (with usage tracking and rate limiting)
+app.use("/api/libraries/*", usageMiddleware);
+app.use("/api/servers/*", usageMiddleware);
+app.use("/api/skills/*", usageMiddleware);
 app.route("/api/libraries", librariesRouter);
 app.route("/api/servers", serversRouter);
+app.route("/api/skills", skillsRouter);
 app.route("/api/submissions", submissionsRouter);
+app.route("/api/server-submissions", serverSubmissionsRouter);
 app.route("/api/stats", statsRouter);
 app.route("/api/analyze", analyzeRouter);
+
+// Protected user routes (require auth)
+app.route("/api/secrets", secretsRouter);
+app.route("/api/user", userRouter);
 
 // Protected admin routes (require X-Admin-Key header)
 app.use("/api/admin/*", adminAuth);
 app.route("/api/admin", adminRouter);
 
-// MCP Protocol endpoint (Streamable HTTP) - public
+// MCP Protocol endpoint (Streamable HTTP) - with optional auth
+// Auth is optional: anonymous users get lower rate limits
+app.use("/mcp/*", authMiddleware);
 app.route("/mcp", mcpRouter);
 
 // Better Auth routes
