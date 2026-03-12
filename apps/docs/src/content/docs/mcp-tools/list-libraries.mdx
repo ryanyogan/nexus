@@ -1,0 +1,135 @@
+---
+title: list-libraries
+description: List all available indexed libraries
+---
+
+## Description
+
+List all available indexed libraries. Optionally filter by category. Use this to discover what documentation is available.
+
+## Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `category` | string | No | - | Filter by category (see available categories below) |
+| `limit` | number | No | 20 | Maximum results to return (1-50) |
+
+## Available Categories
+
+| Category | Description |
+|----------|-------------|
+| `frontend` | UI frameworks and libraries |
+| `backend` | Server-side frameworks |
+| `fullstack` | Full-stack frameworks |
+| `database` | Database clients and ORMs |
+| `cloud` | Cloud platform SDKs |
+| `devops` | CI/CD and infrastructure tools |
+| `ai` | AI and ML libraries |
+| `testing` | Testing frameworks |
+| `mobile` | Mobile development |
+| `utilities` | General utility libraries |
+
+## Response
+
+```json
+{
+  "success": true,
+  "category": "ai",
+  "count": 15,
+  "libraries": [
+    {
+      "libraryId": "langchain",
+      "name": "LangChain",
+      "description": "Building applications with LLMs",
+      "categories": ["ai", "backend"],
+      "version": "0.1.0",
+      "documentationChunks": 2500,
+      "isFeatured": true
+    },
+    {
+      "libraryId": "openai",
+      "name": "OpenAI SDK",
+      "description": "OpenAI API client library",
+      "categories": ["ai"],
+      "version": "4.0.0",
+      "documentationChunks": 800,
+      "isFeatured": true
+    }
+  ],
+  "availableCategories": [
+    "frontend", "backend", "fullstack", "database",
+    "cloud", "devops", "ai", "testing", "mobile", "utilities"
+  ]
+}
+```
+
+### Library Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `libraryId` | string | Unique identifier for use with other tools |
+| `name` | string | Display name |
+| `description` | string | Short description |
+| `categories` | string[] | Category tags |
+| `version` | string | Latest indexed version |
+| `documentationChunks` | number | Number of searchable chunks |
+| `isFeatured` | boolean | Whether featured in explore |
+
+## Examples
+
+### List All Libraries
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "list-libraries",
+    "arguments": {}
+  }
+}
+```
+
+### Filter by Category
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "list-libraries",
+    "arguments": {
+      "category": "ai",
+      "limit": 10
+    }
+  }
+}
+```
+
+### Get More Results
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "list-libraries",
+    "arguments": {
+      "limit": 50
+    }
+  }
+}
+```
+
+:::tip[Browse libraries]
+Use the [Explore page](https://nexus.yogan.dev/explore) to browse libraries with a visual interface.
+:::
+
+## See Also
+
+- [resolve-library](/mcp-tools/resolve-library) - Search for a specific library
+- [get-library-info](/mcp-tools/get-library-info) - Get detailed library information
+- [query-docs](/mcp-tools/query-docs) - Search library documentation

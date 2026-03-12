@@ -6,7 +6,6 @@ import {
   Github,
   Search,
   History,
-  Sparkles,
   Server,
   Zap,
   Database,
@@ -52,49 +51,52 @@ function HomePage() {
   }, [session, navigate]);
 
   return (
-    <div className="flex flex-col">
+    <div className="relative overflow-y-auto overflow-x-hidden pb-0">
       {/* Hero Section */}
-      <section className="border-b border-border py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
-              <Sparkles className="h-4 w-4" />
-              Docs + Servers + Skills + Memory
-            </div>
+      <section className="flex flex-col gap-3 px-4 pt-10 md:gap-4 md:pt-[60px]">
+        <div className="mx-auto flex w-full max-w-[880px] flex-col items-center text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl md:text-6xl">
+            Documentation + Memory for{" "}
+            <span className="text-emerald-600">AI Coding Assistants</span>
+          </h1>
 
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              The Complete{" "}
-              <span className="text-primary">AI Coding Platform</span>
-            </h1>
+          <p className="mt-6 max-w-2xl text-lg text-stone-600">
+            Documentation search, MCP server registry, AI skills, and persistent memory. 
+            Everything your AI assistant needs in one MCP server.
+          </p>
 
-            <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Documentation search, MCP server registry, AI agent skills, persistent memory, 
-              and secure secrets vault. Everything your AI assistant needs in one MCP server.
-            </p>
+          {/* Quick Actions */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="https://docs.nexus.yogan.dev/getting-started"
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+            >
+              Get Started
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            <Link
+              to="/explore"
+              className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+            >
+              <Search className="h-4 w-4" />
+              Explore Platform
+            </Link>
+            <a
+              href="https://github.com/ryanyogan/nexus"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+            >
+              <Github className="h-4 w-4" />
+              GitHub
+            </a>
+          </div>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                to="/docs/getting-started"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Get Started Free
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/explore"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border px-8 text-base font-semibold text-foreground transition-colors hover:bg-muted"
-              >
-                <Search className="h-5 w-5" />
-                Explore Platform
-              </Link>
-            </div>
-
-            {/* Pricing Badge */}
-            <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
-              <span>Free tier with 2,000 API calls/month</span>
-              <span className="opacity-50">|</span>
-              <span className="font-semibold">Pro: $5/mo</span>
-            </div>
+          {/* Pricing Badge */}
+          <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-sm text-emerald-700">
+            <span>Free tier with 2,000 API calls/month</span>
+            <span className="opacity-50">|</span>
+            <span className="font-semibold">Pro: $5/mo</span>
           </div>
 
           {/* Stats */}
@@ -106,12 +108,12 @@ function HomePage() {
 
       {/* Core Features Grid - 8 cards */}
       <section className="py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[880px] px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
               One MCP Server, Everything You Need
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-4 text-lg text-stone-600">
               Stop juggling multiple tools. Nexus brings documentation, servers, skills, and memory together.
             </p>
           </div>
@@ -171,25 +173,25 @@ function HomePage() {
       </section>
 
       {/* Skills Showcase Section */}
-      <section className="border-t border-border bg-gradient-to-br from-purple-500/5 to-primary/5 py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="border-t border-stone-200 bg-gradient-to-br from-purple-500/5 to-emerald-500/5 py-16 sm:py-24">
+        <div className="mx-auto max-w-[880px] px-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-purple-300/30 bg-purple-500/10 px-3 py-1 text-sm text-purple-600 dark:text-purple-400">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-purple-300/30 bg-purple-500/10 px-3 py-1 text-sm text-purple-600">
                 <Zap className="h-4 w-4" />
                 New Feature
               </div>
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
                 AI Agent Skills
               </h2>
-              <p className="mt-2 text-lg text-muted-foreground">
+              <p className="mt-2 text-lg text-stone-600">
                 Pre-built instructions for common development tasks
               </p>
             </div>
             <Link
               to="/explore"
               search={{ tab: "skills" }}
-              className="hidden items-center gap-2 text-primary hover:underline sm:inline-flex"
+              className="hidden items-center gap-2 text-emerald-600 hover:underline sm:inline-flex"
             >
               Browse all skills
               <ArrowRight className="h-4 w-4" />
@@ -204,7 +206,7 @@ function HomePage() {
             <Link
               to="/explore"
               search={{ tab: "skills" }}
-              className="inline-flex items-center gap-2 text-primary hover:underline"
+              className="inline-flex items-center gap-2 text-emerald-600 hover:underline"
             >
               Browse all skills
               <ArrowRight className="h-4 w-4" />
@@ -214,43 +216,43 @@ function HomePage() {
       </section>
 
       {/* OpenCode Remote Terminal Section */}
-      <section className="border-t border-border py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="border-t border-stone-200 py-16 sm:py-24">
+        <div className="mx-auto max-w-[880px] px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm text-primary">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-sm text-emerald-600">
                 <Smartphone className="h-4 w-4" />
                 Remote Access
               </div>
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
                 OpenCode Remote Terminal
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
+              <p className="mt-4 text-lg text-stone-600">
                 Control your OpenCode session from anywhere. Connect to your running 
                 AI coding assistant remotely from your phone, tablet, or any browser.
               </p>
               <ul className="mt-6 space-y-3">
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-500" />
+                <li className="flex items-center gap-2 text-stone-600">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
                   Connect to your OpenCode server remotely
                 </li>
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-500" />
+                <li className="flex items-center gap-2 text-stone-600">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
                   Real-time streaming of AI responses
                 </li>
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-500" />
+                <li className="flex items-center gap-2 text-stone-600">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
                   Live events: file edits, tool calls, todos
                 </li>
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-500" />
+                <li className="flex items-center gap-2 text-stone-600">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
                   Session management and history
                 </li>
               </ul>
               <div className="mt-8">
                 <Link
                   to="/terminal"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-8 text-base font-semibold text-white transition-colors hover:bg-emerald-700"
                 >
                   <Terminal className="h-5 w-5" />
                   Launch Terminal
@@ -258,7 +260,7 @@ function HomePage() {
               </div>
             </div>
             <div className="relative">
-              <div className="overflow-hidden rounded-xl border border-border bg-[#282a36] p-4 font-mono text-sm shadow-2xl">
+              <div className="overflow-hidden rounded-xl border border-stone-200 bg-[#282a36] p-4 font-mono text-sm shadow-2xl">
                 <div className="mb-3 flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-red-500" />
                   <div className="h-3 w-3 rounded-full bg-yellow-500" />
@@ -282,21 +284,21 @@ function HomePage() {
       </section>
 
       {/* MCP Server Gallery Section */}
-      <section className="border-t border-border bg-muted/30 py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="border-t border-stone-200 bg-stone-50 py-16 sm:py-24">
+        <div className="mx-auto max-w-[880px] px-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
                 MCP Server Registry
               </h2>
-              <p className="mt-2 text-lg text-muted-foreground">
+              <p className="mt-2 text-lg text-stone-600">
                 Discover and install MCP servers with one-click configs
               </p>
             </div>
             <Link
               to="/explore"
               search={{ tab: "servers" }}
-              className="hidden items-center gap-2 text-primary hover:underline sm:inline-flex"
+              className="hidden items-center gap-2 text-emerald-600 hover:underline sm:inline-flex"
             >
               View all servers
               <ArrowRight className="h-4 w-4" />
@@ -311,7 +313,7 @@ function HomePage() {
             <Link
               to="/explore"
               search={{ tab: "servers" }}
-              className="inline-flex items-center gap-2 text-primary hover:underline"
+              className="inline-flex items-center gap-2 text-emerald-600 hover:underline"
             >
               View all servers
               <ArrowRight className="h-4 w-4" />
@@ -321,13 +323,13 @@ function HomePage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="border-t border-border py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="border-t border-stone-200 py-16 sm:py-24">
+        <div className="mx-auto max-w-[880px] px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
               Simple, Affordable Pricing
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-4 text-lg text-stone-600">
               Start free, upgrade when you need more. Memory stays free forever.
             </p>
           </div>
@@ -347,7 +349,7 @@ function HomePage() {
                 "Community support",
               ]}
               cta="Get Started"
-              ctaLink="/docs/getting-started"
+              ctaLink="https://docs.nexus.yogan.dev/getting-started"
             />
             <PricingCard
               name="Pro"
@@ -387,13 +389,13 @@ function HomePage() {
       </section>
 
       {/* Comparison Matrix */}
-      <section className="border-t border-border bg-muted/30 py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="border-t border-stone-200 bg-stone-50 py-16 sm:py-24">
+        <div className="mx-auto max-w-[880px] px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
               How Nexus Compares
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-4 text-lg text-stone-600">
               See why developers are switching to Nexus for AI-assisted development
             </p>
           </div>
@@ -402,23 +404,23 @@ function HomePage() {
             <table className="w-full min-w-[800px] border-collapse">
               <thead>
                 <tr>
-                  <th className="border-b border-border p-4 text-left font-semibold text-foreground">Feature</th>
-                  <th className="border-b border-border p-4 text-center">
+                  <th className="border-b border-stone-200 p-4 text-left font-semibold text-stone-900">Feature</th>
+                  <th className="border-b border-stone-200 p-4 text-center">
                     <div className="flex flex-col items-center gap-1">
-                      <span className="font-bold text-primary text-lg">Nexus</span>
-                      <span className="text-xs text-muted-foreground">by yogan.dev</span>
+                      <span className="font-bold text-emerald-600 text-lg">Nexus</span>
+                      <span className="text-xs text-stone-500">by yogan.dev</span>
                     </div>
                   </th>
-                  <th className="border-b border-border p-4 text-center">
+                  <th className="border-b border-stone-200 p-4 text-center">
                     <div className="flex flex-col items-center gap-1">
-                      <span className="font-semibold text-foreground">Context7</span>
-                      <span className="text-xs text-muted-foreground">context7.com</span>
+                      <span className="font-semibold text-stone-900">Context7</span>
+                      <span className="text-xs text-stone-500">context7.com</span>
                     </div>
                   </th>
-                  <th className="border-b border-border p-4 text-center">
+                  <th className="border-b border-stone-200 p-4 text-center">
                     <div className="flex flex-col items-center gap-1">
-                      <span className="font-semibold text-foreground">Cursor Docs</span>
-                      <span className="text-xs text-muted-foreground">Built-in</span>
+                      <span className="font-semibold text-stone-900">Cursor Docs</span>
+                      <span className="text-xs text-stone-500">Built-in</span>
                     </div>
                   </th>
                 </tr>
@@ -488,51 +490,51 @@ function HomePage() {
                   cursor={false}
                   nexusNote="MIT License"
                 />
-                <tr className="bg-muted/50">
-                  <td className="border-b border-border p-4 font-semibold text-foreground">Free Tier</td>
-                  <td className="border-b border-border p-4 text-center">
-                    <span className="font-bold text-green-600 dark:text-green-400">2,000 calls/mo</span>
+                <tr className="bg-stone-100/50">
+                  <td className="border-b border-stone-200 p-4 font-semibold text-stone-900">Free Tier</td>
+                  <td className="border-b border-stone-200 p-4 text-center">
+                    <span className="font-bold text-emerald-600">2,000 calls/mo</span>
                   </td>
-                  <td className="border-b border-border p-4 text-center">
-                    <span className="text-muted-foreground">Limited</span>
+                  <td className="border-b border-stone-200 p-4 text-center">
+                    <span className="text-stone-500">Limited</span>
                   </td>
-                  <td className="border-b border-border p-4 text-center">
-                    <span className="text-muted-foreground">With IDE</span>
+                  <td className="border-b border-stone-200 p-4 text-center">
+                    <span className="text-stone-500">With IDE</span>
                   </td>
                 </tr>
-                <tr className="bg-primary/5">
-                  <td className="border-b border-border p-4 font-semibold text-foreground">Pro Price</td>
-                  <td className="border-b border-border p-4 text-center">
+                <tr className="bg-emerald-50">
+                  <td className="border-b border-stone-200 p-4 font-semibold text-stone-900">Pro Price</td>
+                  <td className="border-b border-stone-200 p-4 text-center">
                     <div className="flex flex-col items-center">
-                      <span className="text-2xl font-bold text-primary">$5</span>
-                      <span className="text-xs text-muted-foreground">/month</span>
+                      <span className="text-2xl font-bold text-emerald-600">$5</span>
+                      <span className="text-xs text-stone-500">/month</span>
                     </div>
                   </td>
-                  <td className="border-b border-border p-4 text-center">
+                  <td className="border-b border-stone-200 p-4 text-center">
                     <div className="flex flex-col items-center">
-                      <span className="text-2xl font-semibold text-foreground">$10</span>
-                      <span className="text-xs text-muted-foreground">/month</span>
+                      <span className="text-2xl font-semibold text-stone-900">$10</span>
+                      <span className="text-xs text-stone-500">/month</span>
                     </div>
                   </td>
-                  <td className="border-b border-border p-4 text-center">
+                  <td className="border-b border-stone-200 p-4 text-center">
                     <div className="flex flex-col items-center">
-                      <span className="text-2xl font-semibold text-foreground">$20</span>
-                      <span className="text-xs text-muted-foreground">/month</span>
+                      <span className="text-2xl font-semibold text-stone-900">$20</span>
+                      <span className="text-xs text-stone-500">/month</span>
                     </div>
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-4 font-semibold text-foreground">Memory Included</td>
+                  <td className="p-4 font-semibold text-stone-900">Memory Included</td>
                   <td className="p-4 text-center">
-                    <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-800">
                       Always FREE
                     </span>
                   </td>
                   <td className="p-4 text-center">
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-stone-500">-</span>
                   </td>
                   <td className="p-4 text-center">
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-stone-500">-</span>
                   </td>
                 </tr>
               </tbody>
@@ -540,8 +542,8 @@ function HomePage() {
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              Save <span className="font-semibold text-primary">70%</span> compared to Context7. 
+            <p className="text-sm text-stone-600">
+              Save <span className="font-semibold text-emerald-600">70%</span> compared to Context7. 
               Memory is always free on Nexus because we believe AI assistants should remember context.
             </p>
           </div>
@@ -549,29 +551,29 @@ function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="border-t border-border bg-gradient-to-br from-primary/5 to-primary/10 py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="border-t border-stone-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 py-16 sm:py-24">
+        <div className="mx-auto max-w-[880px] px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
               Ready to supercharge your AI coding?
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-4 text-lg text-stone-600">
               Join developers using Nexus for documentation, MCP servers, skills, and memory.
               Start free, upgrade when you need more.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                to="/docs/getting-started"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              <a
+                href="https://docs.nexus.yogan.dev/getting-started"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-8 text-base font-semibold text-white transition-colors hover:bg-emerald-700"
               >
                 Get Started Free
                 <ArrowRight className="h-4 w-4" />
-              </Link>
+              </a>
               <a
                 href="https://github.com/ryanyogan/nexus"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border px-8 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-stone-300 px-8 text-base font-semibold text-stone-700 transition-colors hover:bg-stone-50"
               >
                 <Github className="h-5 w-5" />
                 View on GitHub
@@ -593,7 +595,7 @@ function StatsDisplay() {
 
   return (
     <div className="mx-auto mt-16 max-w-4xl">
-      <div className="grid grid-cols-2 gap-6 rounded-lg border border-border bg-card p-6 sm:grid-cols-5">
+      <div className="grid grid-cols-2 gap-6 rounded-lg border border-stone-200 bg-white p-6 sm:grid-cols-5">
         <StatItem value={stats.libraries.indexed} label="Libraries" />
         <StatItem value={stats.servers?.total || 18} label="MCP Servers" />
         <StatItem value={31} label="AI Skills" />
@@ -610,10 +612,10 @@ function StatsDisplay() {
 function StatItem({ value, label }: { value: number; label: string }) {
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-foreground">
+      <div className="text-2xl font-bold text-stone-900">
         {value.toLocaleString()}
       </div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-xs text-stone-500">{label}</div>
     </div>
   );
 }
@@ -627,11 +629,11 @@ function FeaturedSkillsDisplay() {
   const skills = data?.skills || [];
 
   const typeColors: Record<string, string> = {
-    analysis: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    generation: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    transformation: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-    integration: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
-    utility: "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    analysis: "bg-blue-100 text-blue-700",
+    generation: "bg-emerald-100 text-emerald-700",
+    transformation: "bg-purple-100 text-purple-700",
+    integration: "bg-orange-100 text-orange-700",
+    utility: "bg-stone-200 text-stone-700",
   };
 
   if (skills.length === 0) {
@@ -646,19 +648,19 @@ function FeaturedSkillsDisplay() {
           { name: "Test Generation", type: "generation", desc: "Generate comprehensive test suites" },
           { name: "Performance Audit", type: "analysis", desc: "Identify and fix performance issues" },
         ].map((skill, i) => (
-          <div key={i} className="rounded-lg border border-border bg-card p-5">
+          <div key={i} className="rounded-lg border border-stone-200 bg-white p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-200 dark:bg-purple-900/30">
-                <Zap className="h-5 w-5 text-purple-700 dark:text-purple-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+                <Zap className="h-5 w-5 text-purple-700" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground">{skill.name}</h3>
+                  <h3 className="font-semibold text-stone-900">{skill.name}</h3>
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeColors[skill.type]}`}>
                     {skill.type}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{skill.desc}</p>
+                <p className="mt-1 text-sm text-stone-600 line-clamp-2">{skill.desc}</p>
               </div>
             </div>
           </div>
@@ -674,22 +676,22 @@ function FeaturedSkillsDisplay() {
           key={skill.id}
           to="/explore"
           search={{ tab: "skills" }}
-          className="group rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+          className="group rounded-lg border border-stone-200 bg-white p-5 transition-colors hover:border-emerald-300"
         >
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-200 dark:bg-purple-900/30">
-              <Zap className="h-5 w-5 text-purple-700 dark:text-purple-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+              <Zap className="h-5 w-5 text-purple-700" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-foreground">{skill.name}</h3>
+                <h3 className="font-semibold text-stone-900">{skill.name}</h3>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeColors[skill.type] || typeColors.utility}`}>
                   {skill.type}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{skill.description || ""}</p>
+              <p className="mt-1 text-sm text-stone-600 line-clamp-2">{skill.description || ""}</p>
               {skill.installCount > 0 && (
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="mt-2 text-xs text-stone-500">
                   {skill.installCount.toLocaleString()} installs
                 </p>
               )}
@@ -705,12 +707,12 @@ function SkillsSkeleton() {
   return (
     <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-lg border border-border bg-card p-5">
+        <div key={i} className="rounded-lg border border-stone-200 bg-white p-5">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-lg bg-muted" />
+            <div className="h-10 w-10 animate-pulse rounded-lg bg-stone-200" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-              <div className="h-3 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-24 animate-pulse rounded bg-stone-200" />
+              <div className="h-3 w-full animate-pulse rounded bg-stone-200" />
             </div>
           </div>
         </div>
@@ -750,9 +752,9 @@ function ServerPreviewCard({ server }: { server: McpServer }) {
     <Link
       to="/explore/servers/$serverId"
       params={{ serverId: server.id }}
-      className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50"
+      className="group flex items-start gap-3 rounded-lg border border-stone-200 bg-white p-4 transition-colors hover:border-emerald-300"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
         {server.iconUrl ? (
           <img
             src={server.iconUrl}
@@ -760,23 +762,23 @@ function ServerPreviewCard({ server }: { server: McpServer }) {
             className="h-6 w-6 object-contain"
           />
         ) : (
-          <Database className="h-5 w-5 text-primary" />
+          <Database className="h-5 w-5 text-emerald-600" />
         )}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="truncate font-medium text-foreground">{server.name}</h3>
+          <h3 className="truncate font-medium text-stone-900">{server.name}</h3>
           {server.isOfficial && (
-            <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+            <span className="shrink-0 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
               Official
             </span>
           )}
         </div>
-        <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
+        <p className="mt-0.5 line-clamp-2 text-sm text-stone-600">
           {server.description}
         </p>
       </div>
-      <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      <ExternalLink className="h-4 w-4 shrink-0 text-stone-400 opacity-0 transition-opacity group-hover:opacity-100" />
     </Link>
   );
 }
@@ -799,20 +801,20 @@ function FeatureCard({
   isNew?: boolean;
 }) {
   return (
-    <div className="relative rounded-lg border border-border bg-card p-6">
+    <div className="relative rounded-lg border border-stone-200 bg-white p-6">
       {isNew && (
         <div className="absolute -top-2 -right-2 rounded-full bg-purple-500 px-2 py-0.5 text-[10px] font-bold text-white">
           NEW
         </div>
       )}
-      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
         {icon}
       </div>
-      <h3 className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <h3 className="mb-2 text-lg font-semibold text-stone-900">{title}</h3>
+      <p className="text-sm text-stone-600">{description}</p>
       {badge && (
         <div className="mt-3">
-          <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+          <span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-medium text-stone-600">
             {badge}
           </span>
         </div>
@@ -844,35 +846,35 @@ function PricingCard({
   ctaLink: string;
   highlighted?: boolean;
 }) {
-  const isExternal = ctaLink.startsWith("mailto:");
+  const isExternal = ctaLink.startsWith("mailto:") || ctaLink.startsWith("http");
   
   return (
     <div className={`relative flex flex-col rounded-lg border p-6 ${
-      highlighted ? "border-primary bg-primary/5 shadow-lg" : "border-border bg-card"
+      highlighted ? "border-emerald-300 bg-emerald-50 shadow-lg" : "border-stone-200 bg-white"
     }`}>
       {highlighted && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+          <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
             Most Popular
           </span>
         </div>
       )}
       
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-foreground">{name}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <h3 className="text-lg font-semibold text-stone-900">{name}</h3>
+        <p className="mt-1 text-sm text-stone-600">{description}</p>
       </div>
       
       <div className="mb-6">
-        <span className="text-3xl font-bold text-foreground">{price}</span>
-        <span className="text-muted-foreground">{period}</span>
+        <span className="text-3xl font-bold text-stone-900">{price}</span>
+        <span className="text-stone-600">{period}</span>
       </div>
       
       <ul className="mb-6 flex-1 space-y-3">
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-2">
-            <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
-            <span className="text-sm text-foreground">{feature}</span>
+            <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+            <span className="text-sm text-stone-900">{feature}</span>
           </li>
         ))}
       </ul>
@@ -882,8 +884,8 @@ function PricingCard({
           href={ctaLink}
           className={`w-full rounded-lg px-4 py-2 text-center text-sm font-medium transition-colors ${
             highlighted
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "border border-border text-foreground hover:bg-muted"
+              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+              : "border border-stone-300 text-stone-700 hover:bg-stone-50"
           }`}
         >
           {cta}
@@ -893,8 +895,8 @@ function PricingCard({
           to={ctaLink}
           className={`w-full rounded-lg px-4 py-2 text-center text-sm font-medium transition-colors ${
             highlighted
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "border border-border text-foreground hover:bg-muted"
+              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+              : "border border-stone-300 text-stone-700 hover:bg-stone-50"
           }`}
         >
           {cta}
@@ -926,36 +928,36 @@ function ComparisonRow({
   cursorNote?: string;
 }) {
   return (
-    <tr className="hover:bg-muted/30">
-      <td className="border-b border-border p-4 text-foreground">{feature}</td>
-      <td className="border-b border-border p-4 text-center">
+    <tr className="hover:bg-stone-50">
+      <td className="border-b border-stone-200 p-4 text-stone-900">{feature}</td>
+      <td className="border-b border-stone-200 p-4 text-center">
         <div className="flex flex-col items-center gap-1">
           {nexus ? (
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <CheckCircle className="h-5 w-5 text-emerald-600" />
           ) : (
-            <span className="text-muted-foreground">-</span>
+            <span className="text-stone-400">-</span>
           )}
-          {nexusNote && <span className="text-xs text-muted-foreground">{nexusNote}</span>}
+          {nexusNote && <span className="text-xs text-stone-500">{nexusNote}</span>}
         </div>
       </td>
-      <td className="border-b border-border p-4 text-center">
+      <td className="border-b border-stone-200 p-4 text-center">
         <div className="flex flex-col items-center gap-1">
           {context7 ? (
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <CheckCircle className="h-5 w-5 text-emerald-600" />
           ) : (
-            <span className="text-muted-foreground">-</span>
+            <span className="text-stone-400">-</span>
           )}
-          {context7Note && <span className="text-xs text-muted-foreground">{context7Note}</span>}
+          {context7Note && <span className="text-xs text-stone-500">{context7Note}</span>}
         </div>
       </td>
-      <td className="border-b border-border p-4 text-center">
+      <td className="border-b border-stone-200 p-4 text-center">
         <div className="flex flex-col items-center gap-1">
           {cursor ? (
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <CheckCircle className="h-5 w-5 text-emerald-600" />
           ) : (
-            <span className="text-muted-foreground">-</span>
+            <span className="text-stone-400">-</span>
           )}
-          {cursorNote && <span className="text-xs text-muted-foreground">{cursorNote}</span>}
+          {cursorNote && <span className="text-xs text-stone-500">{cursorNote}</span>}
         </div>
       </td>
     </tr>

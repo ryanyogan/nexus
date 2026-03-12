@@ -1,0 +1,245 @@
+---
+title: Server Registry
+description: Discover and configure MCP servers for extending AI capabilities
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Overview
+
+The Nexus Server Registry helps you discover MCP servers that can extend your AI assistant's capabilities. Search by capability, category, or name to find servers for databases, file systems, APIs, and more.
+
+:::note[What are MCP Servers?]
+MCP servers are plugins that give AI assistants access to external tools and resources. They can provide:
+- **Tools**: Functions the AI can call (like executing SQL queries)
+- **Resources**: Data the AI can read (like file contents)
+- **Capabilities**: Extended functionality (like web browsing)
+:::
+
+## discover-servers
+
+Search for MCP servers by capability, category, or name.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | No | What you're looking for (e.g., 'database access', 'file system') |
+| `capabilities` | string[] | No | Filter by capabilities: 'tools', 'resources', 'prompts' |
+| `category` | string | No | Filter by category (see categories below) |
+| `official` | boolean | No | Only show official MCP servers |
+| `limit` | number | No | Max results (1-20, default 10) |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "discover-servers",
+    "arguments": {
+      "query": "postgres database",
+      "category": "database",
+      "limit": 5
+    }
+  }
+}
+```
+
+---
+
+## get-server-info
+
+Get detailed information about a specific MCP server including its tools, resources, prompts, installation instructions, and documentation links.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `serverId` | string | Yes | The server ID (e.g., 'postgres', 'github', 'filesystem') |
+
+### Response
+
+```json
+{
+  "success": true,
+  "server": {
+    "id": "postgres",
+    "name": "PostgreSQL Server",
+    "description": "MCP server for PostgreSQL database access",
+    "category": "database",
+    "official": true,
+    "tools": [
+      {
+        "name": "query",
+        "description": "Execute a SQL query"
+      },
+      {
+        "name": "list_tables",
+        "description": "List all tables in the database"
+      }
+    ],
+    "resources": [
+      {
+        "name": "schema",
+        "description": "Database schema information"
+      }
+    ],
+    "installInstructions": "npm install @modelcontextprotocol/server-postgres",
+    "documentationUrl": "https://github.com/modelcontextprotocol/servers/tree/main/src/postgres"
+  }
+}
+```
+
+---
+
+## get-server-config
+
+Generate installation configuration for an MCP server. Returns ready-to-use config for various MCP clients.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `serverId` | string | Yes | The server ID to get config for |
+| `format` | string | No | Config format: 'claude-desktop' (default), 'vscode', 'generic' |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get-server-config",
+    "arguments": {
+      "serverId": "postgres",
+      "format": "claude-desktop"
+    }
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "serverId": "postgres",
+  "format": "claude-desktop",
+  "config": {
+    "mcpServers": {
+      "postgres": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-postgres"],
+        "env": {
+          "POSTGRES_CONNECTION_STRING": "postgresql://user:pass@localhost:5432/db"
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+## list-server-categories
+
+List all available MCP server categories for filtering.
+
+### Response
+
+```json
+{
+  "success": true,
+  "categories": [
+    { "id": "database", "name": "Database", "count": 12 },
+    { "id": "filesystem", "name": "File System", "count": 5 },
+    { "id": "devtools", "name": "Developer Tools", "count": 18 },
+    { "id": "ai", "name": "AI & ML", "count": 8 },
+    { "id": "cloud", "name": "Cloud Services", "count": 15 },
+    { "id": "productivity", "name": "Productivity", "count": 10 }
+  ]
+}
+```
+
+---
+
+## Examples
+
+### Find a Database Server
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "discover-servers",
+    "arguments": {
+      "query": "sqlite",
+      "category": "database"
+    }
+  }
+}
+```
+
+### Find Official Servers
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "discover-servers",
+    "arguments": {
+      "official": true,
+      "limit": 20
+    }
+  }
+}
+```
+
+### Find Servers with Specific Capabilities
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "discover-servers",
+    "arguments": {
+      "capabilities": ["tools", "resources"],
+      "category": "devtools"
+    }
+  }
+}
+```
+
+## Available Categories
+
+<CardGrid>
+  <Card title="database" icon="seti:db">
+    PostgreSQL, MySQL, SQLite, MongoDB, Redis
+  </Card>
+  <Card title="filesystem" icon="seti:folder">
+    Local files, cloud storage, FTP
+  </Card>
+  <Card title="devtools" icon="seti:config">
+    Git, Docker, CI/CD, testing
+  </Card>
+  <Card title="ai" icon="star">
+    LLM APIs, embeddings, vector stores
+  </Card>
+  <Card title="cloud" icon="cloud">
+    AWS, GCP, Azure, Cloudflare
+  </Card>
+  <Card title="productivity" icon="list-format">
+    Slack, Notion, Linear, email
+  </Card>
+</CardGrid>

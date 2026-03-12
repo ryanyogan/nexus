@@ -52,27 +52,10 @@ const config = defineConfig({
     }),
     tailwindcss(),
     tanstackStart({
-      // Pre-render docs pages at build time
+      // Prerender disabled - docs moved to separate Starlight app
       prerender: {
-        enabled: true,
-        crawlLinks: false, // Don't crawl - we specify pages explicitly
+        enabled: false,
       },
-      // Specify which pages to prerender
-      pages: [
-        { path: '/docs', prerender: { enabled: true } },
-        { path: '/docs/getting-started', prerender: { enabled: true } },
-        { path: '/docs/mcp-tools', prerender: { enabled: true } },
-        { path: '/docs/mcp-tools/resolve-library', prerender: { enabled: true } },
-        { path: '/docs/mcp-tools/query-docs', prerender: { enabled: true } },
-        { path: '/docs/mcp-tools/get-library-info', prerender: { enabled: true } },
-        { path: '/docs/mcp-tools/list-libraries', prerender: { enabled: true } },
-        { path: '/docs/api', prerender: { enabled: true } },
-        { path: '/docs/api/libraries', prerender: { enabled: true } },
-        { path: '/docs/api/submissions', prerender: { enabled: true } },
-        { path: '/docs/api/stats', prerender: { enabled: true } },
-        { path: '/docs/web-ui', prerender: { enabled: true } },
-        { path: '/docs/submit', prerender: { enabled: true } },
-      ],
     }),
     viteReact(),
   ],

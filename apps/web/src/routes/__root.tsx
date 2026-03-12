@@ -13,20 +13,6 @@ import { cn } from "@/lib/utils";
 
 import appCss from "../styles.css?url";
 
-// Inline script to prevent FOUC (flash of unstyled content)
-const themeScript = `
-(function() {
-  try {
-    const theme = localStorage.getItem('theme');
-    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  } catch (e) {}
-})()
-`;
-
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
@@ -41,16 +27,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      {
-        rel: "preconnect",
-        href: "https://fonts.gstatic.com",
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
-      },
     ],
   }),
   component: RootComponent,
@@ -65,9 +41,8 @@ function RootComponent() {
   );
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
         {/* Add mobile PWA meta tags for code routes */}
         {isCodeEditor && (
@@ -80,10 +55,20 @@ function RootComponent() {
           </>
         )}
       </head>
-      <body className="min-h-screen bg-background text-foreground">
+      <body className="flex min-h-screen flex-col overflow-x-hidden bg-stone-50 antialiased">
+        {/* Green gradient background */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[260px]"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0, 153, 101, 0.08) 0%, rgba(0, 153, 101, 0) 100%)",
+          }}
+        />
+
         <Header />
         <main
           className={cn(
+            "flex-grow pt-0",
             isCodeEditor && "h-[calc(100vh-4rem)] overflow-hidden"
           )}
         >

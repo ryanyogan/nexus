@@ -1,0 +1,222 @@
+---
+title: User & Auth API
+description: Authentication and user management
+---
+
+## Get Current User
+
+Get the currently authenticated user's information.
+
+```http
+GET /api/user
+```
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "user": {
+    "id": "user_abc123",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "image": "https://avatars.example.com/user.jpg",
+    "plan": "pro",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+---
+
+## Get API Keys
+
+List the user's API keys.
+
+```http
+GET /api/user/keys
+```
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "keys": [
+    {
+      "id": "key_abc123",
+      "name": "Production Key",
+      "prefix": "nx_prod_",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "lastUsedAt": "2024-01-20T15:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Create API Key
+
+Create a new API key.
+
+```http
+POST /api/user/keys
+```
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Request Body
+
+```json
+{
+  "name": "Development Key"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "key": {
+    "id": "key_xyz789",
+    "name": "Development Key",
+    "secret": "nx_dev_sk_abcdef123456",
+    "createdAt": "2024-01-20T10:00:00Z"
+  }
+}
+```
+
+:::caution[Save Your Key]
+The full API key is only shown once. Store it securely - you won't be able to see it again.
+:::
+
+---
+
+## Delete API Key
+
+Delete an API key.
+
+```http
+DELETE /api/user/keys/:id
+```
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "deleted": "key_abc123"
+}
+```
+
+---
+
+## Get Usage
+
+Get the user's API usage statistics.
+
+```http
+GET /api/user/usage
+```
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `period` | string | Time period: `day`, `week`, `month` (default: `month`) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "usage": {
+    "period": "month",
+    "queries": 1500,
+    "limit": 10000,
+    "remaining": 8500,
+    "resetsAt": "2024-02-01T00:00:00Z"
+  },
+  "breakdown": {
+    "documentation": 1200,
+    "memory": 250,
+    "servers": 50
+  }
+}
+```
+
+## Authentication
+
+Nexus uses OAuth 2.0 for authentication. Users can sign in with:
+
+- **Google** - Sign in with Google account
+- **GitHub** - Sign in with GitHub account
+
+### Getting an Access Token
+
+1. Direct users to the sign-in page at `https://nexus.yogan.dev/sign-in`
+2. After authentication, users are redirected with an access token
+3. Include the token in API requests via the `Authorization` header
+
+### API Key Authentication
+
+For programmatic access, use API keys instead of OAuth tokens:
+
+```
+Authorization: Bearer nx_prod_sk_your_api_key_here
+```
+
+## Examples
+
+### Get User Info
+
+```bash
+curl "https://api.nexus.yogan.dev/api/user" \
+  -H "Authorization: Bearer <your_token>"
+```
+
+### Create API Key
+
+```bash
+curl -X POST "https://api.nexus.yogan.dev/api/user/keys" \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My API Key"}'
+```
+
+### Check Usage
+
+```bash
+curl "https://api.nexus.yogan.dev/api/user/usage?period=month" \
+  -H "Authorization: Bearer <your_token>"
+```

@@ -1,0 +1,213 @@
+---
+title: Libraries API
+description: Search and retrieve library documentation
+---
+
+## List Libraries
+
+List all indexed libraries with optional filtering.
+
+```http
+GET /api/libraries
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `category` | string | Filter by category |
+| `search` | string | Search by name |
+| `status` | string | Filter by status: `indexed`, `indexing`, `pending` |
+| `featured` | boolean | Only featured libraries |
+| `limit` | number | Results per page (default: 20, max: 100) |
+| `offset` | number | Pagination offset |
+
+### Response
+
+```json
+{
+  "success": true,
+  "libraries": [
+    {
+      "id": "react",
+      "name": "React",
+      "description": "A JavaScript library for building user interfaces",
+      "version": "18.2.0",
+      "categories": ["frontend", "ui"],
+      "chunkCount": 1234,
+      "status": "indexed",
+      "isFeatured": true
+    }
+  ],
+  "pagination": {
+    "total": 150,
+    "limit": 20,
+    "offset": 0,
+    "hasMore": true
+  }
+}
+```
+
+---
+
+## Get Library
+
+Get detailed information about a specific library.
+
+```http
+GET /api/libraries/:id
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Library ID |
+
+### Response
+
+```json
+{
+  "success": true,
+  "library": {
+    "id": "react",
+    "name": "React",
+    "description": "A JavaScript library for building user interfaces",
+    "version": "18.2.0",
+    "categories": ["frontend", "ui"],
+    "source": {
+      "type": "github",
+      "url": "https://github.com/facebook/react",
+      "stars": 220000
+    },
+    "documentation": {
+      "status": "indexed",
+      "chunkCount": 1234,
+      "lastIndexed": "2024-01-10T08:30:00Z"
+    },
+    "usage": {
+      "totalQueries": 15000,
+      "avgRelevanceScore": 0.85
+    }
+  }
+}
+```
+
+---
+
+## Get Library Chunks
+
+Get paginated documentation chunks for a library.
+
+```http
+GET /api/libraries/:id/chunks
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Library ID |
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | number | Results per page (default: 20) |
+| `offset` | number | Pagination offset |
+
+### Response
+
+```json
+{
+  "success": true,
+  "libraryId": "react",
+  "chunks": [
+    {
+      "id": "chunk_123",
+      "title": "Getting Started",
+      "content": "# Getting Started with React...",
+      "contentType": "guide",
+      "sourceFile": "docs/getting-started.md",
+      "tokenCount": 450
+    }
+  ],
+  "pagination": {
+    "total": 1234,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+---
+
+## Search Documentation
+
+Perform semantic search across library documentation.
+
+```http
+POST /api/libraries/search
+```
+
+### Request Body
+
+```json
+{
+  "query": "How to handle form state in React",
+  "libraryId": "react",
+  "limit": 5
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | string | Yes | Search query |
+| `libraryId` | string | No | Limit to specific library |
+| `limit` | number | No | Max results (default: 5, max: 10) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "query": "How to handle form state in React",
+  "results": [
+    {
+      "libraryId": "react",
+      "libraryName": "React",
+      "title": "Forms",
+      "content": "# Forms\n\nHTML form elements work differently in React...",
+      "contentType": "guide",
+      "sourceFile": "docs/forms.md",
+      "relevanceScore": 0.92
+    }
+  ]
+}
+```
+
+:::tip[Better Results]
+Be specific in your queries. Instead of "forms", try "how to handle controlled form inputs with validation".
+:::
+
+## Examples
+
+### List Frontend Libraries
+
+```bash
+curl "https://api.nexus.yogan.dev/api/libraries?category=frontend&limit=10"
+```
+
+### Search React Documentation
+
+```bash
+curl -X POST "https://api.nexus.yogan.dev/api/libraries/search" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "useEffect cleanup function", "libraryId": "react"}'
+```
+
+### Get Library Details
+
+```bash
+curl "https://api.nexus.yogan.dev/api/libraries/hono"
+```

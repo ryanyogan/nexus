@@ -1,0 +1,129 @@
+---
+title: MCP Tools Overview
+description: Overview of all MCP tools provided by Nexus
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Nexus provides 14 MCP tools organized into three categories: documentation search, memory management, and server discovery.
+
+## Documentation Tools
+
+These tools help AI assistants find and retrieve library documentation:
+
+<CardGrid>
+  <LinkCard
+    title="resolve-library"
+    description="Search for a library by name to get its ID"
+    href="/mcp-tools/resolve-library"
+  />
+  <LinkCard
+    title="query-docs"
+    description="Semantic search within a library's documentation"
+    href="/mcp-tools/query-docs"
+  />
+  <LinkCard
+    title="get-library-info"
+    description="Get detailed information about a specific library"
+    href="/mcp-tools/get-library-info"
+  />
+  <LinkCard
+    title="list-libraries"
+    description="List all available indexed libraries"
+    href="/mcp-tools/list-libraries"
+  />
+</CardGrid>
+
+## Memory Tools
+
+These tools enable persistent memory across coding sessions:
+
+<CardGrid>
+  <LinkCard
+    title="Memory Tools"
+    description="Save, recall, and manage project memories"
+    href="/mcp-tools/memory"
+  />
+</CardGrid>
+
+| Tool | Description |
+|------|-------------|
+| `save-memory` | Store memories (project context, decisions, lessons learned) |
+| `recall-memories` | Semantic search across stored memories |
+| `get-project-context` | Get all stored context for a project |
+| `list-memories` | Browse stored memories with filtering |
+| `update-memory` | Update an existing memory's content or metadata |
+| `delete-memory` | Remove a stored memory |
+
+## Server Discovery Tools
+
+These tools help discover and configure MCP servers:
+
+<CardGrid>
+  <LinkCard
+    title="Server Registry"
+    description="Discover and configure MCP servers"
+    href="/mcp-tools/servers"
+  />
+</CardGrid>
+
+| Tool | Description |
+|------|-------------|
+| `discover-servers` | Search for MCP servers by capability |
+| `get-server-info` | Get details about a specific server |
+| `get-server-config` | Generate installation configuration |
+| `list-server-categories` | List available server categories |
+
+## How Tools Are Used
+
+When you ask a question, your AI assistant automatically determines which tools to use. Here's a typical flow:
+
+### Documentation Query
+
+1. You ask: "How do I create middleware in Hono?"
+2. Assistant calls `resolve-library` with "hono" to find the library ID
+3. Assistant calls `query-docs` with the library ID and your question
+4. Assistant returns the answer with relevant documentation
+
+### Memory Usage
+
+1. You say: "Save this project context: We use TanStack Start with Hono..."
+2. Assistant calls `save-memory` with type "project_context"
+3. Later, you start a new session and mention the project
+4. Assistant calls `get-project-context` to recall the saved information
+
+### Server Discovery
+
+1. You ask: "What MCP servers are available for databases?"
+2. Assistant calls `discover-servers` with category "database"
+3. You choose one, assistant calls `get-server-config` to generate config
+4. Assistant provides the configuration for your MCP client
+
+## Tool Selection Tips
+
+:::tip[Let the AI decide]
+Most AI assistants are good at determining when to use Nexus tools. You typically don't need to explicitly ask for tool usage.
+:::
+
+However, you can be explicit when needed:
+
+- "Use Nexus to look up React hooks documentation"
+- "Save this to Nexus memory: [your content]"
+- "Recall what we decided about the database"
+- "Find MCP servers for GitHub integration"
+
+## Rate Limits
+
+Tools have the following rate limits:
+
+| Tool Category | Rate Limit |
+|--------------|------------|
+| Documentation queries | 30 requests/minute |
+| Memory operations | 20 requests/minute |
+| Server discovery | 50 requests/minute |
+
+## Next Steps
+
+- Learn about each tool in detail in the pages linked above
+- See the [REST API](/api/) for direct HTTP access
+- Check out [tutorials](/tutorials/vibe-with-nexus) for practical examples

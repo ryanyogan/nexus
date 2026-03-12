@@ -426,14 +426,14 @@ function DocsContent({
         {/* Library Grid */}
         <div className="flex-1">
           {/* Info banner */}
-          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/50 dark:bg-blue-900/20">
+          <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
             <div className="flex items-start gap-3">
-              <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+              <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
               <div>
-                <h3 className="font-medium text-blue-900 dark:text-blue-100">
+                <h3 className="font-medium text-emerald-900">
                   Documentation Libraries
                 </h3>
-                <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                <p className="mt-1 text-sm text-emerald-700">
                   Pre-indexed documentation with semantic search. Ask your AI
                   assistant questions and get relevant code examples instantly.
                 </p>
@@ -452,7 +452,7 @@ function DocsContent({
                   indexed librar{indexedLibraries.length !== 1 ? "ies" : "y"}
                 </p>
                 {hasIndexingLibraries && (
-                  <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-xs text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                  <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs text-emerald-600">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     Auto-refreshing
                   </div>
@@ -783,7 +783,7 @@ function LibraryCard({ library }: { library: Library }) {
         </div>
         {library.lastIndexedAt && (
           <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+            <Clock className="h-3.5 w-3.5 text-emerald-600" />
             <span>
               Updated {new Date(library.lastIndexedAt).toLocaleDateString()}
             </span>
@@ -906,14 +906,14 @@ function SkillsContent({
         {/* Skill Grid */}
         <div className="flex-1">
           {/* Info banner */}
-          <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-800/50 dark:bg-purple-900/20">
+          <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4">
             <div className="flex items-start gap-3">
-              <Zap className="mt-0.5 h-5 w-5 shrink-0 text-purple-600 dark:text-purple-400" />
+              <Zap className="mt-0.5 h-5 w-5 shrink-0 text-purple-600" />
               <div>
-                <h3 className="font-medium text-purple-900 dark:text-purple-100">
+                <h3 className="font-medium text-purple-900">
                   Agent Skills
                 </h3>
-                <p className="mt-1 text-sm text-purple-700 dark:text-purple-300">
+                <p className="mt-1 text-sm text-purple-700">
                   Pre-built skills for AI agents. Copy to your project or use with OpenCode&apos;s skill system.
                 </p>
               </div>
@@ -991,11 +991,11 @@ function SkillsContent({
 
 function SkillCard({ skill }: { skill: Skill }) {
   const typeColors: Record<string, string> = {
-    analysis: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    generation: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    transformation: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    integration: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-    utility: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
+    analysis: "bg-blue-100 text-blue-700",
+    generation: "bg-emerald-100 text-emerald-700",
+    transformation: "bg-yellow-100 text-yellow-700",
+    integration: "bg-purple-100 text-purple-700",
+    utility: "bg-stone-100 text-stone-700",
   };
 
   return (

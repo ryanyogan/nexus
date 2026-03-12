@@ -1,0 +1,139 @@
+---
+title: query-docs
+description: Search documentation for a specific library using semantic search
+---
+
+## Description
+
+Perform semantic search within a library's documentation. Returns relevant code examples, API references, and explanations ranked by relevance score.
+
+:::caution[Requires Library ID]
+You must call `resolve-library` first to get the library ID, unless you already know the exact ID.
+:::
+
+## Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `libraryId` | string | Yes | - | The library ID obtained from resolve-library (e.g., 'react', 'hono') |
+| `query` | string | Yes | - | The question or task you need help with. Be specific for better results. |
+| `limit` | number | No | 5 | Maximum number of results to return (1-10) |
+
+## Response
+
+Returns relevant documentation chunks with content and metadata:
+
+```json
+{
+  "success": true,
+  "libraryId": "hono",
+  "libraryName": "Hono",
+  "version": "4.0.0",
+  "query": "How to create middleware",
+  "resultCount": 3,
+  "results": [
+    {
+      "title": "Middleware",
+      "content": "# Middleware\n\nMiddleware works before and after the Handler...\n\n```ts\napp.use(async (c, next) => {\n  console.log('before')\n  await next()\n  console.log('after')\n})\n```",
+      "contentType": "guide",
+      "sourceFile": "docs/middleware.md",
+      "relevanceScore": 0.92
+    },
+    {
+      "title": "Built-in Middleware",
+      "content": "Hono provides several built-in middleware functions...",
+      "contentType": "api",
+      "sourceFile": "docs/api/middleware.md",
+      "relevanceScore": 0.85
+    }
+  ]
+}
+```
+
+### Result Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Title of the documentation section |
+| `content` | string | The actual documentation content (markdown) |
+| `contentType` | string | Type of content: 'guide', 'api', 'example', 'concept' |
+| `sourceFile` | string | Original file path in the documentation |
+| `relevanceScore` | number | Relevance score from 0 to 1 (higher is better) |
+
+## Examples
+
+### Basic Query
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "query-docs",
+    "arguments": {
+      "libraryId": "hono",
+      "query": "How do I handle form data in POST requests?"
+    }
+  }
+}
+```
+
+### With Custom Limit
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "query-docs",
+    "arguments": {
+      "libraryId": "react",
+      "query": "useEffect cleanup function examples",
+      "limit": 10
+    }
+  }
+}
+```
+
+### Error: Library Not Found
+
+```json title="Error Response"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32603,
+    "message": "Library \"unknownlib\" not found. Use resolve-library to search for available libraries."
+  }
+}
+```
+
+## Tips for Better Results
+
+### Good Queries
+
+- "How to set up authentication with JWT in Express.js"
+- "React useEffect cleanup function examples"
+- "Hono middleware for request logging"
+
+### Bad Queries
+
+- "auth" (too vague)
+- "hooks" (too broad)
+- "middleware" (not specific enough)
+
+:::tip[Include Context]
+The more specific your query, the better the results. Include what you're trying to accomplish, not just keywords.
+:::
+
+:::note[Call limit]
+Don't call this tool more than 3 times per question. If you can't find what you need after 3 calls, use the best information you have.
+:::
+
+## See Also
+
+- [resolve-library](/mcp-tools/resolve-library) - Find a library ID first
+- [get-library-info](/mcp-tools/get-library-info) - Get library metadata
+- [list-libraries](/mcp-tools/list-libraries) - Browse available libraries

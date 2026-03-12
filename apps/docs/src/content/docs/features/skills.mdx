@@ -1,0 +1,132 @@
+---
+title: AI Skills
+description: Curated instruction sets encoding expert knowledge for AI assistants
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## What are AI Skills?
+
+AI Skills are curated instruction sets that encode expert knowledge into reusable patterns. They help AI assistants perform specialized tasks like code review, documentation generation, test writing, and more with consistent quality.
+
+Think of skills as expert playbooks - they capture the knowledge and best practices of experienced developers and make them available to any AI assistant.
+
+## Why Use Skills?
+
+<CardGrid>
+  <Card title="Consistent Quality" icon="approve-check">
+    Skills ensure consistent output across different sessions and projects.
+  </Card>
+  <Card title="Expert Knowledge" icon="star">
+    Capture and reuse expertise from experienced developers.
+  </Card>
+  <Card title="Task-Specific" icon="setting">
+    Optimized instructions for specific tasks like code review or testing.
+  </Card>
+  <Card title="Community Curated" icon="group">
+    Best practices refined by the developer community.
+  </Card>
+</CardGrid>
+
+## Skill Types
+
+| Type | Description | Examples |
+|------|-------------|----------|
+| `analysis` | Examine and evaluate code | Code review, security audit, performance analysis |
+| `generation` | Create new content | Test generation, documentation, boilerplate |
+| `transformation` | Convert or refactor | Code migration, format conversion, refactoring |
+| `integration` | Connect systems | API integration, database setup, CI/CD |
+| `utility` | General helpers | Debugging, logging, error handling |
+
+## Using Skills
+
+To load a skill, ask your AI assistant:
+
+```
+Load the code-review skill from Nexus
+```
+
+The assistant will fetch the skill instructions and apply them to your task:
+
+```
+Using the code-review skill, review this function:
+
+function processData(data) {
+  // ... your code
+}
+```
+
+## Popular Skills
+
+<CardGrid>
+  <Card title="Code Review" icon="pencil">
+    Expert code review covering security, performance, and maintainability.
+    
+    Type: `analysis`
+  </Card>
+  <Card title="React Best Practices" icon="rocket">
+    Modern React patterns including hooks, performance, and accessibility.
+    
+    Type: `analysis`
+  </Card>
+  <Card title="Test Generation" icon="approve-check">
+    Generate comprehensive test suites with edge cases and mocks.
+    
+    Type: `generation`
+  </Card>
+  <Card title="API Documentation" icon="document">
+    Generate OpenAPI specs and documentation from code.
+    
+    Type: `generation`
+  </Card>
+  <Card title="Database Schema" icon="seti:db">
+    Design and review database schemas with best practices.
+    
+    Type: `analysis`
+  </Card>
+  <Card title="Performance Audit" icon="rocket">
+    Identify performance bottlenecks and optimization opportunities.
+    
+    Type: `analysis`
+  </Card>
+</CardGrid>
+
+## API Access
+
+List available skills:
+
+```bash
+curl "https://api.nexus.yogan.dev/api/skills"
+```
+
+Get skill details:
+
+```bash
+curl "https://api.nexus.yogan.dev/api/skills/code-review"
+```
+
+Filter by type:
+
+```bash
+curl "https://api.nexus.yogan.dev/api/skills?type=analysis"
+```
+
+Search skills:
+
+```bash
+curl "https://api.nexus.yogan.dev/api/skills?search=react"
+```
+
+## Coming Soon
+
+:::tip[What's Next]
+- **Submit your own skills** - Share your expertise with the community
+- **Skill versioning** - Track changes and rollback if needed
+- **Private skills** - Team-specific skills for enterprise users
+- **Skill composition** - Combine multiple skills for complex workflows
+:::
+
+## See Also
+
+- [Skills API Reference](/api/skills)
+- [User Dashboard](/features/dashboard) - Manage your installed skills

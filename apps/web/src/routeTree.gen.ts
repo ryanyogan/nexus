@@ -15,18 +15,11 @@ import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as CodeIndexRouteImport } from './routes/code/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SettingsSecretsRouteImport } from './routes/settings/secrets'
 import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
-import { Route as DocsWebUiRouteImport } from './routes/docs/web-ui'
-import { Route as DocsTroubleshootingRouteImport } from './routes/docs/troubleshooting'
-import { Route as DocsSubmitRouteImport } from './routes/docs/submit'
-import { Route as DocsSdkRouteImport } from './routes/docs/sdk'
-import { Route as DocsMobileTerminalRouteImport } from './routes/docs/mobile-terminal'
-import { Route as DocsGettingStartedRouteImport } from './routes/docs/getting-started'
 import { Route as DashboardSkillsRouteImport } from './routes/dashboard/skills'
 import { Route as DashboardKeysRouteImport } from './routes/dashboard/keys'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
@@ -35,25 +28,7 @@ import { Route as AdminSubmissionsRouteImport } from './routes/admin/submissions
 import { Route as AdminServerSubmissionsRouteImport } from './routes/admin/server-submissions'
 import { Route as AdminLibrariesRouteImport } from './routes/admin/libraries'
 import { Route as ExploreServersIndexRouteImport } from './routes/explore/servers.index'
-import { Route as DocsMcpToolsIndexRouteImport } from './routes/docs/mcp-tools/index'
-import { Route as DocsApiIndexRouteImport } from './routes/docs/api/index'
 import { Route as ExploreServersServerIdRouteImport } from './routes/explore/servers.$serverId'
-import { Route as DocsTutorialsVibeWithNexusRouteImport } from './routes/docs/tutorials/vibe-with-nexus'
-import { Route as DocsTutorialsProjectMemoryRouteImport } from './routes/docs/tutorials/project-memory'
-import { Route as DocsTutorialsMcpServerSetupRouteImport } from './routes/docs/tutorials/mcp-server-setup'
-import { Route as DocsTutorialsBuildWithNexusRouteImport } from './routes/docs/tutorials/build-with-nexus'
-import { Route as DocsMcpToolsServersRouteImport } from './routes/docs/mcp-tools/servers'
-import { Route as DocsMcpToolsResolveLibraryRouteImport } from './routes/docs/mcp-tools/resolve-library'
-import { Route as DocsMcpToolsQueryDocsRouteImport } from './routes/docs/mcp-tools/query-docs'
-import { Route as DocsMcpToolsMemoryRouteImport } from './routes/docs/mcp-tools/memory'
-import { Route as DocsMcpToolsListLibrariesRouteImport } from './routes/docs/mcp-tools/list-libraries'
-import { Route as DocsMcpToolsGetLibraryInfoRouteImport } from './routes/docs/mcp-tools/get-library-info'
-import { Route as DocsFeaturesSkillsRouteImport } from './routes/docs/features/skills'
-import { Route as DocsFeaturesSecretsRouteImport } from './routes/docs/features/secrets'
-import { Route as DocsFeaturesDashboardRouteImport } from './routes/docs/features/dashboard'
-import { Route as DocsApiSubmissionsRouteImport } from './routes/docs/api/submissions'
-import { Route as DocsApiStatsRouteImport } from './routes/docs/api/stats'
-import { Route as DocsApiLibrariesRouteImport } from './routes/docs/api/libraries'
 import { Route as CodeSessionSessionIdRouteImport } from './routes/code/session.$sessionId'
 
 const TerminalRoute = TerminalRouteImport.update({
@@ -86,11 +61,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsIndexRoute = DocsIndexRouteImport.update({
-  id: '/docs/',
-  path: '/docs/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
@@ -114,36 +84,6 @@ const SettingsSecretsRoute = SettingsSecretsRouteImport.update({
 const LibrariesLibraryIdRoute = LibrariesLibraryIdRouteImport.update({
   id: '/libraries/$libraryId',
   path: '/libraries/$libraryId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsWebUiRoute = DocsWebUiRouteImport.update({
-  id: '/docs/web-ui',
-  path: '/docs/web-ui',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsTroubleshootingRoute = DocsTroubleshootingRouteImport.update({
-  id: '/docs/troubleshooting',
-  path: '/docs/troubleshooting',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsSubmitRoute = DocsSubmitRouteImport.update({
-  id: '/docs/submit',
-  path: '/docs/submit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsSdkRoute = DocsSdkRouteImport.update({
-  id: '/docs/sdk',
-  path: '/docs/sdk',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsMobileTerminalRoute = DocsMobileTerminalRouteImport.update({
-  id: '/docs/mobile-terminal',
-  path: '/docs/mobile-terminal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsGettingStartedRoute = DocsGettingStartedRouteImport.update({
-  id: '/docs/getting-started',
-  path: '/docs/getting-started',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardSkillsRoute = DashboardSkillsRouteImport.update({
@@ -186,107 +126,10 @@ const ExploreServersIndexRoute = ExploreServersIndexRouteImport.update({
   path: '/servers/',
   getParentRoute: () => ExploreRoute,
 } as any)
-const DocsMcpToolsIndexRoute = DocsMcpToolsIndexRouteImport.update({
-  id: '/docs/mcp-tools/',
-  path: '/docs/mcp-tools/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsApiIndexRoute = DocsApiIndexRouteImport.update({
-  id: '/docs/api/',
-  path: '/docs/api/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ExploreServersServerIdRoute = ExploreServersServerIdRouteImport.update({
   id: '/servers/$serverId',
   path: '/servers/$serverId',
   getParentRoute: () => ExploreRoute,
-} as any)
-const DocsTutorialsVibeWithNexusRoute =
-  DocsTutorialsVibeWithNexusRouteImport.update({
-    id: '/docs/tutorials/vibe-with-nexus',
-    path: '/docs/tutorials/vibe-with-nexus',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DocsTutorialsProjectMemoryRoute =
-  DocsTutorialsProjectMemoryRouteImport.update({
-    id: '/docs/tutorials/project-memory',
-    path: '/docs/tutorials/project-memory',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DocsTutorialsMcpServerSetupRoute =
-  DocsTutorialsMcpServerSetupRouteImport.update({
-    id: '/docs/tutorials/mcp-server-setup',
-    path: '/docs/tutorials/mcp-server-setup',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DocsTutorialsBuildWithNexusRoute =
-  DocsTutorialsBuildWithNexusRouteImport.update({
-    id: '/docs/tutorials/build-with-nexus',
-    path: '/docs/tutorials/build-with-nexus',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DocsMcpToolsServersRoute = DocsMcpToolsServersRouteImport.update({
-  id: '/docs/mcp-tools/servers',
-  path: '/docs/mcp-tools/servers',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsMcpToolsResolveLibraryRoute =
-  DocsMcpToolsResolveLibraryRouteImport.update({
-    id: '/docs/mcp-tools/resolve-library',
-    path: '/docs/mcp-tools/resolve-library',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DocsMcpToolsQueryDocsRoute = DocsMcpToolsQueryDocsRouteImport.update({
-  id: '/docs/mcp-tools/query-docs',
-  path: '/docs/mcp-tools/query-docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsMcpToolsMemoryRoute = DocsMcpToolsMemoryRouteImport.update({
-  id: '/docs/mcp-tools/memory',
-  path: '/docs/mcp-tools/memory',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsMcpToolsListLibrariesRoute =
-  DocsMcpToolsListLibrariesRouteImport.update({
-    id: '/docs/mcp-tools/list-libraries',
-    path: '/docs/mcp-tools/list-libraries',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DocsMcpToolsGetLibraryInfoRoute =
-  DocsMcpToolsGetLibraryInfoRouteImport.update({
-    id: '/docs/mcp-tools/get-library-info',
-    path: '/docs/mcp-tools/get-library-info',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DocsFeaturesSkillsRoute = DocsFeaturesSkillsRouteImport.update({
-  id: '/docs/features/skills',
-  path: '/docs/features/skills',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsFeaturesSecretsRoute = DocsFeaturesSecretsRouteImport.update({
-  id: '/docs/features/secrets',
-  path: '/docs/features/secrets',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsFeaturesDashboardRoute = DocsFeaturesDashboardRouteImport.update({
-  id: '/docs/features/dashboard',
-  path: '/docs/features/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsApiSubmissionsRoute = DocsApiSubmissionsRouteImport.update({
-  id: '/docs/api/submissions',
-  path: '/docs/api/submissions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsApiStatsRoute = DocsApiStatsRouteImport.update({
-  id: '/docs/api/stats',
-  path: '/docs/api/stats',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsApiLibrariesRoute = DocsApiLibrariesRouteImport.update({
-  id: '/docs/api/libraries',
-  path: '/docs/api/libraries',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const CodeSessionSessionIdRoute = CodeSessionSessionIdRouteImport.update({
   id: '/code/session/$sessionId',
@@ -310,38 +153,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/skills': typeof DashboardSkillsRoute
-  '/docs/getting-started': typeof DocsGettingStartedRoute
-  '/docs/mobile-terminal': typeof DocsMobileTerminalRoute
-  '/docs/sdk': typeof DocsSdkRoute
-  '/docs/submit': typeof DocsSubmitRoute
-  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
-  '/docs/web-ui': typeof DocsWebUiRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/settings/secrets': typeof SettingsSecretsRoute
   '/admin/': typeof AdminIndexRoute
   '/code/': typeof CodeIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
-  '/docs/': typeof DocsIndexRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
-  '/docs/api/libraries': typeof DocsApiLibrariesRoute
-  '/docs/api/stats': typeof DocsApiStatsRoute
-  '/docs/api/submissions': typeof DocsApiSubmissionsRoute
-  '/docs/features/dashboard': typeof DocsFeaturesDashboardRoute
-  '/docs/features/secrets': typeof DocsFeaturesSecretsRoute
-  '/docs/features/skills': typeof DocsFeaturesSkillsRoute
-  '/docs/mcp-tools/get-library-info': typeof DocsMcpToolsGetLibraryInfoRoute
-  '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
-  '/docs/mcp-tools/memory': typeof DocsMcpToolsMemoryRoute
-  '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
-  '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
-  '/docs/mcp-tools/servers': typeof DocsMcpToolsServersRoute
-  '/docs/tutorials/build-with-nexus': typeof DocsTutorialsBuildWithNexusRoute
-  '/docs/tutorials/mcp-server-setup': typeof DocsTutorialsMcpServerSetupRoute
-  '/docs/tutorials/project-memory': typeof DocsTutorialsProjectMemoryRoute
-  '/docs/tutorials/vibe-with-nexus': typeof DocsTutorialsVibeWithNexusRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
-  '/docs/api/': typeof DocsApiIndexRoute
-  '/docs/mcp-tools/': typeof DocsMcpToolsIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -358,38 +176,13 @@ export interface FileRoutesByTo {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/skills': typeof DashboardSkillsRoute
-  '/docs/getting-started': typeof DocsGettingStartedRoute
-  '/docs/mobile-terminal': typeof DocsMobileTerminalRoute
-  '/docs/sdk': typeof DocsSdkRoute
-  '/docs/submit': typeof DocsSubmitRoute
-  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
-  '/docs/web-ui': typeof DocsWebUiRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/settings/secrets': typeof SettingsSecretsRoute
   '/admin': typeof AdminIndexRoute
   '/code': typeof CodeIndexRoute
   '/dashboard': typeof DashboardIndexRoute
-  '/docs': typeof DocsIndexRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
-  '/docs/api/libraries': typeof DocsApiLibrariesRoute
-  '/docs/api/stats': typeof DocsApiStatsRoute
-  '/docs/api/submissions': typeof DocsApiSubmissionsRoute
-  '/docs/features/dashboard': typeof DocsFeaturesDashboardRoute
-  '/docs/features/secrets': typeof DocsFeaturesSecretsRoute
-  '/docs/features/skills': typeof DocsFeaturesSkillsRoute
-  '/docs/mcp-tools/get-library-info': typeof DocsMcpToolsGetLibraryInfoRoute
-  '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
-  '/docs/mcp-tools/memory': typeof DocsMcpToolsMemoryRoute
-  '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
-  '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
-  '/docs/mcp-tools/servers': typeof DocsMcpToolsServersRoute
-  '/docs/tutorials/build-with-nexus': typeof DocsTutorialsBuildWithNexusRoute
-  '/docs/tutorials/mcp-server-setup': typeof DocsTutorialsMcpServerSetupRoute
-  '/docs/tutorials/project-memory': typeof DocsTutorialsProjectMemoryRoute
-  '/docs/tutorials/vibe-with-nexus': typeof DocsTutorialsVibeWithNexusRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
-  '/docs/api': typeof DocsApiIndexRoute
-  '/docs/mcp-tools': typeof DocsMcpToolsIndexRoute
   '/explore/servers': typeof ExploreServersIndexRoute
 }
 export interface FileRoutesById {
@@ -407,38 +200,13 @@ export interface FileRoutesById {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/skills': typeof DashboardSkillsRoute
-  '/docs/getting-started': typeof DocsGettingStartedRoute
-  '/docs/mobile-terminal': typeof DocsMobileTerminalRoute
-  '/docs/sdk': typeof DocsSdkRoute
-  '/docs/submit': typeof DocsSubmitRoute
-  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
-  '/docs/web-ui': typeof DocsWebUiRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/settings/secrets': typeof SettingsSecretsRoute
   '/admin/': typeof AdminIndexRoute
   '/code/': typeof CodeIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
-  '/docs/': typeof DocsIndexRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
-  '/docs/api/libraries': typeof DocsApiLibrariesRoute
-  '/docs/api/stats': typeof DocsApiStatsRoute
-  '/docs/api/submissions': typeof DocsApiSubmissionsRoute
-  '/docs/features/dashboard': typeof DocsFeaturesDashboardRoute
-  '/docs/features/secrets': typeof DocsFeaturesSecretsRoute
-  '/docs/features/skills': typeof DocsFeaturesSkillsRoute
-  '/docs/mcp-tools/get-library-info': typeof DocsMcpToolsGetLibraryInfoRoute
-  '/docs/mcp-tools/list-libraries': typeof DocsMcpToolsListLibrariesRoute
-  '/docs/mcp-tools/memory': typeof DocsMcpToolsMemoryRoute
-  '/docs/mcp-tools/query-docs': typeof DocsMcpToolsQueryDocsRoute
-  '/docs/mcp-tools/resolve-library': typeof DocsMcpToolsResolveLibraryRoute
-  '/docs/mcp-tools/servers': typeof DocsMcpToolsServersRoute
-  '/docs/tutorials/build-with-nexus': typeof DocsTutorialsBuildWithNexusRoute
-  '/docs/tutorials/mcp-server-setup': typeof DocsTutorialsMcpServerSetupRoute
-  '/docs/tutorials/project-memory': typeof DocsTutorialsProjectMemoryRoute
-  '/docs/tutorials/vibe-with-nexus': typeof DocsTutorialsVibeWithNexusRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
-  '/docs/api/': typeof DocsApiIndexRoute
-  '/docs/mcp-tools/': typeof DocsMcpToolsIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
 }
 export interface FileRouteTypes {
@@ -457,38 +225,13 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
-    | '/docs/getting-started'
-    | '/docs/mobile-terminal'
-    | '/docs/sdk'
-    | '/docs/submit'
-    | '/docs/troubleshooting'
-    | '/docs/web-ui'
     | '/libraries/$libraryId'
     | '/settings/secrets'
     | '/admin/'
     | '/code/'
     | '/dashboard/'
-    | '/docs/'
     | '/code/session/$sessionId'
-    | '/docs/api/libraries'
-    | '/docs/api/stats'
-    | '/docs/api/submissions'
-    | '/docs/features/dashboard'
-    | '/docs/features/secrets'
-    | '/docs/features/skills'
-    | '/docs/mcp-tools/get-library-info'
-    | '/docs/mcp-tools/list-libraries'
-    | '/docs/mcp-tools/memory'
-    | '/docs/mcp-tools/query-docs'
-    | '/docs/mcp-tools/resolve-library'
-    | '/docs/mcp-tools/servers'
-    | '/docs/tutorials/build-with-nexus'
-    | '/docs/tutorials/mcp-server-setup'
-    | '/docs/tutorials/project-memory'
-    | '/docs/tutorials/vibe-with-nexus'
     | '/explore/servers/$serverId'
-    | '/docs/api/'
-    | '/docs/mcp-tools/'
     | '/explore/servers/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -505,38 +248,13 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
-    | '/docs/getting-started'
-    | '/docs/mobile-terminal'
-    | '/docs/sdk'
-    | '/docs/submit'
-    | '/docs/troubleshooting'
-    | '/docs/web-ui'
     | '/libraries/$libraryId'
     | '/settings/secrets'
     | '/admin'
     | '/code'
     | '/dashboard'
-    | '/docs'
     | '/code/session/$sessionId'
-    | '/docs/api/libraries'
-    | '/docs/api/stats'
-    | '/docs/api/submissions'
-    | '/docs/features/dashboard'
-    | '/docs/features/secrets'
-    | '/docs/features/skills'
-    | '/docs/mcp-tools/get-library-info'
-    | '/docs/mcp-tools/list-libraries'
-    | '/docs/mcp-tools/memory'
-    | '/docs/mcp-tools/query-docs'
-    | '/docs/mcp-tools/resolve-library'
-    | '/docs/mcp-tools/servers'
-    | '/docs/tutorials/build-with-nexus'
-    | '/docs/tutorials/mcp-server-setup'
-    | '/docs/tutorials/project-memory'
-    | '/docs/tutorials/vibe-with-nexus'
     | '/explore/servers/$serverId'
-    | '/docs/api'
-    | '/docs/mcp-tools'
     | '/explore/servers'
   id:
     | '__root__'
@@ -553,38 +271,13 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
-    | '/docs/getting-started'
-    | '/docs/mobile-terminal'
-    | '/docs/sdk'
-    | '/docs/submit'
-    | '/docs/troubleshooting'
-    | '/docs/web-ui'
     | '/libraries/$libraryId'
     | '/settings/secrets'
     | '/admin/'
     | '/code/'
     | '/dashboard/'
-    | '/docs/'
     | '/code/session/$sessionId'
-    | '/docs/api/libraries'
-    | '/docs/api/stats'
-    | '/docs/api/submissions'
-    | '/docs/features/dashboard'
-    | '/docs/features/secrets'
-    | '/docs/features/skills'
-    | '/docs/mcp-tools/get-library-info'
-    | '/docs/mcp-tools/list-libraries'
-    | '/docs/mcp-tools/memory'
-    | '/docs/mcp-tools/query-docs'
-    | '/docs/mcp-tools/resolve-library'
-    | '/docs/mcp-tools/servers'
-    | '/docs/tutorials/build-with-nexus'
-    | '/docs/tutorials/mcp-server-setup'
-    | '/docs/tutorials/project-memory'
-    | '/docs/tutorials/vibe-with-nexus'
     | '/explore/servers/$serverId'
-    | '/docs/api/'
-    | '/docs/mcp-tools/'
     | '/explore/servers/'
   fileRoutesById: FileRoutesById
 }
@@ -602,37 +295,12 @@ export interface RootRouteChildren {
   DashboardBillingRoute: typeof DashboardBillingRoute
   DashboardKeysRoute: typeof DashboardKeysRoute
   DashboardSkillsRoute: typeof DashboardSkillsRoute
-  DocsGettingStartedRoute: typeof DocsGettingStartedRoute
-  DocsMobileTerminalRoute: typeof DocsMobileTerminalRoute
-  DocsSdkRoute: typeof DocsSdkRoute
-  DocsSubmitRoute: typeof DocsSubmitRoute
-  DocsTroubleshootingRoute: typeof DocsTroubleshootingRoute
-  DocsWebUiRoute: typeof DocsWebUiRoute
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
   SettingsSecretsRoute: typeof SettingsSecretsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   CodeIndexRoute: typeof CodeIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
-  DocsIndexRoute: typeof DocsIndexRoute
   CodeSessionSessionIdRoute: typeof CodeSessionSessionIdRoute
-  DocsApiLibrariesRoute: typeof DocsApiLibrariesRoute
-  DocsApiStatsRoute: typeof DocsApiStatsRoute
-  DocsApiSubmissionsRoute: typeof DocsApiSubmissionsRoute
-  DocsFeaturesDashboardRoute: typeof DocsFeaturesDashboardRoute
-  DocsFeaturesSecretsRoute: typeof DocsFeaturesSecretsRoute
-  DocsFeaturesSkillsRoute: typeof DocsFeaturesSkillsRoute
-  DocsMcpToolsGetLibraryInfoRoute: typeof DocsMcpToolsGetLibraryInfoRoute
-  DocsMcpToolsListLibrariesRoute: typeof DocsMcpToolsListLibrariesRoute
-  DocsMcpToolsMemoryRoute: typeof DocsMcpToolsMemoryRoute
-  DocsMcpToolsQueryDocsRoute: typeof DocsMcpToolsQueryDocsRoute
-  DocsMcpToolsResolveLibraryRoute: typeof DocsMcpToolsResolveLibraryRoute
-  DocsMcpToolsServersRoute: typeof DocsMcpToolsServersRoute
-  DocsTutorialsBuildWithNexusRoute: typeof DocsTutorialsBuildWithNexusRoute
-  DocsTutorialsMcpServerSetupRoute: typeof DocsTutorialsMcpServerSetupRoute
-  DocsTutorialsProjectMemoryRoute: typeof DocsTutorialsProjectMemoryRoute
-  DocsTutorialsVibeWithNexusRoute: typeof DocsTutorialsVibeWithNexusRoute
-  DocsApiIndexRoute: typeof DocsApiIndexRoute
-  DocsMcpToolsIndexRoute: typeof DocsMcpToolsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -679,13 +347,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs/': {
-      id: '/docs/'
-      path: '/docs'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof DocsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/dashboard'
@@ -719,48 +380,6 @@ declare module '@tanstack/react-router' {
       path: '/libraries/$libraryId'
       fullPath: '/libraries/$libraryId'
       preLoaderRoute: typeof LibrariesLibraryIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/web-ui': {
-      id: '/docs/web-ui'
-      path: '/docs/web-ui'
-      fullPath: '/docs/web-ui'
-      preLoaderRoute: typeof DocsWebUiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/troubleshooting': {
-      id: '/docs/troubleshooting'
-      path: '/docs/troubleshooting'
-      fullPath: '/docs/troubleshooting'
-      preLoaderRoute: typeof DocsTroubleshootingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/submit': {
-      id: '/docs/submit'
-      path: '/docs/submit'
-      fullPath: '/docs/submit'
-      preLoaderRoute: typeof DocsSubmitRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/sdk': {
-      id: '/docs/sdk'
-      path: '/docs/sdk'
-      fullPath: '/docs/sdk'
-      preLoaderRoute: typeof DocsSdkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/mobile-terminal': {
-      id: '/docs/mobile-terminal'
-      path: '/docs/mobile-terminal'
-      fullPath: '/docs/mobile-terminal'
-      preLoaderRoute: typeof DocsMobileTerminalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/getting-started': {
-      id: '/docs/getting-started'
-      path: '/docs/getting-started'
-      fullPath: '/docs/getting-started'
-      preLoaderRoute: typeof DocsGettingStartedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/skills': {
@@ -819,138 +438,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreServersIndexRouteImport
       parentRoute: typeof ExploreRoute
     }
-    '/docs/mcp-tools/': {
-      id: '/docs/mcp-tools/'
-      path: '/docs/mcp-tools'
-      fullPath: '/docs/mcp-tools/'
-      preLoaderRoute: typeof DocsMcpToolsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/api/': {
-      id: '/docs/api/'
-      path: '/docs/api'
-      fullPath: '/docs/api/'
-      preLoaderRoute: typeof DocsApiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/explore/servers/$serverId': {
       id: '/explore/servers/$serverId'
       path: '/servers/$serverId'
       fullPath: '/explore/servers/$serverId'
       preLoaderRoute: typeof ExploreServersServerIdRouteImport
       parentRoute: typeof ExploreRoute
-    }
-    '/docs/tutorials/vibe-with-nexus': {
-      id: '/docs/tutorials/vibe-with-nexus'
-      path: '/docs/tutorials/vibe-with-nexus'
-      fullPath: '/docs/tutorials/vibe-with-nexus'
-      preLoaderRoute: typeof DocsTutorialsVibeWithNexusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/tutorials/project-memory': {
-      id: '/docs/tutorials/project-memory'
-      path: '/docs/tutorials/project-memory'
-      fullPath: '/docs/tutorials/project-memory'
-      preLoaderRoute: typeof DocsTutorialsProjectMemoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/tutorials/mcp-server-setup': {
-      id: '/docs/tutorials/mcp-server-setup'
-      path: '/docs/tutorials/mcp-server-setup'
-      fullPath: '/docs/tutorials/mcp-server-setup'
-      preLoaderRoute: typeof DocsTutorialsMcpServerSetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/tutorials/build-with-nexus': {
-      id: '/docs/tutorials/build-with-nexus'
-      path: '/docs/tutorials/build-with-nexus'
-      fullPath: '/docs/tutorials/build-with-nexus'
-      preLoaderRoute: typeof DocsTutorialsBuildWithNexusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/mcp-tools/servers': {
-      id: '/docs/mcp-tools/servers'
-      path: '/docs/mcp-tools/servers'
-      fullPath: '/docs/mcp-tools/servers'
-      preLoaderRoute: typeof DocsMcpToolsServersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/mcp-tools/resolve-library': {
-      id: '/docs/mcp-tools/resolve-library'
-      path: '/docs/mcp-tools/resolve-library'
-      fullPath: '/docs/mcp-tools/resolve-library'
-      preLoaderRoute: typeof DocsMcpToolsResolveLibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/mcp-tools/query-docs': {
-      id: '/docs/mcp-tools/query-docs'
-      path: '/docs/mcp-tools/query-docs'
-      fullPath: '/docs/mcp-tools/query-docs'
-      preLoaderRoute: typeof DocsMcpToolsQueryDocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/mcp-tools/memory': {
-      id: '/docs/mcp-tools/memory'
-      path: '/docs/mcp-tools/memory'
-      fullPath: '/docs/mcp-tools/memory'
-      preLoaderRoute: typeof DocsMcpToolsMemoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/mcp-tools/list-libraries': {
-      id: '/docs/mcp-tools/list-libraries'
-      path: '/docs/mcp-tools/list-libraries'
-      fullPath: '/docs/mcp-tools/list-libraries'
-      preLoaderRoute: typeof DocsMcpToolsListLibrariesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/mcp-tools/get-library-info': {
-      id: '/docs/mcp-tools/get-library-info'
-      path: '/docs/mcp-tools/get-library-info'
-      fullPath: '/docs/mcp-tools/get-library-info'
-      preLoaderRoute: typeof DocsMcpToolsGetLibraryInfoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/features/skills': {
-      id: '/docs/features/skills'
-      path: '/docs/features/skills'
-      fullPath: '/docs/features/skills'
-      preLoaderRoute: typeof DocsFeaturesSkillsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/features/secrets': {
-      id: '/docs/features/secrets'
-      path: '/docs/features/secrets'
-      fullPath: '/docs/features/secrets'
-      preLoaderRoute: typeof DocsFeaturesSecretsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/features/dashboard': {
-      id: '/docs/features/dashboard'
-      path: '/docs/features/dashboard'
-      fullPath: '/docs/features/dashboard'
-      preLoaderRoute: typeof DocsFeaturesDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/api/submissions': {
-      id: '/docs/api/submissions'
-      path: '/docs/api/submissions'
-      fullPath: '/docs/api/submissions'
-      preLoaderRoute: typeof DocsApiSubmissionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/api/stats': {
-      id: '/docs/api/stats'
-      path: '/docs/api/stats'
-      fullPath: '/docs/api/stats'
-      preLoaderRoute: typeof DocsApiStatsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/api/libraries': {
-      id: '/docs/api/libraries'
-      path: '/docs/api/libraries'
-      fullPath: '/docs/api/libraries'
-      preLoaderRoute: typeof DocsApiLibrariesRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/code/session/$sessionId': {
       id: '/code/session/$sessionId'
@@ -989,37 +482,12 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardBillingRoute: DashboardBillingRoute,
   DashboardKeysRoute: DashboardKeysRoute,
   DashboardSkillsRoute: DashboardSkillsRoute,
-  DocsGettingStartedRoute: DocsGettingStartedRoute,
-  DocsMobileTerminalRoute: DocsMobileTerminalRoute,
-  DocsSdkRoute: DocsSdkRoute,
-  DocsSubmitRoute: DocsSubmitRoute,
-  DocsTroubleshootingRoute: DocsTroubleshootingRoute,
-  DocsWebUiRoute: DocsWebUiRoute,
   LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
   SettingsSecretsRoute: SettingsSecretsRoute,
   AdminIndexRoute: AdminIndexRoute,
   CodeIndexRoute: CodeIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
-  DocsIndexRoute: DocsIndexRoute,
   CodeSessionSessionIdRoute: CodeSessionSessionIdRoute,
-  DocsApiLibrariesRoute: DocsApiLibrariesRoute,
-  DocsApiStatsRoute: DocsApiStatsRoute,
-  DocsApiSubmissionsRoute: DocsApiSubmissionsRoute,
-  DocsFeaturesDashboardRoute: DocsFeaturesDashboardRoute,
-  DocsFeaturesSecretsRoute: DocsFeaturesSecretsRoute,
-  DocsFeaturesSkillsRoute: DocsFeaturesSkillsRoute,
-  DocsMcpToolsGetLibraryInfoRoute: DocsMcpToolsGetLibraryInfoRoute,
-  DocsMcpToolsListLibrariesRoute: DocsMcpToolsListLibrariesRoute,
-  DocsMcpToolsMemoryRoute: DocsMcpToolsMemoryRoute,
-  DocsMcpToolsQueryDocsRoute: DocsMcpToolsQueryDocsRoute,
-  DocsMcpToolsResolveLibraryRoute: DocsMcpToolsResolveLibraryRoute,
-  DocsMcpToolsServersRoute: DocsMcpToolsServersRoute,
-  DocsTutorialsBuildWithNexusRoute: DocsTutorialsBuildWithNexusRoute,
-  DocsTutorialsMcpServerSetupRoute: DocsTutorialsMcpServerSetupRoute,
-  DocsTutorialsProjectMemoryRoute: DocsTutorialsProjectMemoryRoute,
-  DocsTutorialsVibeWithNexusRoute: DocsTutorialsVibeWithNexusRoute,
-  DocsApiIndexRoute: DocsApiIndexRoute,
-  DocsMcpToolsIndexRoute: DocsMcpToolsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,0 +1,150 @@
+---
+title: REST API Overview
+description: Direct HTTP access to Nexus documentation search and memory
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+The Nexus REST API provides programmatic access to all Nexus features. Use it to search documentation, list libraries, submit new libraries for indexing, and retrieve statistics.
+
+:::note
+For AI coding assistants, we recommend using the [MCP tools](/mcp-tools/) instead of the REST API for better integration.
+:::
+
+## Base URL
+
+```
+https://api.nexus.yogan.dev
+```
+
+All API endpoints are prefixed with `/api`.
+
+## Authentication
+
+Currently, the Nexus API is open and does not require authentication. All endpoints are publicly accessible.
+
+:::caution[Rate Limits Apply]
+While no authentication is required, rate limits are enforced to ensure fair usage. See the rate limiting section below.
+:::
+
+## Rate Limiting
+
+| Endpoint Type | Rate Limit |
+|--------------|------------|
+| Read endpoints (GET) | 100 requests per minute |
+| Search endpoints (POST /search) | 30 requests per minute |
+| Submit endpoints (POST /submissions) | 10 requests per minute |
+
+Rate limit headers are included in all responses:
+
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1705312800
+```
+
+## Endpoints
+
+<CardGrid>
+  <LinkCard
+    title="Libraries"
+    description="Search and retrieve library documentation"
+    href="/api/libraries"
+  />
+  <LinkCard
+    title="Servers"
+    description="Discover and configure MCP servers"
+    href="/api/servers"
+  />
+  <LinkCard
+    title="Skills"
+    description="Browse and retrieve AI skills"
+    href="/api/skills"
+  />
+  <LinkCard
+    title="User & Auth"
+    description="Authentication and user management"
+    href="/api/user"
+  />
+  <LinkCard
+    title="Submissions"
+    description="Submit new libraries for indexing"
+    href="/api/submissions"
+  />
+  <LinkCard
+    title="Stats"
+    description="Platform statistics and popular libraries"
+    href="/api/stats"
+  />
+</CardGrid>
+
+## Quick Reference
+
+### Libraries
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/libraries` | List all libraries |
+| GET | `/api/libraries/:id` | Get library details |
+| GET | `/api/libraries/:id/chunks` | Get documentation chunks |
+| POST | `/api/libraries/search` | Search documentation |
+
+### Servers
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/servers` | List MCP servers |
+| GET | `/api/servers/:id` | Get server details |
+| GET | `/api/servers/:id/config` | Get installation config |
+| GET | `/api/servers/categories` | List categories |
+
+### Submissions
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/submissions` | Submit a library |
+| GET | `/api/submissions` | List submissions |
+| GET | `/api/submissions/:id` | Get submission status |
+
+### Stats
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/stats` | Global statistics |
+| GET | `/api/stats/popular` | Popular libraries |
+| GET | `/api/stats/recent` | Recently indexed |
+
+## Response Format
+
+All responses are JSON with a consistent structure:
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Library not found"
+  }
+}
+```
+
+## Common HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 400 | Bad Request - Invalid parameters |
+| 404 | Not Found - Resource doesn't exist |
+| 429 | Too Many Requests - Rate limit exceeded |
+| 500 | Internal Server Error |

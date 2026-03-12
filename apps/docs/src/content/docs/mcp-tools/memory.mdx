@@ -1,0 +1,237 @@
+---
+title: Memory Tools
+description: Save, recall, and manage persistent memory across coding sessions
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Overview
+
+Nexus memory tools enable persistent memory for AI assistants across coding sessions. Store project context, architectural decisions, lessons learned, and session summaries that persist beyond individual conversations.
+
+:::note[Memory Types]
+- **project_context**: Architecture, tech stack, conventions
+- **session_summary**: What was accomplished in a session
+- **decision**: Architectural decisions with rationale
+- **correction**: Lessons learned, things to avoid
+:::
+
+## save-memory
+
+Store a memory for later retrieval. Memories persist across sessions and can be searched semantically.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `content` | string | Yes | The full content of the memory to store |
+| `title` | string | Yes | A short, descriptive title (max 100 chars) |
+| `type` | string | Yes | Memory type: `project_context`, `session_summary`, `decision`, `correction` |
+| `project` | string | No | Project name (e.g., 'nexus') |
+| `tags` | string[] | No | Tags for categorization |
+| `importance` | number | No | Importance score 1-10 (default 5) |
+| `summary` | string | No | Short summary for listing (max 200 chars) |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "save-memory",
+    "arguments": {
+      "title": "Nexus Architecture Overview",
+      "content": "Nexus is a pnpm monorepo with TanStack Start for the web app and Hono for the API. Uses Cloudflare Workers, D1 database, R2 storage, and Vectorize for embeddings.",
+      "type": "project_context",
+      "project": "nexus",
+      "tags": ["architecture", "cloudflare"],
+      "importance": 9
+    }
+  }
+}
+```
+
+---
+
+## recall-memories
+
+Search for relevant memories using semantic search. Returns memories that match the query conceptually, not just by keywords.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | Yes | What to search for (natural language) |
+| `type` | string | No | Filter by memory type |
+| `project` | string | No | Filter by project name |
+| `tags` | string[] | No | Filter by tags (all must match) |
+| `limit` | number | No | Max results (1-10, default 5) |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "recall-memories",
+    "arguments": {
+      "query": "database architecture decisions",
+      "project": "nexus",
+      "limit": 5
+    }
+  }
+}
+```
+
+---
+
+## get-project-context
+
+Get all stored context for a specific project. Returns project architecture, conventions, recent decisions, and lessons learned. Use this at the start of a session to understand the project.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project` | string | Yes | Project name (e.g., 'nexus') |
+| `includeTypes` | string[] | No | Filter to specific types (default: all) |
+| `limit` | number | No | Max memories per type (default 5) |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get-project-context",
+    "arguments": {
+      "project": "nexus",
+      "includeTypes": ["project_context", "decision"]
+    }
+  }
+}
+```
+
+---
+
+## list-memories
+
+Browse stored memories with filtering. Returns summaries without full content. Use `recall-memories` for semantic search instead.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `type` | string | No | Filter by memory type |
+| `project` | string | No | Filter by project name |
+| `limit` | number | No | Max results (1-50, default 20) |
+| `offset` | number | No | Pagination offset |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "list-memories",
+    "arguments": {
+      "project": "nexus",
+      "type": "decision",
+      "limit": 10
+    }
+  }
+}
+```
+
+---
+
+## update-memory
+
+Update an existing memory. Can modify content, title, tags, importance, or summary.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `memoryId` | string | Yes | ID of memory to update |
+| `content` | string | No | New content (will regenerate embedding) |
+| `title` | string | No | New title |
+| `tags` | string[] | No | New tags |
+| `importance` | number | No | New importance (1-10) |
+| `summary` | string | No | New summary |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "update-memory",
+    "arguments": {
+      "memoryId": "mem_abc123",
+      "content": "Updated architecture: Now using TanStack Start with SSR...",
+      "importance": 10
+    }
+  }
+}
+```
+
+---
+
+## delete-memory
+
+Delete a memory permanently.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `memoryId` | string | Yes | ID of memory to delete |
+
+### Example
+
+```json title="Request"
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "delete-memory",
+    "arguments": {
+      "memoryId": "mem_abc123"
+    }
+  }
+}
+```
+
+---
+
+## Best Practices
+
+<CardGrid>
+  <Card title="Use Project Tags" icon="setting">
+    Always include the project name when saving memories. This makes it easy to recall all context for a specific project.
+  </Card>
+  <Card title="Be Specific with Titles" icon="pencil">
+    Use descriptive titles that summarize the memory content. This helps when browsing memories.
+  </Card>
+  <Card title="Set Importance Wisely" icon="star">
+    Higher importance (8-10) for core architecture. Lower (1-4) for minor details. This affects search ranking.
+  </Card>
+  <Card title="Use Corrections" icon="warning">
+    When you learn something doesn't work, save it as a correction. This prevents repeating mistakes.
+  </Card>
+  <Card title="Start with Context" icon="rocket">
+    At the start of each session, use `get-project-context` to load relevant memories.
+  </Card>
+</CardGrid>

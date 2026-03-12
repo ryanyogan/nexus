@@ -1,0 +1,174 @@
+---
+title: Servers API
+description: Discover and configure MCP servers
+---
+
+## List Servers
+
+List available MCP servers with optional filtering.
+
+```http
+GET /api/servers
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | string | Search by name or description |
+| `category` | string | Filter by category |
+| `official` | boolean | Only official servers |
+| `limit` | number | Results per page (default: 20) |
+| `offset` | number | Pagination offset |
+
+### Response
+
+```json
+{
+  "success": true,
+  "servers": [
+    {
+      "id": "postgres",
+      "name": "PostgreSQL Server",
+      "description": "MCP server for PostgreSQL database access",
+      "category": "database",
+      "official": true,
+      "capabilities": ["tools", "resources"]
+    }
+  ],
+  "pagination": {
+    "total": 50,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+---
+
+## Get Server
+
+Get detailed information about a specific server.
+
+```http
+GET /api/servers/:id
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Server ID |
+
+### Response
+
+```json
+{
+  "success": true,
+  "server": {
+    "id": "postgres",
+    "name": "PostgreSQL Server",
+    "description": "MCP server for PostgreSQL database access",
+    "category": "database",
+    "official": true,
+    "tools": [
+      { "name": "query", "description": "Execute SQL query" },
+      { "name": "list_tables", "description": "List database tables" }
+    ],
+    "resources": [
+      { "name": "schema", "description": "Database schema" }
+    ],
+    "installInstructions": "npm install @modelcontextprotocol/server-postgres",
+    "documentationUrl": "https://github.com/modelcontextprotocol/servers"
+  }
+}
+```
+
+---
+
+## Get Server Config
+
+Generate installation configuration for a server.
+
+```http
+GET /api/servers/:id/config
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Server ID |
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `format` | string | Config format: `claude-desktop`, `vscode`, `generic` |
+
+### Response
+
+```json
+{
+  "success": true,
+  "serverId": "postgres",
+  "format": "claude-desktop",
+  "config": {
+    "mcpServers": {
+      "postgres": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-postgres"],
+        "env": {
+          "POSTGRES_CONNECTION_STRING": "<your-connection-string>"
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+## List Categories
+
+List all available server categories.
+
+```http
+GET /api/servers/categories
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "categories": [
+    { "id": "database", "name": "Database", "count": 12 },
+    { "id": "filesystem", "name": "File System", "count": 5 },
+    { "id": "devtools", "name": "Developer Tools", "count": 18 },
+    { "id": "ai", "name": "AI & ML", "count": 8 },
+    { "id": "cloud", "name": "Cloud Services", "count": 15 },
+    { "id": "productivity", "name": "Productivity", "count": 10 }
+  ]
+}
+```
+
+## Examples
+
+### Search for Database Servers
+
+```bash
+curl "https://api.nexus.yogan.dev/api/servers?category=database"
+```
+
+### Get Server Details
+
+```bash
+curl "https://api.nexus.yogan.dev/api/servers/postgres"
+```
+
+### Get Claude Desktop Config
+
+```bash
+curl "https://api.nexus.yogan.dev/api/servers/postgres/config?format=claude-desktop"
+```
