@@ -15,7 +15,8 @@ import {
  */
 export interface AuthConfig {
   token: string;
-  userId: string;
+  tokenPrefix?: string;
+  userId?: string;
   email: string;
   name?: string;
   expiresAt?: string;

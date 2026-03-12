@@ -18,6 +18,7 @@ import { Route as CodeIndexRouteImport } from './routes/code/index'
 import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
 import { Route as ExploreDocsRouteImport } from './routes/explore/docs'
 import { Route as CodeSessionsRouteImport } from './routes/code/sessions'
+import { Route as AuthCliRouteImport } from './routes/auth/cli'
 import { Route as AuthedSubmitServerRouteImport } from './routes/_authed/submit-server'
 import { Route as AuthedSubmitRouteImport } from './routes/_authed/submit'
 import { Route as AuthedAdminRouteImport } from './routes/_authed/admin'
@@ -81,6 +82,11 @@ const CodeSessionsRoute = CodeSessionsRouteImport.update({
   path: '/code/sessions',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/code/sessions.lazy').then((d) => d.Route))
+const AuthCliRoute = AuthCliRouteImport.update({
+  id: '/auth/cli',
+  path: '/auth/cli',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedSubmitServerRoute = AuthedSubmitServerRouteImport.update({
   id: '/submit-server',
   path: '/submit-server',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthedAdminRouteWithChildren
   '/submit': typeof AuthedSubmitRoute
   '/submit-server': typeof AuthedSubmitServerRoute
+  '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
   '/explore/docs': typeof ExploreDocsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/terminal': typeof TerminalRoute
   '/submit': typeof AuthedSubmitRoute
   '/submit-server': typeof AuthedSubmitServerRoute
+  '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
   '/explore/docs': typeof ExploreDocsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/_authed/admin': typeof AuthedAdminRouteWithChildren
   '/_authed/submit': typeof AuthedSubmitRoute
   '/_authed/submit-server': typeof AuthedSubmitServerRoute
+  '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
   '/explore/docs': typeof ExploreDocsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/submit'
     | '/submit-server'
+    | '/auth/cli'
     | '/code/sessions'
     | '/explore/docs'
     | '/libraries/$libraryId'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/terminal'
     | '/submit'
     | '/submit-server'
+    | '/auth/cli'
     | '/code/sessions'
     | '/explore/docs'
     | '/libraries/$libraryId'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/_authed/admin'
     | '/_authed/submit'
     | '/_authed/submit-server'
+    | '/auth/cli'
     | '/code/sessions'
     | '/explore/docs'
     | '/libraries/$libraryId'
@@ -352,6 +364,7 @@ export interface RootRouteChildren {
   AuthedRoute: typeof AuthedRouteWithChildren
   SignInRoute: typeof SignInRoute
   TerminalRoute: typeof TerminalRoute
+  AuthCliRoute: typeof AuthCliRoute
   CodeSessionsRoute: typeof CodeSessionsRoute
   ExploreDocsRoute: typeof ExploreDocsRoute
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
@@ -427,6 +440,13 @@ declare module '@tanstack/react-router' {
       path: '/code/sessions'
       fullPath: '/code/sessions'
       preLoaderRoute: typeof CodeSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/cli': {
+      id: '/auth/cli'
+      path: '/auth/cli'
+      fullPath: '/auth/cli'
+      preLoaderRoute: typeof AuthCliRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/submit-server': {
@@ -608,6 +628,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   SignInRoute: SignInRoute,
   TerminalRoute: TerminalRoute,
+  AuthCliRoute: AuthCliRoute,
   CodeSessionsRoute: CodeSessionsRoute,
   ExploreDocsRoute: ExploreDocsRoute,
   LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,

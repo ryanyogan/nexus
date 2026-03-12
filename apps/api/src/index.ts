@@ -13,6 +13,7 @@ import { serversRouter } from "./routes/servers";
 import { secretsRouter } from "./routes/secrets";
 import { skillsRouter } from "./routes/skills";
 import { userRouter } from "./routes/user";
+import { cliAuthRouter } from "./routes/cli-auth";
 import { adminAuth } from "./middleware/admin";
 import { usageMiddleware, mcpRateLimitMiddleware } from "./middleware/usage";
 import { authMiddleware } from "./middleware/auth";
@@ -72,6 +73,9 @@ app.route("/api/analyze", analyzeRouter);
 // Protected user routes (require auth)
 app.route("/api/secrets", secretsRouter);
 app.route("/api/user", userRouter);
+
+// CLI authentication routes
+app.route("/api/cli/auth", cliAuthRouter);
 
 // Protected admin routes (require X-Admin-Key header)
 app.use("/api/admin/*", adminAuth);

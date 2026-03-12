@@ -22,7 +22,8 @@
 
   // Environment variables (non-secret)
   "vars": {
-    "BETTER_AUTH_URL": "https://api.nexus.yogan.dev"
+    "BETTER_AUTH_URL": "https://api.nexus.yogan.dev",
+    "WEB_URL": "https://nexus.yogan.dev"
   },
 
   // D1 Database

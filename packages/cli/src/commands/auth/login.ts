@@ -1,8 +1,5 @@
 import { Command } from "commander";
-import { createServer } from "node:http";
-import { URL } from "node:url";
 import open from "open";
-import getPort from "get-port";
 import chalk from "chalk";
 import { logger } from "../../utils/logger.js";
 import { outputJson, outputJsonError, isJsonOutput } from "../../utils/json.js";
@@ -88,7 +85,7 @@ async function loginWithToken(jsonOutput: boolean): Promise<void> {
       // Validate token with API
       try {
         const apiUrl = getApiUrl();
-        const response = await fetch(`${apiUrl}/api/user/stats`, {
+        const response = await fetch(`${apiUrl}/api/cli/auth/verify`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -104,29 +101,26 @@ async function loginWithToken(jsonOutput: boolean): Promise<void> {
           return;
         }
 
-        // Get user info
-        const userResponse = await fetch(`${apiUrl}/api/auth/get-session`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const data = (await response.json()) as {
+          valid: boolean;
+          tokenPrefix?: string;
+        };
 
-        let email = "user@nexus.dev";
-        let userId = "unknown";
-        let name: string | undefined;
-
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          email = userData.user?.email || email;
-          userId = userData.user?.id || userId;
-          name = userData.user?.name;
+        if (!data.valid) {
+          if (jsonOutput) {
+            outputJsonError("INVALID_TOKEN", "Token is invalid or revoked");
+          } else {
+            logger.error("Token is invalid or has been revoked.");
+          }
+          resolve();
+          return;
         }
 
+        // Save auth config
         const authConfig: AuthConfig = {
           token,
-          userId,
-          email,
-          name,
+          tokenPrefix: data.tokenPrefix || token.slice(0, 12),
+          email: "user@nexus.dev", // Will be filled by browser auth
         };
 
         setAuth(authConfig);
@@ -134,10 +128,10 @@ async function loginWithToken(jsonOutput: boolean): Promise<void> {
         if (jsonOutput) {
           outputJson({
             status: "authenticated",
-            email,
+            tokenPrefix: authConfig.tokenPrefix,
           });
         } else {
-          logger.success(`Authenticated as ${chalk.cyan(email)}`);
+          logger.success("Authenticated successfully!");
         }
       } catch (error) {
         if (jsonOutput) {
@@ -158,167 +152,151 @@ async function loginWithToken(jsonOutput: boolean): Promise<void> {
 
 /**
  * Login with browser-based OAuth flow
+ *
+ * Flow:
+ * 1. Start auth session (get code)
+ * 2. Open browser to auth URL
+ * 3. Poll for completion
+ * 4. Save token
  */
 async function loginWithBrowser(jsonOutput: boolean): Promise<void> {
   const apiUrl = getApiUrl();
 
-  // Get an available port for the callback server
-  const port = await getPort({ port: [9876, 9877, 9878, 9879, 9880] });
-  const callbackUrl = `http://localhost:${port}/callback`;
+  try {
+    // Step 1: Start auth session
+    if (!jsonOutput) {
+      logger.info("Starting authentication...");
+    }
 
-  // Generate a random state for security
-  const state = Math.random().toString(36).substring(2, 15);
+    const startResponse = await fetch(`${apiUrl}/api/cli/auth/start`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  // Start local server to receive the callback
-  const server = createServer(async (req, res) => {
-    const url = new URL(req.url || "/", `http://localhost:${port}`);
+    if (!startResponse.ok) {
+      if (jsonOutput) {
+        outputJsonError("START_FAILED", "Failed to start auth session");
+      } else {
+        logger.error("Failed to start authentication session");
+      }
+      return;
+    }
 
-    if (url.pathname === "/callback") {
-      const token = url.searchParams.get("token");
-      const error = url.searchParams.get("error");
-      const returnedState = url.searchParams.get("state");
+    const { code, authUrl, pollInterval } = (await startResponse.json()) as {
+      code: string;
+      authUrl: string;
+      expiresIn: number;
+      pollInterval: number;
+    };
 
-      // Set CORS headers
-      res.setHeader("Content-Type", "text/html");
+    // Step 2: Open browser
+    if (!jsonOutput) {
+      logger.newline();
+      logger.log(chalk.bold("  Authentication Code:"));
+      logger.log(chalk.cyan.bold(`  ${code}`));
+      logger.newline();
+      logger.info("Opening browser for authentication...");
+      logger.info(`If the browser doesn't open, visit:`);
+      logger.log(chalk.cyan(`  ${authUrl}`));
+      logger.newline();
+    }
 
-      if (error) {
-        res.writeHead(400);
-        res.end(`
-          <html>
-            <body style="font-family: system-ui; padding: 40px; text-align: center;">
-              <h1>Authentication Failed</h1>
-              <p>${error}</p>
-              <p>You can close this window.</p>
-            </body>
-          </html>
-        `);
-        server.close();
+    await open(authUrl);
 
-        if (jsonOutput) {
-          outputJsonError("AUTH_FAILED", error);
-        } else {
-          logger.error(`Authentication failed: ${error}`);
-        }
-        return;
+    // Step 3: Poll for completion
+    const maxAttempts = 300; // 10 minutes with 2s interval
+    let attempts = 0;
+
+    if (!jsonOutput) {
+      process.stdout.write("Waiting for authentication");
+    }
+
+    while (attempts < maxAttempts) {
+      await sleep(pollInterval * 1000);
+      attempts++;
+
+      if (!jsonOutput && attempts % 5 === 0) {
+        process.stdout.write(".");
       }
 
-      if (returnedState !== state) {
-        res.writeHead(400);
-        res.end(`
-          <html>
-            <body style="font-family: system-ui; padding: 40px; text-align: center;">
-              <h1>Authentication Failed</h1>
-              <p>Invalid state parameter. This may be a security issue.</p>
-              <p>You can close this window.</p>
-            </body>
-          </html>
-        `);
-        server.close();
+      try {
+        const pollResponse = await fetch(
+          `${apiUrl}/api/cli/auth/poll?code=${code}`
+        );
 
-        if (jsonOutput) {
-          outputJsonError("INVALID_STATE", "State mismatch - possible CSRF attack");
-        } else {
-          logger.error("Invalid state parameter. Please try again.");
-        }
-        return;
-      }
-
-      if (token) {
-        // Validate and get user info
-        try {
-          const userResponse = await fetch(`${apiUrl}/api/auth/get-session`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          let email = "user@nexus.dev";
-          let userId = "unknown";
-          let name: string | undefined;
-
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            email = userData.user?.email || email;
-            userId = userData.user?.id || userId;
-            name = userData.user?.name;
+        if (!pollResponse.ok) {
+          const status = pollResponse.status;
+          if (status === 410) {
+            // Expired
+            if (jsonOutput) {
+              outputJsonError("EXPIRED", "Authentication code expired");
+            } else {
+              logger.newline();
+              logger.error("Authentication code expired. Please try again.");
+            }
+            return;
           }
+          continue;
+        }
 
+        const result = (await pollResponse.json()) as {
+          status: "pending" | "completed";
+          token?: string;
+          tokenPrefix?: string;
+          userEmail?: string;
+        };
+
+        if (result.status === "completed" && result.token) {
+          // Step 4: Save token
           const authConfig: AuthConfig = {
-            token,
-            userId,
-            email,
-            name,
+            token: result.token,
+            tokenPrefix: result.tokenPrefix || result.token.slice(0, 12),
+            email: result.userEmail || "user@nexus.dev",
           };
 
           setAuth(authConfig);
 
-          res.writeHead(200);
-          res.end(`
-            <html>
-              <body style="font-family: system-ui; padding: 40px; text-align: center;">
-                <h1 style="color: #10b981;">Authentication Successful!</h1>
-                <p>You are now logged in as <strong>${email}</strong></p>
-                <p>You can close this window and return to your terminal.</p>
-              </body>
-            </html>
-          `);
-
-          server.close();
-
           if (jsonOutput) {
             outputJson({
               status: "authenticated",
-              email,
+              email: authConfig.email,
             });
           } else {
             logger.newline();
-            logger.success(`Authenticated as ${chalk.cyan(email)}`);
+            logger.newline();
+            logger.success(
+              `Authenticated as ${chalk.cyan(authConfig.email)}`
+            );
           }
-        } catch {
-          res.writeHead(500);
-          res.end(`
-            <html>
-              <body style="font-family: system-ui; padding: 40px; text-align: center;">
-                <h1>Authentication Failed</h1>
-                <p>Failed to validate token.</p>
-                <p>You can close this window.</p>
-              </body>
-            </html>
-          `);
-          server.close();
-
-          if (jsonOutput) {
-            outputJsonError("VALIDATION_FAILED", "Failed to validate token");
-          } else {
-            logger.error("Failed to validate token");
-          }
+          return;
         }
+      } catch {
+        // Network error, continue polling
       }
     }
-  });
 
-  server.listen(port, () => {
-    // Build the auth URL
-    const authUrl = new URL(`${apiUrl}/auth/cli`);
-    authUrl.searchParams.set("callback", callbackUrl);
-    authUrl.searchParams.set("state", state);
-
-    if (!jsonOutput) {
-      logger.info("Opening browser for authentication...");
-      logger.info(`If the browser doesn't open, visit:`);
-      logger.log(chalk.cyan(authUrl.toString()));
+    // Timeout
+    if (jsonOutput) {
+      outputJsonError("TIMEOUT", "Authentication timed out");
+    } else {
       logger.newline();
-    }
-
-    // Open the browser
-    open(authUrl.toString());
-  });
-
-  // Timeout after 5 minutes
-  setTimeout(() => {
-    server.close();
-    if (!jsonOutput) {
       logger.error("Authentication timed out. Please try again.");
     }
-  }, 5 * 60 * 1000);
+  } catch (error) {
+    if (jsonOutput) {
+      outputJsonError(
+        "CONNECTION_ERROR",
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    } else {
+      logger.error("Failed to connect to Nexus API");
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+    }
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
