@@ -54,6 +54,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@nexus/sdk": "workspace:*",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",
@@ -67,7 +68,8 @@
     "ink-spinner": "^5.0.0",
     "ink-text-input": "^6.0.0",
     "open": "^10.1.0",
-    "react": "^18.3.1"
+    "react": "^18.3.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
