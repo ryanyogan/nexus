@@ -108,36 +108,114 @@ All explore pages now use minimal list design with pagination:
 - **File**: `/apps/docs/astro.config.mjs`
 - Added Architecture link to Features section
 
+### Phase 4: Nexus CLI (WIP)
+
+#### Package Setup
+- **Location**: `/packages/cli/`
+- **Package name**: `nexus-cli`
+- **Commands**: `nexus` and `nxs` (aliases)
+- **Framework**: Commander.js for CLI parsing
+
+#### CLI Structure
+```
+nexus auth login       # OAuth via browser or API token
+nexus auth logout      # Clear credentials
+nexus auth status      # Show authentication state
+
+nexus docs search      # Search documentation across libraries
+nexus docs fetch       # Fetch docs for specific library
+nexus docs download    # Download docs for offline use
+nexus docs cached      # List cached documentation
+nexus docs clear       # Clear documentation cache
+
+nexus servers list     # List available MCP servers
+nexus servers search   # Search servers by capability
+nexus servers add      # Install server to editors
+nexus servers remove   # Remove server from editors
+nexus servers info     # Show server details
+nexus servers installed # List installed servers per editor
+
+nexus skills list      # List available skills (stub)
+nexus skills add       # Add skill (stub)
+
+nexus init             # Setup wizard
+nexus stats            # Usage dashboard
+nexus serve            # Run MCP server locally (stub)
+```
+
+#### Editor Adapters
+Full adapter system for managing MCP server configs across editors:
+
+| Editor | Config Location | Format |
+|--------|----------------|--------|
+| Claude Code | `~/.claude/` (via CLI) | `claude mcp add` command |
+| Cursor | `~/.cursor/mcp.json` | `{ "mcpServers": { ... } }` |
+| VS Code | `.vscode/mcp.json` | `{ "servers": { ... } }` |
+| OpenCode | `opencode.json` | `{ "mcp": { ... } }` |
+| Zed | `~/.config/zed/settings.json` | `{ "context_servers": { ... } }` |
+
+**Adapter Files:**
+- `adapters/types.ts` - Interface definitions
+- `adapters/base.ts` - Abstract base class for JSON config editors
+- `adapters/cursor.ts` - Cursor adapter
+- `adapters/vscode.ts` - VS Code adapter
+- `adapters/opencode.ts` - OpenCode adapter
+- `adapters/zed.ts` - Zed adapter
+- `adapters/claude-code.ts` - Claude Code adapter (uses CLI)
+- `adapters/index.ts` - Registry and factory functions
+
+#### SDK Integration
+- Uses `@nexus/sdk` for API calls
+- Methods: `searchLibrary()`, `queryDocs()`, `getLibrary()`, `discoverServers()`, `getServer()`, `getServerConfig()`
+
+#### Config Management
+- Global config: `~/.nexus/config.json` (auth, default editors)
+- Project config: `.nexus/config.json` (project-specific editors)
+- Cache: `.nexus/cache/docs/` (downloaded documentation)
+
 ---
 
 ## Remaining Work / Future Enhancements
 
 ### High Priority
 
-1. **Apply User Preferences to MCP Queries**
+1. **CLI Auth Flow**
+   - API endpoints for CLI OAuth (`/api/cli/auth/*`)
+   - Web route for browser callback (`/auth/cli`)
+   - Token exchange flow
+
+2. **Apply User Preferences to MCP Queries**
    - Currently preferences are stored but not used
    - Need to read user's `defaultResponseFormat` when handling MCP tool calls
    - Apply `defaultTokenBudget` to limit response size
 
-2. **API Token Scopes**
+3. **API Token Scopes**
    - Tokens have scopes defined but not enforced
    - Implement scope checking in API routes
 
-3. **Usage Analytics**
+4. **Usage Analytics**
    - Analytics Engine binding exists but not used
    - Track API calls per user for billing/limits
 
 ### Medium Priority
 
-4. **Improve Search Quality**
+5. **CLI MCP Server Mode**
+   - `nexus serve` to run bundled MCP server locally
+   - Useful for development and testing
+
+6. **CLI Interactive TUI**
+   - Ink-based React components for interactive selection
+   - Better UX for `nexus init`, `nexus servers add`
+
+7. **Improve Search Quality**
    - Better ranking for library search results
    - Hybrid search (keyword + semantic)
 
-5. **Library Submission Flow**
+8. **Library Submission Flow**
    - Users can submit libraries but approval workflow is basic
    - Add admin notifications, better review UI
 
-6. **Memory System Enhancements**
+9. **Memory System Enhancements**
    - Memory tagging UI
    - Memory search in web UI (currently MCP only)
 
@@ -245,6 +323,7 @@ cd apps/docs && pnpm run deploy
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-03-12 | WIP | CLI package with editor adapters |
 | 2026-03-12 | b85a011c | Added user preferences API endpoints |
 | 2026-03-12 | 73185a21 | Settings page with API integration |
 | 2026-03-12 | - | Database migration for user_preferences table |
