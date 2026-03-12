@@ -23,7 +23,7 @@ interface ServerSubmission {
 export const Route = createFileRoute("/_authed/admin/server-submissions")({ component: AdminServerSubmissionsPage });
 
 function AdminServerSubmissionsPage() {
-  const { session } = Route.useRouteContext();
+  // Note: session available via Route.useRouteContext() if needed
   const [submissions, setSubmissions] = useState<ServerSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");

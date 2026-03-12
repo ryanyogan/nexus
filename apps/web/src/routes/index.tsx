@@ -1,85 +1,63 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "@nexus/db";
 import { sql, eq } from "drizzle-orm";
+import { withLogging } from "../lib/server-fn";
 import {
   ArrowRight,
-  Github,
   Search,
-  History,
   Server,
   Zap,
+  History,
+  Github,
+  BookOpen,
+  FileText,
   Database,
-  ExternalLink,
+  Sparkles,
+  TrendingDown,
+  Clock,
   CheckCircle,
-  Terminal,
-  Smartphone,
-  Users,
-  Cpu,
-  Lock,
 } from "lucide-react";
 
-type McpServer = typeof schema.mcpServers.$inferSelect;
-type Skill = typeof schema.skills.$inferSelect;
+const getHomePageData = createServerFn({ method: "GET" }).handler(
+  withLogging("getHomePageData", async () => {
+    const db = drizzle(env.DB, { schema });
 
-const getHomePageData = createServerFn({ method: "GET" }).handler(async () => {
-  const db = drizzle(env.DB, { schema });
+    // Get stats
+    const [libraryStats] = await db
+      .select({
+        total: sql<number>`count(*)`,
+        indexed: sql<number>`sum(case when index_status = 'indexed' then 1 else 0 end)`,
+      })
+      .from(schema.libraries)
+      .where(eq(schema.libraries.isActive, true));
 
-  // Get stats
-  const [libraryStats] = await db
-    .select({
-      total: sql<number>`count(*)`,
-      indexed: sql<number>`sum(case when index_status = 'indexed' then 1 else 0 end)`,
-    })
-    .from(schema.libraries)
-    .where(eq(schema.libraries.isActive, true));
+    const [serverStats] = await db
+      .select({
+        total: sql<number>`count(*)`,
+      })
+      .from(schema.mcpServers)
+      .where(eq(schema.mcpServers.isActive, true));
 
-  const [chunkStats] = await db
-    .select({
-      totalChunks: sql<number>`count(*)`,
-    })
-    .from(schema.chunks);
+    const [skillStats] = await db
+      .select({
+        total: sql<number>`count(*)`,
+      })
+      .from(schema.skills)
+      .where(eq(schema.skills.isActive, true));
 
-  const [serverStats] = await db
-    .select({
-      total: sql<number>`count(*)`,
-    })
-    .from(schema.mcpServers)
-    .where(eq(schema.mcpServers.isActive, true));
-
-  // Get featured servers (limit 4)
-  const featuredServers = await db
-    .select()
-    .from(schema.mcpServers)
-    .where(eq(schema.mcpServers.isFeatured, true))
-    .limit(4);
-
-  // Get featured skills (limit 6)
-  const featuredSkills = await db
-    .select()
-    .from(schema.skills)
-    .where(eq(schema.skills.isFeatured, true))
-    .limit(6);
-
-  return {
-    stats: {
-      libraries: {
-        total: Number(libraryStats?.total ?? 0),
-        indexed: Number(libraryStats?.indexed ?? 0),
+    return {
+      stats: {
+        libraries: Number(libraryStats?.indexed ?? 0),
+        servers: Number(serverStats?.total ?? 0),
+        skills: Number(skillStats?.total ?? 0),
       },
-      documentation: {
-        totalChunks: Number(chunkStats?.totalChunks ?? 0),
-        totalTokens: 0,
-      },
-      servers: { total: Number(serverStats?.total ?? 0) },
-      usage: { totalQueries: 0 },
-    },
-    featuredServers,
-    featuredSkills,
-  };
-});
+    };
+  })
+);
 
 export const Route = createFileRoute("/")({
   beforeLoad: async ({ context }) => {
@@ -93,884 +71,385 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const { stats, featuredServers, featuredSkills } = Route.useLoaderData();
+  const { stats } = Route.useLoaderData();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate({ to: "/explore/docs", search: { q: searchQuery.trim() } });
+    } else {
+      navigate({ to: "/explore/docs" });
+    }
+  };
 
   return (
-    <div className="relative overflow-y-auto overflow-x-hidden pb-0">
-      {/* Hero Section */}
-      <section className="flex flex-col gap-3 px-4 pt-10 md:gap-4 md:pt-[60px]">
-        <div className="mx-auto flex w-full max-w-[880px] flex-col items-center text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl md:text-6xl">
-            Documentation + Memory for{" "}
-            <span className="text-emerald-600">AI Coding Assistants</span>
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+      {/* Hero Section - Centered */}
+      <main className="flex flex-1 flex-col items-center justify-center px-4 pb-16">
+        <div className="mx-auto w-full max-w-3xl text-center">
+          {/* Logo/Title */}
+          <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl md:text-7xl">
+            Nexus
           </h1>
-
-          <p className="mt-6 max-w-2xl text-lg text-stone-600">
-            Documentation search, MCP server registry, AI skills, and persistent memory. 
-            Everything your AI assistant needs in one MCP server.
+          <p className="mt-4 text-xl text-muted-foreground sm:text-2xl">
+            Up-to-date documentation for AI code editors
           </p>
 
-          {/* Quick Actions */}
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="mt-10">
+            <div className="relative mx-auto max-w-xl">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search documentation..."
+                className="h-14 w-full rounded-xl border border-border bg-background pl-12 pr-32 text-lg text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+
+          {/* Quick Links */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="https://docs.nexus.yogan.dev/getting-started"
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
-            >
-              Get Started
-              <ArrowRight className="h-4 w-4" />
-            </a>
             <Link
-              to="/explore"
-              className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+              to="/explore/docs"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
-              <Search className="h-4 w-4" />
-              Explore Platform
+              <BookOpen className="h-4 w-4" />
+              Browse Docs
+            </Link>
+            <Link
+              to="/explore/servers"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              <Server className="h-4 w-4" />
+              MCP Servers
+            </Link>
+            <Link
+              to="/explore/skills"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              <Zap className="h-4 w-4" />
+              AI Skills
             </Link>
             <a
               href="https://github.com/ryanyogan/nexus"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
               <Github className="h-4 w-4" />
               GitHub
             </a>
           </div>
 
-          {/* Pricing Badge */}
-          <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-sm text-emerald-700">
-            <span>Free tier with 2,000 API calls/month</span>
-            <span className="opacity-50">|</span>
-            <span className="font-semibold">Pro: $5/mo</span>
+          {/* Stats - Subtle */}
+          <div className="mt-12 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+            <span>{stats.libraries}+ libraries</span>
+            <span className="h-4 w-px bg-border" />
+            <span>{stats.servers}+ servers</span>
+            <span className="h-4 w-px bg-border" />
+            <span>{stats.skills}+ skills</span>
+          </div>
+        </div>
+      </main>
+
+      {/* Token Savings Section */}
+      <section className="border-t border-border bg-emerald-50/50 py-16">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+              Save 90% on Context Tokens
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              Instead of stuffing your entire codebase into context, Nexus retrieves only the relevant documentation chunks you need.
+            </p>
           </div>
 
-          {/* Stats */}
-          <StatsDisplay stats={stats} />
+          <div className="mt-12 grid gap-8 sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-card p-6 text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <TrendingDown className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="text-3xl font-bold text-foreground">~500k</div>
+              <div className="mt-1 text-sm text-muted-foreground">
+                Tokens with raw context stuffing
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+                <Sparkles className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div className="text-3xl font-bold text-emerald-700">~5k</div>
+              <div className="mt-1 text-sm text-emerald-600">
+                Tokens with Nexus semantic search
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-6 text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Clock className="h-6 w-6 text-primary" />
+              </div>
+              <div className="text-3xl font-bold text-foreground">~50ms</div>
+              <div className="mt-1 text-sm text-muted-foreground">
+                Average query latency
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Core Features Grid - 8 cards */}
-      <section className="py-16 sm:py-24">
-        <div className="mx-auto max-w-[880px] px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-              One MCP Server, Everything You Need
+      {/* How It Works Section */}
+      <section className="border-t border-border py-16">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+              How It Works
             </h2>
-            <p className="mt-4 text-lg text-stone-600">
-              Stop juggling multiple tools. Nexus brings documentation, servers, skills, and memory together.
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              Nexus pre-indexes documentation and uses vector embeddings to find exactly what you need.
             </p>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <FeatureCard
-              icon={<Search className="h-6 w-6" />}
-              title="Doc Search"
-              description="Pre-indexed documentation with semantic search. Millisecond queries with code examples."
-              badge="30+ Libraries"
+            <StepItem
+              number={1}
+              icon={<FileText className="h-5 w-5" />}
+              title="Pre-indexed Docs"
+              description="Documentation is chunked and indexed ahead of time"
             />
-            <FeatureCard
-              icon={<Server className="h-6 w-6" />}
-              title="Server Registry"
-              description="Discover MCP servers. Get ready-to-use configs for Claude, VS Code, and OpenCode."
-              badge="18+ Servers"
+            <StepItem
+              number={2}
+              icon={<Database className="h-5 w-5" />}
+              title="Vector Embeddings"
+              description="Each chunk is embedded using Cloudflare AI"
             />
-            <FeatureCard
-              icon={<Zap className="h-6 w-6" />}
+            <StepItem
+              number={3}
+              icon={<Search className="h-5 w-5" />}
+              title="Semantic Search"
+              description="Your query finds the most relevant chunks"
+            />
+            <StepItem
+              number={4}
+              icon={<Zap className="h-5 w-5" />}
+              title="Instant Results"
+              description="Get code examples and docs in milliseconds"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Features - Minimal Grid */}
+      <section className="border-t border-border bg-muted/30 py-16">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <FeatureItem
+              icon={<Search className="h-5 w-5" />}
+              title="Documentation"
+              description="Pre-indexed docs with semantic search"
+            />
+            <FeatureItem
+              icon={<Server className="h-5 w-5" />}
+              title="MCP Servers"
+              description="Discover and install with one click"
+            />
+            <FeatureItem
+              icon={<Zap className="h-5 w-5" />}
               title="AI Skills"
-              description="Curated collection of AI agent skills. Code review, documentation, testing, and more."
-              badge="31+ Skills"
-              isNew
+              description="Curated prompts for common tasks"
             />
-            <FeatureCard
-              icon={<History className="h-6 w-6" />}
-              title="Persistent Memory"
-              description="Remember project context, decisions, and lessons across sessions. Free for everyone."
-              badge="Unlimited"
-            />
-            <FeatureCard
-              icon={<Lock className="h-6 w-6" />}
-              title="Secrets Vault"
-              description="Encrypted storage for API keys. AES-256-GCM encryption, never leaves your account."
-              badge="Secure"
-            />
-            <FeatureCard
-              icon={<Terminal className="h-6 w-6" />}
-              title="Remote Terminal"
-              description="Control OpenCode remotely from any device. Real-time streaming and live events."
-              badge="Mobile Ready"
-            />
-            <FeatureCard
-              icon={<Users className="h-6 w-6" />}
-              title="Team Workspaces"
-              description="Share memories, skills, and API keys with your team. Role-based access control."
-              badge="Coming Soon"
-            />
-            <FeatureCard
-              icon={<Cpu className="h-6 w-6" />}
-              title="Usage Analytics"
-              description="Track API usage, popular queries, and team activity. Optimize your workflow."
-              badge="Pro"
+            <FeatureItem
+              icon={<History className="h-5 w-5" />}
+              title="Memory"
+              description="Remember context across sessions"
             />
           </div>
         </div>
       </section>
 
-      {/* Skills Showcase Section */}
-      <section className="border-t border-stone-200 bg-gradient-to-br from-purple-500/5 to-emerald-500/5 py-16 sm:py-24">
-        <div className="mx-auto max-w-[880px] px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-purple-300/30 bg-purple-500/10 px-3 py-1 text-sm text-purple-600">
-                <Zap className="h-4 w-4" />
-                New Feature
-              </div>
-              <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-                AI Agent Skills
-              </h2>
-              <p className="mt-2 text-lg text-stone-600">
-                Pre-built instructions for common development tasks
-              </p>
-            </div>
-            <Link
-              to="/explore"
-              search={{ tab: "skills" }}
-              className="hidden items-center gap-2 text-emerald-600 hover:underline sm:inline-flex"
-            >
-              Browse all skills
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <FeaturedSkillsDisplay skills={featuredSkills} />
-
-          <div className="mt-6 sm:hidden">
-            <Link
-              to="/explore"
-              search={{ tab: "skills" }}
-              className="inline-flex items-center gap-2 text-emerald-600 hover:underline"
-            >
-              Browse all skills
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* OpenCode Remote Terminal Section */}
-      <section className="border-t border-stone-200 py-16 sm:py-24">
-        <div className="mx-auto max-w-[880px] px-4">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-sm text-emerald-600">
-                <Smartphone className="h-4 w-4" />
-                Remote Access
-              </div>
-              <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-                OpenCode Remote Terminal
-              </h2>
-              <p className="mt-4 text-lg text-stone-600">
-                Control your OpenCode session from anywhere. Connect to your running 
-                AI coding assistant remotely from your phone, tablet, or any browser.
-              </p>
-              <ul className="mt-6 space-y-3">
-                <li className="flex items-center gap-2 text-stone-600">
-                  <CheckCircle className="h-4 w-4 text-emerald-600" />
-                  Connect to your OpenCode server remotely
-                </li>
-                <li className="flex items-center gap-2 text-stone-600">
-                  <CheckCircle className="h-4 w-4 text-emerald-600" />
-                  Real-time streaming of AI responses
-                </li>
-                <li className="flex items-center gap-2 text-stone-600">
-                  <CheckCircle className="h-4 w-4 text-emerald-600" />
-                  Live events: file edits, tool calls, todos
-                </li>
-                <li className="flex items-center gap-2 text-stone-600">
-                  <CheckCircle className="h-4 w-4 text-emerald-600" />
-                  Session management and history
-                </li>
-              </ul>
-              <div className="mt-8">
-                <Link
-                  to="/terminal"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-8 text-base font-semibold text-white transition-colors hover:bg-emerald-700"
-                >
-                  <Terminal className="h-5 w-5" />
-                  Launch Terminal
-                </Link>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="overflow-hidden rounded-xl border border-stone-200 bg-[#282a36] p-4 font-mono text-sm shadow-2xl">
-                <div className="mb-3 flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-500" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                  <div className="h-3 w-3 rounded-full bg-green-500" />
-                  <span className="ml-2 text-xs text-zinc-400">opencode remote</span>
-                </div>
-                <div className="space-y-2 text-[#f8f8f2]">
-                  <p className="text-zinc-400 text-xs">Connected to: localhost:4096</p>
-                  <p className="text-zinc-400 text-xs">Project: ~/my-project (main)</p>
-                  <p className="mt-2 text-green-400">&gt; Add a dark mode toggle to the settings page</p>
-                  <p className="mt-2 text-zinc-300">I'll add a dark mode toggle to your settings. Let me:</p>
-                  <p className="text-zinc-400 pl-2">1. Create a theme context...</p>
-                  <p className="text-zinc-400 pl-2">2. Add the toggle component...</p>
-                  <p className="text-yellow-400 text-xs mt-2">Event: File edited - src/components/ThemeToggle.tsx</p>
-                  <p className="text-green-400 mt-2">&gt; _</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* MCP Server Gallery Section */}
-      <section className="border-t border-stone-200 bg-stone-50 py-16 sm:py-24">
-        <div className="mx-auto max-w-[880px] px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-                MCP Server Registry
-              </h2>
-              <p className="mt-2 text-lg text-stone-600">
-                Discover and install MCP servers with one-click configs
-              </p>
-            </div>
-            <Link
-              to="/explore"
-              search={{ tab: "servers" }}
-              className="hidden items-center gap-2 text-emerald-600 hover:underline sm:inline-flex"
-            >
-              View all servers
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <FeaturedServersDisplay servers={featuredServers} />
-
-          <div className="mt-6 sm:hidden">
-            <Link
-              to="/explore"
-              search={{ tab: "servers" }}
-              className="inline-flex items-center gap-2 text-emerald-600 hover:underline"
-            >
-              View all servers
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="border-t border-stone-200 py-16 sm:py-24">
-        <div className="mx-auto max-w-[880px] px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-              Simple, Affordable Pricing
+      {/* Response Formats Section */}
+      <section className="border-t border-border py-16">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+              Control Your Token Budget
             </h2>
-            <p className="mt-4 text-lg text-stone-600">
-              Start free, upgrade when you need more. Memory stays free forever.
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              Choose from 4 response formats to balance detail vs token efficiency.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            <PricingCard
-              name="Free"
-              price="$0"
-              period="forever"
-              description="Perfect for trying out Nexus"
-              features={[
-                "2,000 API calls/month",
-                "1 API key",
-                "5 memories",
-                "All documentation search",
-                "All MCP servers",
-                "Community support",
-              ]}
-              cta="Get Started"
-              ctaLink="https://docs.nexus.yogan.dev/getting-started"
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <FormatCard
+              title="Full"
+              description="Complete documentation with all metadata"
+              tokens="~5,000"
             />
-            <PricingCard
-              name="Pro"
-              price="$5"
-              period="/month"
-              description="For power users"
-              features={[
-                "Unlimited API calls",
-                "10 API keys",
-                "Unlimited memories",
-                "Priority doc indexing",
-                "Usage analytics",
-                "Email support",
-              ]}
-              cta="Upgrade to Pro"
-              ctaLink="/dashboard/billing"
+            <FormatCard
+              title="Compact"
+              description="Essential data, minimal formatting"
+              tokens="~2,000"
               highlighted
             />
-            <PricingCard
-              name="Team"
-              price="$5"
-              period="/user/month"
-              description="For teams"
-              features={[
-                "Everything in Pro",
-                "Shared team memories",
-                "Team API keys",
-                "Admin dashboard",
-                "Priority support",
-                "Custom integrations",
-              ]}
-              cta="Contact Us"
-              ctaLink="mailto:hello@nexus.yogan.dev"
+            <FormatCard
+              title="Code Only"
+              description="Just the code blocks"
+              tokens="~1,000"
+            />
+            <FormatCard
+              title="Summary"
+              description="Brief overview with key points"
+              tokens="~500"
             />
           </div>
         </div>
       </section>
 
-      {/* Comparison Matrix */}
-      <section className="border-t border-stone-200 bg-stone-50 py-16 sm:py-24">
-        <div className="mx-auto max-w-[880px] px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-              How Nexus Compares
-            </h2>
-            <p className="mt-4 text-lg text-stone-600">
-              See why developers are switching to Nexus for AI-assisted development
-            </p>
-          </div>
-
-          <div className="mt-12 overflow-x-auto">
-            <table className="w-full min-w-[800px] border-collapse">
-              <thead>
-                <tr>
-                  <th className="border-b border-stone-200 p-4 text-left font-semibold text-stone-900">Feature</th>
-                  <th className="border-b border-stone-200 p-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="font-bold text-emerald-600 text-lg">Nexus</span>
-                      <span className="text-xs text-stone-500">by yogan.dev</span>
-                    </div>
-                  </th>
-                  <th className="border-b border-stone-200 p-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="font-semibold text-stone-900">Context7</span>
-                      <span className="text-xs text-stone-500">context7.com</span>
-                    </div>
-                  </th>
-                  <th className="border-b border-stone-200 p-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="font-semibold text-stone-900">Cursor Docs</span>
-                      <span className="text-xs text-stone-500">Built-in</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <ComparisonRow 
-                  feature="Documentation Search" 
-                  nexus={true} 
-                  context7={true} 
-                  cursor={true}
-                  nexusNote="50+ libraries indexed"
-                  context7Note="1000+ libraries"
-                  cursorNote="Web crawling"
-                />
-                <ComparisonRow 
-                  feature="Persistent Memory" 
-                  nexus={true} 
-                  context7={false} 
-                  cursor={false}
-                  nexusNote="FREE for all users"
-                />
-                <ComparisonRow 
-                  feature="MCP Server Registry" 
-                  nexus={true} 
-                  context7={true} 
-                  cursor={false}
-                  nexusNote="18+ servers with configs"
-                />
-                <ComparisonRow 
-                  feature="AI Agent Skills" 
-                  nexus={true} 
-                  context7={false} 
-                  cursor={false}
-                  nexusNote="31+ curated skills"
-                />
-                <ComparisonRow 
-                  feature="Secrets Vault" 
-                  nexus={true} 
-                  context7={false} 
-                  cursor={false}
-                  nexusNote="AES-256-GCM encrypted"
-                />
-                <ComparisonRow 
-                  feature="Remote Terminal" 
-                  nexus={true} 
-                  context7={false} 
-                  cursor={false}
-                  nexusNote="Control from any device"
-                />
-                <ComparisonRow 
-                  feature="User Dashboard" 
-                  nexus={true} 
-                  context7={true} 
-                  cursor={true}
-                />
-                <ComparisonRow 
-                  feature="Team Features" 
-                  nexus={true} 
-                  context7={true} 
-                  cursor={true}
-                  nexusNote="Coming soon"
-                />
-                <ComparisonRow 
-                  feature="Open Source" 
-                  nexus={true} 
-                  context7={false} 
-                  cursor={false}
-                  nexusNote="MIT License"
-                />
-                <tr className="bg-stone-100/50">
-                  <td className="border-b border-stone-200 p-4 font-semibold text-stone-900">Free Tier</td>
-                  <td className="border-b border-stone-200 p-4 text-center">
-                    <span className="font-bold text-emerald-600">2,000 calls/mo</span>
-                  </td>
-                  <td className="border-b border-stone-200 p-4 text-center">
-                    <span className="text-stone-500">Limited</span>
-                  </td>
-                  <td className="border-b border-stone-200 p-4 text-center">
-                    <span className="text-stone-500">With IDE</span>
-                  </td>
-                </tr>
-                <tr className="bg-emerald-50">
-                  <td className="border-b border-stone-200 p-4 font-semibold text-stone-900">Pro Price</td>
-                  <td className="border-b border-stone-200 p-4 text-center">
-                    <div className="flex flex-col items-center">
-                      <span className="text-2xl font-bold text-emerald-600">$5</span>
-                      <span className="text-xs text-stone-500">/month</span>
-                    </div>
-                  </td>
-                  <td className="border-b border-stone-200 p-4 text-center">
-                    <div className="flex flex-col items-center">
-                      <span className="text-2xl font-semibold text-stone-900">$10</span>
-                      <span className="text-xs text-stone-500">/month</span>
-                    </div>
-                  </td>
-                  <td className="border-b border-stone-200 p-4 text-center">
-                    <div className="flex flex-col items-center">
-                      <span className="text-2xl font-semibold text-stone-900">$20</span>
-                      <span className="text-xs text-stone-500">/month</span>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-4 font-semibold text-stone-900">Memory Included</td>
-                  <td className="p-4 text-center">
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-800">
-                      Always FREE
-                    </span>
-                  </td>
-                  <td className="p-4 text-center">
-                    <span className="text-stone-500">-</span>
-                  </td>
-                  <td className="p-4 text-center">
-                    <span className="text-stone-500">-</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-stone-600">
-              Save <span className="font-semibold text-emerald-600">70%</span> compared to Context7. 
-              Memory is always free on Nexus because we believe AI assistants should remember context.
-            </p>
+      {/* CTA - Simple */}
+      <section className="border-t border-border py-12">
+        <div className="mx-auto max-w-3xl px-4 text-center">
+          <p className="text-lg text-muted-foreground">
+            Free tier with 2,000 API calls/month.{" "}
+            <Link to="/dashboard/billing" className="text-primary hover:underline">
+              Pro from $5/mo
+            </Link>
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <a
+              href="https://github.com/ryanyogan/nexus#installation"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Install MCP Server
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            <Link
+              to="/submit"
+              className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Add Documentation
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="border-t border-stone-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 py-16 sm:py-24">
-        <div className="mx-auto max-w-[880px] px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-              Ready to supercharge your AI coding?
-            </h2>
-            <p className="mt-4 text-lg text-stone-600">
-              Join developers using Nexus for documentation, MCP servers, skills, and memory.
-              Start free, upgrade when you need more.
+      {/* Footer - Minimal */}
+      <footer className="border-t border-border py-6">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-sm text-muted-foreground">
+              © 2026 Nexus by{" "}
+              <a href="https://yogan.dev" className="hover:underline">
+                yogan.dev
+              </a>
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <a
-                href="https://docs.nexus.yogan.dev/getting-started"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-8 text-base font-semibold text-white transition-colors hover:bg-emerald-700"
-              >
-                Get Started Free
-                <ArrowRight className="h-4 w-4" />
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <a href="https://docs.nexus.yogan.dev" className="hover:text-foreground">
+                Docs
               </a>
-              <a
-                href="https://github.com/ryanyogan/nexus"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-stone-300 px-8 text-base font-semibold text-stone-700 transition-colors hover:bg-stone-50"
-              >
-                <Github className="h-5 w-5" />
-                View on GitHub
+              <a href="https://github.com/ryanyogan/nexus" className="hover:text-foreground">
+                GitHub
               </a>
+              <Link to="/terminal" className="hover:text-foreground">
+                Terminal
+              </Link>
             </div>
           </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 }
 
-// ============================================================================
-// Stats Display Component
-// ============================================================================
-
-interface StatsData {
-  libraries: { total: number; indexed: number };
-  documentation: { totalChunks: number; totalTokens: number };
-  servers: { total: number };
-  usage: { totalQueries: number };
-}
-
-function StatsDisplay({ stats }: { stats: StatsData }) {
-  return (
-    <div className="mx-auto mt-16 max-w-4xl">
-      <div className="grid grid-cols-2 gap-6 rounded-lg border border-stone-200 bg-white p-6 sm:grid-cols-5">
-        <StatItem value={stats.libraries.indexed} label="Libraries" />
-        <StatItem value={stats.servers?.total || 18} label="MCP Servers" />
-        <StatItem value={31} label="AI Skills" />
-        <StatItem
-          value={Math.round(stats.documentation.totalTokens / 1000)}
-          label="K Tokens"
-        />
-        <StatItem value={stats.usage.totalQueries} label="Queries" />
-      </div>
-    </div>
-  );
-}
-
-function StatItem({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="text-center">
-      <div className="text-2xl font-bold text-stone-900">
-        {value.toLocaleString()}
-      </div>
-      <div className="text-xs text-stone-500">{label}</div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Featured Skills Display
-// ============================================================================
-
-function FeaturedSkillsDisplay({ skills }: { skills: Skill[] }) {
-  const typeColors: Record<string, string> = {
-    analysis: "bg-blue-100 text-blue-700",
-    generation: "bg-emerald-100 text-emerald-700",
-    transformation: "bg-purple-100 text-purple-700",
-    integration: "bg-orange-100 text-orange-700",
-    utility: "bg-stone-200 text-stone-700",
-  };
-
-  if (skills.length === 0) {
-    return (
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Show placeholder skills */}
-        {[
-          { name: "Code Review", type: "analysis", desc: "Comprehensive code review following best practices" },
-          { name: "React Best Practices", type: "generation", desc: "Write idiomatic React components" },
-          { name: "API Documentation", type: "generation", desc: "Generate OpenAPI specs and API docs" },
-          { name: "Database Schema", type: "analysis", desc: "Design and optimize database schemas" },
-          { name: "Test Generation", type: "generation", desc: "Generate comprehensive test suites" },
-          { name: "Performance Audit", type: "analysis", desc: "Identify and fix performance issues" },
-        ].map((skill, i) => (
-          <div key={i} className="rounded-lg border border-stone-200 bg-white p-5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-                <Zap className="h-5 w-5 text-purple-700" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-stone-900">{skill.name}</h3>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeColors[skill.type]}`}>
-                    {skill.type}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-stone-600 line-clamp-2">{skill.desc}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {skills.map((skill: Skill) => (
-        <Link
-          key={skill.id}
-          to="/explore"
-          search={{ tab: "skills" }}
-          className="group rounded-lg border border-stone-200 bg-white p-5 transition-colors hover:border-emerald-300"
-        >
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-              <Zap className="h-5 w-5 text-purple-700" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-stone-900">{skill.name}</h3>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeColors[skill.type] || typeColors.utility}`}>
-                  {skill.type}
-                </span>
-              </div>
-              <p className="mt-1 text-sm text-stone-600 line-clamp-2">{skill.description || ""}</p>
-              {skill.installCount > 0 && (
-                <p className="mt-2 text-xs text-stone-500">
-                  {skill.installCount.toLocaleString()} installs
-                </p>
-              )}
-            </div>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-// ============================================================================
-// Featured Servers Display
-// ============================================================================
-
-function FeaturedServersDisplay({ servers }: { servers: McpServer[] }) {
-  return (
-    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {servers.map((server) => (
-        <ServerPreviewCard key={server.id} server={server} />
-      ))}
-    </div>
-  );
-}
-
-function ServerPreviewCard({ server }: { server: McpServer }) {
-  return (
-    <Link
-      to="/explore/servers/$serverId"
-      params={{ serverId: server.id }}
-      className="group flex items-start gap-3 rounded-lg border border-stone-200 bg-white p-4 transition-colors hover:border-emerald-300"
-    >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
-        {server.iconUrl ? (
-          <img
-            src={server.iconUrl}
-            alt={server.name}
-            className="h-6 w-6 object-contain"
-          />
-        ) : (
-          <Database className="h-5 w-5 text-emerald-600" />
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <h3 className="truncate font-medium text-stone-900">{server.name}</h3>
-          {server.isOfficial && (
-            <span className="shrink-0 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
-              Official
-            </span>
-          )}
-        </div>
-        <p className="mt-0.5 line-clamp-2 text-sm text-stone-600">
-          {server.description}
-        </p>
-      </div>
-      <ExternalLink className="h-4 w-4 shrink-0 text-stone-400 opacity-0 transition-opacity group-hover:opacity-100" />
-    </Link>
-  );
-}
-
-// ============================================================================
-// Feature Card Component
-// ============================================================================
-
-function FeatureCard({
+function FeatureItem({
   icon,
   title,
   description,
-  badge,
-  isNew,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
-  badge?: string;
-  isNew?: boolean;
 }) {
   return (
-    <div className="relative rounded-lg border border-stone-200 bg-white p-6">
-      {isNew && (
-        <div className="absolute -top-2 -right-2 rounded-full bg-purple-500 px-2 py-0.5 text-[10px] font-bold text-white">
-          NEW
-        </div>
-      )}
-      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+    <div className="text-center">
+      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
         {icon}
       </div>
-      <h3 className="mb-2 text-lg font-semibold text-stone-900">{title}</h3>
-      <p className="text-sm text-stone-600">{description}</p>
-      {badge && (
-        <div className="mt-3">
-          <span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-medium text-stone-600">
-            {badge}
-          </span>
-        </div>
-      )}
+      <h3 className="font-medium text-foreground">{title}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }
 
-// ============================================================================
-// Pricing Card Component
-// ============================================================================
-
-function PricingCard({
-  name,
-  price,
-  period,
+function StepItem({
+  number,
+  icon,
+  title,
   description,
-  features,
-  cta,
-  ctaLink,
+}: {
+  number: number;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="relative text-center">
+      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-primary">
+        {icon}
+      </div>
+      <div className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+        {number}
+      </div>
+      <h3 className="font-medium text-foreground">{title}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function FormatCard({
+  title,
+  description,
+  tokens,
   highlighted,
 }: {
-  name: string;
-  price: string;
-  period: string;
+  title: string;
   description: string;
-  features: string[];
-  cta: string;
-  ctaLink: string;
+  tokens: string;
   highlighted?: boolean;
 }) {
-  const isExternal = ctaLink.startsWith("mailto:") || ctaLink.startsWith("http");
-  
   return (
-    <div className={`relative flex flex-col rounded-lg border p-6 ${
-      highlighted ? "border-emerald-300 bg-emerald-50 shadow-lg" : "border-stone-200 bg-white"
-    }`}>
-      {highlighted && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
-            Most Popular
-          </span>
-        </div>
-      )}
-      
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-stone-900">{name}</h3>
-        <p className="mt-1 text-sm text-stone-600">{description}</p>
+    <div
+      className={`rounded-xl border p-4 ${
+        highlighted
+          ? "border-emerald-300 bg-emerald-50"
+          : "border-border bg-card"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <h3 className={`font-medium ${highlighted ? "text-emerald-900" : "text-foreground"}`}>
+          {title}
+        </h3>
+        {highlighted && (
+          <CheckCircle className="h-4 w-4 text-emerald-600" />
+        )}
       </div>
-      
-      <div className="mb-6">
-        <span className="text-3xl font-bold text-stone-900">{price}</span>
-        <span className="text-stone-600">{period}</span>
+      <p className={`mt-1 text-sm ${highlighted ? "text-emerald-700" : "text-muted-foreground"}`}>
+        {description}
+      </p>
+      <div className={`mt-3 text-xs font-medium ${highlighted ? "text-emerald-600" : "text-muted-foreground"}`}>
+        {tokens} tokens
       </div>
-      
-      <ul className="mb-6 flex-1 space-y-3">
-        {features.map((feature) => (
-          <li key={feature} className="flex items-start gap-2">
-            <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
-            <span className="text-sm text-stone-900">{feature}</span>
-          </li>
-        ))}
-      </ul>
-      
-      {isExternal ? (
-        <a
-          href={ctaLink}
-          className={`w-full rounded-lg px-4 py-2 text-center text-sm font-medium transition-colors ${
-            highlighted
-              ? "bg-emerald-600 text-white hover:bg-emerald-700"
-              : "border border-stone-300 text-stone-700 hover:bg-stone-50"
-          }`}
-        >
-          {cta}
-        </a>
-      ) : (
-        <Link
-          to={ctaLink}
-          className={`w-full rounded-lg px-4 py-2 text-center text-sm font-medium transition-colors ${
-            highlighted
-              ? "bg-emerald-600 text-white hover:bg-emerald-700"
-              : "border border-stone-300 text-stone-700 hover:bg-stone-50"
-          }`}
-        >
-          {cta}
-        </Link>
-      )}
     </div>
-  );
-}
-
-// ============================================================================
-// Comparison Row Component
-// ============================================================================
-
-function ComparisonRow({
-  feature,
-  nexus,
-  context7,
-  cursor,
-  nexusNote,
-  context7Note,
-  cursorNote,
-}: {
-  feature: string;
-  nexus: boolean;
-  context7: boolean;
-  cursor: boolean;
-  nexusNote?: string;
-  context7Note?: string;
-  cursorNote?: string;
-}) {
-  return (
-    <tr className="hover:bg-stone-50">
-      <td className="border-b border-stone-200 p-4 text-stone-900">{feature}</td>
-      <td className="border-b border-stone-200 p-4 text-center">
-        <div className="flex flex-col items-center gap-1">
-          {nexus ? (
-            <CheckCircle className="h-5 w-5 text-emerald-600" />
-          ) : (
-            <span className="text-stone-400">-</span>
-          )}
-          {nexusNote && <span className="text-xs text-stone-500">{nexusNote}</span>}
-        </div>
-      </td>
-      <td className="border-b border-stone-200 p-4 text-center">
-        <div className="flex flex-col items-center gap-1">
-          {context7 ? (
-            <CheckCircle className="h-5 w-5 text-emerald-600" />
-          ) : (
-            <span className="text-stone-400">-</span>
-          )}
-          {context7Note && <span className="text-xs text-stone-500">{context7Note}</span>}
-        </div>
-      </td>
-      <td className="border-b border-stone-200 p-4 text-center">
-        <div className="flex flex-col items-center gap-1">
-          {cursor ? (
-            <CheckCircle className="h-5 w-5 text-emerald-600" />
-          ) : (
-            <span className="text-stone-400">-</span>
-          )}
-          {cursorNote && <span className="text-xs text-stone-500">{cursorNote}</span>}
-        </div>
-      </td>
-    </tr>
   );
 }

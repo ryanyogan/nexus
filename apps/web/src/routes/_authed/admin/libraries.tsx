@@ -1,5 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
   ArrowLeft,
@@ -18,8 +17,6 @@ import {
 import { adminFetch } from "../../../lib/api";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { ResultModal } from "@/components/ui/result-modal";
-import { getDb } from "../../../server/db";
-import * as schema from "@nexus/db";
 
 export const Route = createFileRoute("/_authed/admin/libraries")({ component: AdminLibrariesPage });
 
@@ -122,9 +119,8 @@ interface LibraryData {
 // ============================================================================
 
 function AdminLibrariesPage() {
-  const router = useRouter();
-  const { session } = Route.useRouteContext();
-
+  // Note: session and router available via Route.useRouteContext() and useRouter() if needed
+  
   // Local state
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");

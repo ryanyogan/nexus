@@ -18,6 +18,7 @@ import {
   Tag,
 } from "lucide-react";
 import { Skeleton } from "../../components/skeletons";
+import { logger } from "../../lib/server-fn";
 
 // ============================================================================
 // Types
@@ -57,20 +58,35 @@ interface Skill {
 const getSkill = createServerFn({ method: "GET" })
   .inputValidator((d: { skillId: string }) => d)
   .handler(async ({ data }) => {
-    const db = drizzle(env.DB, { schema });
+    const startTime = Date.now();
+    const fnName = "getSkill";
 
-    const skill = await db
-      .select()
-      .from(schema.skills)
-      .where(eq(schema.skills.id, data.skillId))
-      .get();
+    try {
+      logger.debug(`${fnName} started`, { skillId: data.skillId });
 
-    if (!skill) {
-      throw new Error("Skill not found");
+      const db = drizzle(env.DB, { schema });
+
+      const skill = await db
+        .select()
+        .from(schema.skills)
+        .where(eq(schema.skills.id, data.skillId))
+        .get();
+
+      if (!skill) {
+        throw new Error("Skill not found");
+      }
+
+      const durationMs = Date.now() - startTime;
+      logger.info(`${fnName} completed`, { durationMs, skillId: data.skillId });
+
+      // Return skill without content - content will be fetched client-side
+      return { skill: skill as Skill, content: null as string | null };
+    } catch (error) {
+      const durationMs = Date.now() - startTime;
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error(`${fnName} failed`, { durationMs, skillId: data.skillId }, err);
+      throw error;
     }
-
-    // Return skill without content - content will be fetched client-side
-    return { skill: skill as Skill, content: null as string | null };
   });
 
 // ============================================================================
@@ -141,7 +157,7 @@ function SkillDetailPage() {
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Back link */}
           <Link
-            to="/explore/skills/"
+            to="/explore/skills"
             className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -354,14 +370,12 @@ function SkillDetailPage() {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {skill.categories.map((cat: string) => (
-                    <Link
+                    <span
                       key={cat}
-                      to="/explore/skills/"
-                      search={{ category: cat }}
-                      className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground hover:bg-muted/80 capitalize"
+                      className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground capitalize"
                     >
                       {cat.replace(/-/g, " ")}
-                    </Link>
+                    </span>
                   ))}
                 </div>
               </div>

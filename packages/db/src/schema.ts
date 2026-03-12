@@ -924,6 +924,58 @@ export const userSkillsRelations = relations(userSkills, ({ one }) => ({
 }));
 
 // ============================================================================
+// User Preferences - Settings for MCP response format, etc.
+// ============================================================================
+
+export const RESPONSE_FORMATS = ["full", "compact", "code-only", "summary"] as const;
+export type ResponseFormat = (typeof RESPONSE_FORMATS)[number];
+
+export const userPreferences = sqliteTable(
+  "user_preferences",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .unique()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Response format preference for MCP tools
+    defaultResponseFormat: text("default_response_format", { enum: RESPONSE_FORMATS })
+      .notNull()
+      .default("full"),
+
+    // Token budget preference (max tokens to return)
+    defaultTokenBudget: integer("default_token_budget"),
+
+    // Other preferences
+    showCodeLineNumbers: integer("show_code_line_numbers", { mode: "boolean" })
+      .notNull()
+      .default(true),
+    preferredCodeLanguage: text("preferred_code_language"), // e.g., "typescript", "python"
+
+    // Email preferences
+    emailNotifications: integer("email_notifications", { mode: "boolean" })
+      .notNull()
+      .default(true),
+    emailWeeklyDigest: integer("email_weekly_digest", { mode: "boolean" })
+      .notNull()
+      .default(false),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [index("user_preferences_user_idx").on(table.userId)]
+);
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
 // Type exports
 // ============================================================================
 
@@ -959,3 +1011,5 @@ export type Skill = typeof skills.$inferSelect;
 export type NewSkill = typeof skills.$inferInsert;
 export type UserSkill = typeof userSkills.$inferSelect;
 export type NewUserSkill = typeof userSkills.$inferInsert;
+export type UserPreferences = typeof userPreferences.$inferSelect;
+export type NewUserPreferences = typeof userPreferences.$inferInsert;

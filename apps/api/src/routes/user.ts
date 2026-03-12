@@ -6,10 +6,11 @@ import {
   userSkills, 
   skills, 
   userSecrets,
-  memories 
+  memories,
+  userPreferences,
 } from "@nexus/db";
 import { createAuth } from "@nexus/auth";
-import type { AppContext, AuthUser } from "../types";
+import type { AppContext, AuthUser, ResponseFormat } from "../types";
 
 const userRouter = new Hono<AppContext>();
 
@@ -393,6 +394,101 @@ userRouter.get("/subscription", async (c) => {
     cancelAtPeriodEnd: subscription.canceledAt != null,
     limits: limits[subscription.plan as keyof typeof limits] || limits.free,
   });
+});
+
+// ============================================================================
+// User Preferences
+// ============================================================================
+
+const VALID_RESPONSE_FORMATS: ResponseFormat[] = ["full", "compact", "code-only", "summary"];
+
+userRouter.get("/preferences", async (c) => {
+  const db = c.get("db");
+  const user = c.get("user") as AuthUser;
+
+  const [prefs] = await db
+    .select()
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, user.id))
+    .limit(1);
+
+  // Return defaults if no preferences exist
+  if (!prefs) {
+    return c.json({
+      defaultResponseFormat: "full" as ResponseFormat,
+      defaultTokenBudget: null,
+      showCodeLineNumbers: true,
+      preferredCodeLanguage: null,
+      emailNotifications: true,
+      emailWeeklyDigest: false,
+    });
+  }
+
+  return c.json({
+    defaultResponseFormat: prefs.defaultResponseFormat,
+    defaultTokenBudget: prefs.defaultTokenBudget,
+    showCodeLineNumbers: prefs.showCodeLineNumbers,
+    preferredCodeLanguage: prefs.preferredCodeLanguage,
+    emailNotifications: prefs.emailNotifications,
+    emailWeeklyDigest: prefs.emailWeeklyDigest,
+  });
+});
+
+userRouter.put("/preferences", async (c) => {
+  const db = c.get("db");
+  const user = c.get("user") as AuthUser;
+
+  const body = await c.req.json();
+  
+  // Validate response format
+  if (body.defaultResponseFormat && !VALID_RESPONSE_FORMATS.includes(body.defaultResponseFormat)) {
+    return c.json({ error: "Invalid response format" }, 400);
+  }
+
+  // Validate token budget
+  if (body.defaultTokenBudget !== undefined && body.defaultTokenBudget !== null) {
+    const budget = Number(body.defaultTokenBudget);
+    if (isNaN(budget) || budget < 0 || budget > 100000) {
+      return c.json({ error: "Token budget must be between 0 and 100000" }, 400);
+    }
+  }
+
+  const now = new Date().toISOString();
+
+  // Check if preferences exist
+  const [existing] = await db
+    .select()
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, user.id))
+    .limit(1);
+
+  const prefsData = {
+    defaultResponseFormat: body.defaultResponseFormat || "full",
+    defaultTokenBudget: body.defaultTokenBudget ?? null,
+    showCodeLineNumbers: body.showCodeLineNumbers ?? true,
+    preferredCodeLanguage: body.preferredCodeLanguage || null,
+    emailNotifications: body.emailNotifications ?? true,
+    emailWeeklyDigest: body.emailWeeklyDigest ?? false,
+    updatedAt: now,
+  };
+
+  if (existing) {
+    // Update existing preferences
+    await db
+      .update(userPreferences)
+      .set(prefsData)
+      .where(eq(userPreferences.userId, user.id));
+  } else {
+    // Create new preferences
+    await db.insert(userPreferences).values({
+      id: crypto.randomUUID(),
+      userId: user.id,
+      ...prefsData,
+      createdAt: now,
+    });
+  }
+
+  return c.json({ success: true, ...prefsData });
 });
 
 export { userRouter };

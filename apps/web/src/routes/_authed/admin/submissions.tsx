@@ -18,7 +18,7 @@ interface Submission {
 export const Route = createFileRoute("/_authed/admin/submissions")({ component: AdminSubmissionsPage });
 
 function AdminSubmissionsPage() {
-  const { session } = Route.useRouteContext();
+  // Note: session available via Route.useRouteContext() if needed
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");

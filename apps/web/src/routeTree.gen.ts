@@ -23,6 +23,7 @@ import { Route as AuthedSubmitRouteImport } from './routes/_authed/submit'
 import { Route as AuthedAdminRouteImport } from './routes/_authed/admin'
 import { Route as ExploreSkillsIndexRouteImport } from './routes/explore/skills.index'
 import { Route as ExploreServersIndexRouteImport } from './routes/explore/servers.index'
+import { Route as AuthedSettingsIndexRouteImport } from './routes/_authed/settings/index'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as ExploreSkillsSkillIdRouteImport } from './routes/explore/skills.$skillId'
@@ -104,6 +105,11 @@ const ExploreServersIndexRoute = ExploreServersIndexRouteImport.update({
   id: '/explore/servers/',
   path: '/explore/servers/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedSettingsIndexRoute = AuthedSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
   id: '/dashboard/',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
   '/admin/': typeof AuthedAdminIndexRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
+  '/settings/': typeof AuthedSettingsIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
   '/explore/skills/': typeof ExploreSkillsIndexRoute
 }
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
   '/admin': typeof AuthedAdminIndexRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
+  '/settings': typeof AuthedSettingsIndexRoute
   '/explore/servers': typeof ExploreServersIndexRoute
   '/explore/skills': typeof ExploreSkillsIndexRoute
 }
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
+  '/_authed/settings/': typeof AuthedSettingsIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
   '/explore/skills/': typeof ExploreSkillsIndexRoute
 }
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/explore/skills/$skillId'
     | '/admin/'
     | '/dashboard/'
+    | '/settings/'
     | '/explore/servers/'
     | '/explore/skills/'
   fileRoutesByTo: FileRoutesByTo
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/explore/skills/$skillId'
     | '/admin'
     | '/dashboard'
+    | '/settings'
     | '/explore/servers'
     | '/explore/skills'
   id:
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/explore/skills/$skillId'
     | '/_authed/admin/'
     | '/_authed/dashboard/'
+    | '/_authed/settings/'
     | '/explore/servers/'
     | '/explore/skills/'
   fileRoutesById: FileRoutesById
@@ -452,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreServersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/settings/': {
+      id: '/_authed/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthedSettingsIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/dashboard/': {
       id: '/_authed/dashboard/'
       path: '/dashboard'
@@ -566,6 +585,7 @@ interface AuthedRouteChildren {
   AuthedDashboardSkillsRoute: typeof AuthedDashboardSkillsRoute
   AuthedSettingsSecretsRoute: typeof AuthedSettingsSecretsRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
+  AuthedSettingsIndexRoute: typeof AuthedSettingsIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
@@ -577,6 +597,7 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDashboardSkillsRoute: AuthedDashboardSkillsRoute,
   AuthedSettingsSecretsRoute: AuthedSettingsSecretsRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
+  AuthedSettingsIndexRoute: AuthedSettingsIndexRoute,
 }
 
 const AuthedRouteWithChildren =

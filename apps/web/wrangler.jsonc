@@ -8,10 +8,17 @@
     { "pattern": "nexus.yogan.dev", "custom_domain": true }
   ],
 
-  // Observability - logs, metrics, traces
+  // Full observability - logs, traces, source maps
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "logs": {
+      "invocation_logs": true,
+      "head_sampling_rate": 1
+    }
   },
+
+  // Upload source maps for readable stack traces
+  "upload_source_maps": true,
 
   // D1 Database - shared with API
   "d1_databases": [

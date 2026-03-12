@@ -39,6 +39,7 @@ export default defineConfig({
         {
           label: 'Features',
           items: [
+            { label: 'Architecture & Token Savings', link: '/features/architecture/', badge: { text: 'New', variant: 'tip' } },
             { label: 'AI Skills', link: '/features/skills/', badge: { text: 'New', variant: 'tip' } },
             { label: 'Secrets Vault', link: '/features/secrets/', badge: { text: 'New', variant: 'tip' } },
             { label: 'Mobile Terminal', link: '/mobile-terminal/' },

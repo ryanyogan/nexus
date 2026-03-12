@@ -4,7 +4,8 @@ import { z } from "zod";
 import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "@nexus/db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, count } from "drizzle-orm";
+import { logger } from "../../lib/server-fn";
 import {
   Search,
   ExternalLink,
@@ -12,14 +13,14 @@ import {
   Server,
   Github,
   CheckCircle,
-  Sparkles,
   Star,
   Shield,
   ShieldAlert,
   ShieldCheck,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { ServerCardSkeleton } from "../../components/skeletons";
 
 // ============================================================================
 // Types
@@ -36,7 +37,6 @@ interface McpServer {
   iconUrl: string | null;
   repositoryUrl: string | null;
   packageName: string | null;
-  // Security
   securityRiskLevel: "low" | "medium" | "high" | "critical" | null;
   isSecurityAudited: boolean;
 }
@@ -47,6 +47,14 @@ interface ServerCategory {
   count: number;
 }
 
+interface PaginatedResult {
+  servers: McpServer[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 // ============================================================================
 // Server Functions
 // ============================================================================
@@ -54,70 +62,105 @@ interface ServerCategory {
 interface GetServersInput {
   search?: string;
   category?: string;
+  page?: number;
+  pageSize?: number;
 }
 
-const getServers = createServerFn({ method: "GET" }).handler(
-  async (ctx: { data: GetServersInput }) => {
-    const { data } = ctx;
+const getServers = createServerFn({ method: "GET" })
+  .inputValidator((data: GetServersInput) => data)
+  .handler(async ({ data }): Promise<PaginatedResult> => {
+    const startTime = Date.now();
+    const fnName = "getServers";
+
+    try {
+      logger.debug(`${fnName} started`, { input: data });
+
+      const db = drizzle(env.DB, { schema });
+      const { search, category, page = 1, pageSize = 20 } = data;
+      const offset = (page - 1) * pageSize;
+
+      const conditions = [eq(schema.mcpServers.isActive, true)];
+
+      if (search) {
+        conditions.push(
+          sql`(${schema.mcpServers.name} LIKE ${"%" + search + "%"} OR ${schema.mcpServers.displayName} LIKE ${"%" + search + "%"} OR ${schema.mcpServers.description} LIKE ${"%" + search + "%"})`
+        );
+      }
+
+      if (category) {
+        conditions.push(
+          sql`json_array_length(${schema.mcpServers.categories}) > 0 AND EXISTS (SELECT 1 FROM json_each(${schema.mcpServers.categories}) WHERE json_each.value = ${category})`
+        );
+      }
+
+      const whereClause = and(...conditions);
+
+      // Get total count
+      const [countResult] = await db
+        .select({ count: count() })
+        .from(schema.mcpServers)
+        .where(whereClause);
+
+      const total = countResult?.count ?? 0;
+
+      // Get paginated results
+      const servers = await db
+        .select({
+          id: schema.mcpServers.id,
+          name: schema.mcpServers.name,
+          displayName: schema.mcpServers.displayName,
+          description: schema.mcpServers.description,
+          categories: schema.mcpServers.categories,
+          isOfficial: schema.mcpServers.isOfficial,
+          isFeatured: schema.mcpServers.isFeatured,
+          iconUrl: schema.mcpServers.iconUrl,
+          repositoryUrl: schema.mcpServers.repositoryUrl,
+          packageName: schema.mcpServers.packageName,
+          securityRiskLevel: schema.mcpServers.securityRiskLevel,
+          isSecurityAudited: schema.mcpServers.isSecurityAudited,
+        })
+        .from(schema.mcpServers)
+        .where(whereClause)
+        .orderBy(
+          desc(schema.mcpServers.isOfficial),
+          desc(schema.mcpServers.isFeatured),
+          schema.mcpServers.name
+        )
+        .limit(pageSize)
+        .offset(offset);
+
+      const durationMs = Date.now() - startTime;
+      logger.info(`${fnName} completed`, { durationMs, count: servers.length, total });
+
+      return {
+        servers: servers as McpServer[],
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      };
+    } catch (error) {
+      const durationMs = Date.now() - startTime;
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error(`${fnName} failed`, { durationMs, input: data }, err);
+      throw error;
+    }
+  });
+
+const getServerCategories = createServerFn({ method: "GET" }).handler(async () => {
+  const startTime = Date.now();
+  const fnName = "getServerCategories";
+
+  try {
+    logger.debug(`${fnName} started`);
+
     const db = drizzle(env.DB, { schema });
 
-    const conditions = [eq(schema.mcpServers.isActive, true)];
-
-    if (data?.search) {
-      conditions.push(
-        sql`(${schema.mcpServers.name} LIKE ${"%" + data.search + "%"} OR ${schema.mcpServers.displayName} LIKE ${"%" + data.search + "%"} OR ${schema.mcpServers.description} LIKE ${"%" + data.search + "%"})`
-      );
-    }
-
-    if (data?.category) {
-      // Categories are stored as JSON array, so we need to check if the category is in the array
-      conditions.push(
-        sql`json_array_length(${schema.mcpServers.categories}) > 0 AND EXISTS (SELECT 1 FROM json_each(${schema.mcpServers.categories}) WHERE json_each.value = ${data.category})`
-      );
-    }
-
     const servers = await db
-      .select({
-        id: schema.mcpServers.id,
-        name: schema.mcpServers.name,
-        displayName: schema.mcpServers.displayName,
-        description: schema.mcpServers.description,
-        categories: schema.mcpServers.categories,
-        isOfficial: schema.mcpServers.isOfficial,
-        isFeatured: schema.mcpServers.isFeatured,
-        iconUrl: schema.mcpServers.iconUrl,
-        repositoryUrl: schema.mcpServers.repositoryUrl,
-        packageName: schema.mcpServers.packageName,
-        // Security
-        securityRiskLevel: schema.mcpServers.securityRiskLevel,
-        isSecurityAudited: schema.mcpServers.isSecurityAudited,
-      })
-      .from(schema.mcpServers)
-      .where(and(...conditions))
-      .orderBy(
-        desc(schema.mcpServers.isOfficial),
-        desc(schema.mcpServers.isFeatured),
-        schema.mcpServers.name
-      )
-      .limit(100);
-
-    return { servers: servers as McpServer[], total: servers.length };
-  }
-);
-
-const getServerCategories = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const db = drizzle(env.DB, { schema });
-
-    // Get all active servers and count categories
-    const servers = await db
-      .select({
-        categories: schema.mcpServers.categories,
-      })
+      .select({ categories: schema.mcpServers.categories })
       .from(schema.mcpServers)
       .where(eq(schema.mcpServers.isActive, true));
 
-    // Count occurrences of each category
     const categoryCounts = new Map<string, number>();
     for (const server of servers) {
       if (server.categories && Array.isArray(server.categories)) {
@@ -127,7 +170,6 @@ const getServerCategories = createServerFn({ method: "GET" }).handler(
       }
     }
 
-    // Convert to array and sort by count
     const categories: ServerCategory[] = Array.from(categoryCounts.entries())
       .map(([id, count]) => ({
         id,
@@ -136,9 +178,17 @@ const getServerCategories = createServerFn({ method: "GET" }).handler(
       }))
       .sort((a, b) => b.count - a.count);
 
+    const durationMs = Date.now() - startTime;
+    logger.info(`${fnName} completed`, { durationMs, count: categories.length });
+
     return categories;
+  } catch (error) {
+    const durationMs = Date.now() - startTime;
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error(`${fnName} failed`, { durationMs }, err);
+    throw error;
   }
-);
+});
 
 // ============================================================================
 // Search Params Schema
@@ -147,6 +197,7 @@ const getServerCategories = createServerFn({ method: "GET" }).handler(
 const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
   category: z.string().optional().catch(undefined),
+  page: z.coerce.number().min(1).optional().catch(1),
 });
 
 type SearchParams = z.infer<typeof searchSchema>;
@@ -160,6 +211,7 @@ export const Route = createFileRoute("/explore/servers/")({
   loaderDeps: ({ search }) => ({
     q: search.q,
     category: search.category,
+    page: search.page ?? 1,
   }),
   loader: async ({ deps }) => {
     const [serversData, categories] = await Promise.all([
@@ -167,6 +219,8 @@ export const Route = createFileRoute("/explore/servers/")({
         data: {
           search: deps.q,
           category: deps.category,
+          page: deps.page,
+          pageSize: 20,
         },
       }),
       getServerCategories(),
@@ -179,16 +233,43 @@ export const Route = createFileRoute("/explore/servers/")({
 });
 
 // ============================================================================
+// Page Skeleton
+// ============================================================================
+
+function ServersPageSkeleton() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mb-8">
+        <div className="h-12 animate-pulse rounded-xl bg-stone-200" />
+      </div>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-8 w-20 animate-pulse rounded-lg bg-stone-200" />
+        ))}
+      </div>
+      <div className="space-y-1">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="h-14 animate-pulse rounded-lg bg-stone-100" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
 function ServersPage() {
   const navigate = useNavigate({ from: "/explore/servers/" });
-  const { q, category } = Route.useSearch();
+  const { q, category, page } = Route.useSearch();
   const { serversData, categories } = Route.useLoaderData();
 
   const searchQuery = q || "";
-  const selectedCategory = category || "all";
+  const selectedCategory = category || "";
+  const currentPage = page ?? 1;
+
+  const { servers, total, totalPages } = serversData;
 
   const updateSearch = (updates: Partial<SearchParams>) => {
     navigate({
@@ -198,10 +279,11 @@ function ServersPage() {
         q: updates.q !== undefined ? updates.q || undefined : prev.q,
         category:
           updates.category !== undefined
-            ? updates.category === "all"
+            ? updates.category === ""
               ? undefined
               : updates.category
             : prev.category,
+        page: updates.page ?? (updates.q !== undefined || updates.category !== undefined ? 1 : prev.page),
       }),
     });
   };
@@ -218,18 +300,12 @@ function ServersPage() {
     updateSearch({ q: "" });
   };
 
-  const clearAllFilters = () => {
-    updateSearch({ q: "", category: "all" });
+  const goToPage = (newPage: number) => {
+    updateSearch({ page: newPage });
   };
 
-  const servers = serversData.servers;
-  const total = serversData.total;
-
-  const officialServers = servers.filter((s: McpServer) => s.isOfficial);
-  const communityServers = servers.filter((s: McpServer) => !s.isOfficial);
-
   const allCategories = [
-    { id: "all", label: "All Servers", count: total },
+    { id: "", label: "All", count: total },
     ...categories.map((cat: ServerCategory) => ({
       id: cat.id,
       label: cat.label,
@@ -238,156 +314,146 @@ function ServersPage() {
   ];
 
   return (
-    <div className="relative min-h-screen">
+    <div className="mx-auto max-w-3xl px-4 py-8">
       {/* Header */}
-      <div className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                MCP Servers
-              </h1>
-              <p className="mt-1 text-muted-foreground">
-                Discover and install Model Context Protocol servers
-              </p>
-            </div>
-          </div>
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold text-stone-900">MCP Servers</h1>
+        <p className="mt-1 text-stone-600">Discover and install Model Context Protocol servers</p>
+      </div>
 
-          {/* Search */}
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search MCP servers..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="h-12 w-full rounded-lg border border-border bg-background pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
+      {/* Search bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400" />
+          <input
+            type="text"
+            placeholder="Search servers..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="h-12 w-full rounded-xl border border-stone-300 bg-white pl-12 pr-10 text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          />
+          {searchQuery && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Sidebar */}
-          <aside className="w-full shrink-0 lg:w-56">
-            <h2 className="mb-4 text-sm font-semibold text-foreground">
-              Categories
-            </h2>
-            <nav className="flex flex-row flex-wrap gap-2 lg:flex-col lg:gap-1">
-              {allCategories.map((cat) => (
+      {/* Category Pills */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {allCategories.slice(0, 10).map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => handleCategoryChange(cat.id)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              selectedCategory === cat.id
+                ? "bg-emerald-600 text-white"
+                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Results info */}
+      <div className="mb-4 flex items-center justify-between text-sm text-stone-500">
+        <span>
+          {total} server{total !== 1 ? "s" : ""}
+          {searchQuery && ` for "${searchQuery}"`}
+        </span>
+      </div>
+
+      {/* Server List - Minimal Design */}
+      {servers.length > 0 ? (
+        <div className="space-y-1">
+          {servers.map((server: McpServer) => (
+            <ServerRow key={server.id} server={server} />
+          ))}
+        </div>
+      ) : (
+        <div className="py-16 text-center">
+          <Server className="mx-auto h-12 w-12 text-stone-300" />
+          <p className="mt-4 text-stone-600">No servers found</p>
+          <button
+            onClick={() => updateSearch({ q: "", category: "" })}
+            className="mt-4 text-sm text-emerald-600 hover:underline"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-center gap-2">
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage <= 1}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+
+              return (
                 <button
-                  key={cat.id}
-                  onClick={() => handleCategoryChange(cat.id)}
-                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                    selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  key={pageNum}
+                  onClick={() => goToPage(pageNum)}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === pageNum
+                      ? "bg-emerald-600 text-white"
+                      : "border border-stone-300 text-stone-600 hover:bg-stone-100"
                   }`}
                 >
-                  <span className="capitalize">{cat.label}</span>
-                  {cat.count !== undefined && (
-                    <span className="ml-2 text-xs opacity-70">{cat.count}</span>
-                  )}
+                  {pageNum}
                 </button>
-              ))}
-            </nav>
-          </aside>
-
-          {/* Server Grid */}
-          <div className="flex-1">
-            {servers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
-                <Server className="mb-4 h-12 w-12 text-muted-foreground" />
-                <p className="text-lg font-medium text-foreground">
-                  No servers found
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  Try adjusting your search or filters
-                </p>
-                <button
-                  onClick={clearAllFilters}
-                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Clear filters
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Official Servers */}
-                {officialServers.length > 0 && (
-                  <>
-                    <div className="mb-4 flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-semibold text-foreground">
-                        Official MCP Servers
-                      </h3>
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                        {officialServers.length}
-                      </span>
-                    </div>
-                    <div className="mb-8 grid gap-4 sm:grid-cols-2">
-                      {officialServers.map((server: McpServer) => (
-                        <ServerCard key={server.id} server={server} />
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {/* Community Servers */}
-                {communityServers.length > 0 && (
-                  <>
-                    <div className="mb-4 flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold text-foreground">
-                        Community Servers
-                      </h3>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                        {communityServers.length}
-                      </span>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {communityServers.map((server: McpServer) => (
-                        <ServerCard key={server.id} server={server} />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+              );
+            })}
           </div>
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 // ============================================================================
-// Server Card Component
+// Server Row Component - Minimal List Item
 // ============================================================================
 
-// Security badge config
 const securityConfig = {
-  low: { icon: ShieldCheck, color: "text-green-500", bg: "bg-green-500/10", label: "Low Risk" },
-  medium: { icon: Shield, color: "text-yellow-500", bg: "bg-yellow-500/10", label: "Medium Risk" },
-  high: { icon: ShieldAlert, color: "text-orange-500", bg: "bg-orange-500/10", label: "High Risk" },
-  critical: { icon: AlertTriangle, color: "text-red-500", bg: "bg-red-500/10", label: "Critical" },
+  low: { icon: ShieldCheck, color: "text-green-600" },
+  medium: { icon: Shield, color: "text-yellow-600" },
+  high: { icon: ShieldAlert, color: "text-orange-600" },
+  critical: { icon: AlertTriangle, color: "text-red-600" },
 } as const;
 
-function ServerCard({ server }: { server: McpServer }) {
+function ServerRow({ server }: { server: McpServer }) {
   const displayName = server.displayName || server.name;
-  const category = server.categories?.[0];
   const riskLevel = server.securityRiskLevel || "medium";
   const security = securityConfig[riskLevel];
   const SecurityIcon = security.icon;
@@ -396,123 +462,55 @@ function ServerCard({ server }: { server: McpServer }) {
     <Link
       to="/explore/servers/$serverId"
       params={{ serverId: server.id }}
-      className="group flex flex-col rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+      className="group flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-stone-100"
     >
-      <div className="mb-4 flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          {server.iconUrl ? (
-            <img
-              src={server.iconUrl}
-              alt={displayName}
-              className="h-10 w-10 rounded-lg bg-muted object-contain p-1"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Server className="h-5 w-5 text-primary" />
-            </div>
-          )}
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-foreground">{displayName}</h3>
-              {server.isOfficial && (
-                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                  Official
-                </span>
-              )}
-              {server.isFeatured && !server.isOfficial && (
-                <Star className="h-4 w-4 text-yellow-500" />
-              )}
-            </div>
-            {server.packageName && (
-              <p className="text-xs text-muted-foreground">
-                {server.packageName}
-              </p>
-            )}
-          </div>
+      {/* Icon */}
+      {server.iconUrl ? (
+        <img
+          src={server.iconUrl}
+          alt={displayName}
+          className="h-8 w-8 shrink-0 rounded-md bg-stone-100 object-contain p-1"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-100">
+          <Server className="h-4 w-4 text-emerald-600" />
         </div>
-        <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      )}
+
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-stone-900">{displayName}</span>
+          {server.isOfficial && (
+            <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+              Official
+            </span>
+          )}
+          {server.isFeatured && !server.isOfficial && (
+            <Star className="h-3.5 w-3.5 text-amber-500" />
+          )}
+        </div>
+        {server.description && (
+          <p className="truncate text-sm text-stone-500">{server.description}</p>
+        )}
       </div>
 
-      <p className="mb-4 line-clamp-2 flex-1 text-sm text-muted-foreground">
-        {server.description || "No description available"}
-      </p>
-
-      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        {/* Security Badge */}
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs ${security.bg} ${security.color}`}
-          title={security.label}
-        >
-          <SecurityIcon className="h-3 w-3" />
-          {security.label}
-        </span>
+      {/* Meta */}
+      <div className="hidden shrink-0 items-center gap-3 sm:flex">
+        <SecurityIcon className={`h-4 w-4 ${security.color}`} />
         {server.isSecurityAudited && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-500">
-            <CheckCircle className="h-3 w-3" />
-            Audited
-          </span>
-        )}
-        {category && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground capitalize">
-            {category}
-          </span>
+          <CheckCircle className="h-4 w-4 text-green-600" />
         )}
         {server.repositoryUrl && (
-          <a
-            href={server.repositoryUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground hover:bg-muted/80"
-          >
-            <Github className="h-3 w-3" />
-            GitHub
-          </a>
+          <Github className="h-4 w-4 text-stone-400" />
         )}
       </div>
+
+      {/* Arrow */}
+      <ExternalLink className="h-4 w-4 shrink-0 text-stone-300 transition-colors group-hover:text-stone-500" />
     </Link>
-  );
-}
-
-// ============================================================================
-// Skeleton Components
-// ============================================================================
-
-function ServersPageSkeleton() {
-  return (
-    <div className="relative min-h-screen">
-      <div className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="h-9 w-48 animate-pulse rounded bg-muted" />
-          <div className="mt-2 h-5 w-96 animate-pulse rounded bg-muted" />
-          <div className="mt-6 h-12 w-full animate-pulse rounded-lg bg-muted" />
-        </div>
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <aside className="w-full shrink-0 lg:w-56">
-            <div className="h-5 w-24 animate-pulse rounded bg-muted" />
-            <div className="mt-4 space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-10 w-full animate-pulse rounded-lg bg-muted"
-                />
-              ))}
-            </div>
-          </aside>
-          <div className="flex-1">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <ServerCardSkeleton key={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }

@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { env } from "cloudflare:workers";
 import { createAuth } from "@nexus/auth";
+import { createLogger } from "@nexus/logger";
+
+const logger = createLogger("nexus-web");
 
 // Session type matching Better Auth with admin plugin
 export interface SessionUser {
@@ -85,13 +88,23 @@ const DEV_SESSION: SessionData = {
  */
 export const getSessionFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<SessionData | null> => {
+    const startTime = Date.now();
+    const fnLogger = logger.child({ serverFn: "getSessionFn" });
+
     // Dev bypass for local development
     if (isDevBypassEnabled()) {
+      fnLogger.debug("Using dev bypass session");
       return DEV_SESSION;
     }
 
     try {
+      fnLogger.debug("getSessionFn started");
+      
       const request = getRequest();
+      const url = new URL(request.url);
+      
+      fnLogger.debug("Creating auth instance", { path: url.pathname });
+      
       const auth = createAuth({
         DB: env.DB,
         GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
@@ -106,13 +119,27 @@ export const getSessionFn = createServerFn({ method: "GET" }).handler(
         headers: request.headers,
       });
 
+      const durationMs = Date.now() - startTime;
+
       if (!session) {
+        fnLogger.debug("No session found", { durationMs });
         return null;
       }
 
+      fnLogger.info("Session retrieved", { 
+        durationMs, 
+        userId: session.user?.id,
+        hasSession: true 
+      });
+      
       return session as SessionData;
     } catch (error) {
-      console.error("Failed to get session:", error);
+      const durationMs = Date.now() - startTime;
+      const err = error instanceof Error ? error : new Error(String(error));
+      
+      fnLogger.error("Failed to get session", { durationMs }, err);
+      
+      // Return null instead of throwing to avoid breaking the app
       return null;
     }
   }
@@ -124,6 +151,12 @@ export const getSessionFn = createServerFn({ method: "GET" }).handler(
  */
 export const isDevAuthEnabledFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<boolean> => {
-    return isDevBypassEnabled();
+    try {
+      return isDevBypassEnabled();
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error("isDevAuthEnabledFn failed", {}, err);
+      return false;
+    }
   }
 );

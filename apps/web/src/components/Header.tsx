@@ -4,11 +4,15 @@ import {
   X,
   Plus,
   Github,
-  ChevronDown,
   User,
   LogOut,
   Settings,
   Key,
+  BookOpen,
+  Brain,
+  Server,
+  Database,
+  ArrowUpRight,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "@nexus/auth/client";
@@ -20,7 +24,6 @@ interface HeaderProps {
 
 export default function Header({ session }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const isSignedIn = !!session?.user;
@@ -84,7 +87,7 @@ export default function Header({ session }: HeaderProps) {
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-stone-200 bg-white py-2 shadow-lg">
+                  <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-xl border border-stone-300 bg-white py-2 shadow-xl">
                     <div className="px-4 py-2 text-sm text-stone-500">
                       {session.user.email}
                     </div>
@@ -92,15 +95,23 @@ export default function Header({ session }: HeaderProps) {
                     <Link
                       to="/dashboard"
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-50"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100"
                     >
                       <Settings className="h-4 w-4" />
                       Dashboard
                     </Link>
                     <Link
+                      to="/settings"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
+                    <Link
                       to="/settings/secrets"
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-50"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100"
                     >
                       <Key className="h-4 w-4" />
                       API Key Vault
@@ -109,7 +120,7 @@ export default function Header({ session }: HeaderProps) {
                       <Link
                         to="/admin"
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-50"
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100"
                       >
                         <Settings className="h-4 w-4" />
                         Admin
@@ -118,7 +129,7 @@ export default function Header({ session }: HeaderProps) {
                     <div className="my-1 border-t border-stone-100" />
                     <button
                       onClick={handleSignOut}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-50"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100"
                     >
                       <LogOut className="h-4 w-4" />
                       Sign Out
@@ -188,18 +199,28 @@ export default function Header({ session }: HeaderProps) {
             {/* Mobile grid */}
             <div className="grid w-full grid-cols-2 gap-2 md:hidden">
               <Link
-                to="/code"
+                to="/explore/docs"
                 className="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-stone-300 px-3 py-3 text-base font-medium leading-none text-stone-700 transition-colors hover:bg-stone-100"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Code
+                Libraries
+              </Link>
+              <Link
+                to="/explore/servers"
+                className="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-stone-300 px-3 py-3 text-base font-medium leading-none text-stone-700 transition-colors hover:bg-stone-100"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                MCP Servers
               </Link>
               <a
                 href="https://docs.nexus.yogan.dev"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-stone-300 px-3 py-3 text-base font-medium leading-none text-stone-700 transition-colors hover:bg-stone-100"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Documentation
+                Docs
+                <ArrowUpRight className="h-4 w-4" />
               </a>
               <a
                 href="https://github.com/ryanyogan/nexus"
@@ -208,25 +229,16 @@ export default function Header({ session }: HeaderProps) {
                 className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-stone-300 px-3 py-3 text-base font-medium leading-none text-stone-700 transition-colors hover:bg-stone-100"
               >
                 <Github className="h-4 w-4" />
-                GitHub
+                Install
               </a>
             </div>
 
-            {/* Desktop nav links - Channel9 Style */}
+            {/* Desktop nav links */}
             <Link
               to="/explore"
               className="hidden cursor-pointer text-base text-stone-700 underline underline-offset-2 transition-all hover:text-stone-800 md:block"
             >
               Explore
-            </Link>
-
-            <span className="hidden h-4 w-px bg-stone-300 md:block" />
-
-            <Link
-              to="/code"
-              className="hidden cursor-pointer text-base text-stone-700 underline underline-offset-2 transition-all hover:text-stone-800 md:block"
-            >
-              Code
             </Link>
 
             <span className="hidden h-4 w-px bg-stone-300 md:block" />
@@ -238,61 +250,100 @@ export default function Header({ session }: HeaderProps) {
               className="hidden cursor-pointer items-center gap-1 text-base text-stone-700 underline underline-offset-2 transition-all hover:text-stone-800 md:flex"
             >
               <Github className="h-5 w-5" />
-              GitHub
+              Install
             </a>
 
             <span className="hidden h-4 w-px bg-stone-300 md:block" />
 
-            {/* More... Dropdown */}
-            <div
-              className="relative hidden md:block"
-              onMouseEnter={() => setMoreMenuOpen(true)}
-              onMouseLeave={() => setMoreMenuOpen(false)}
-            >
-              <button className="flex cursor-pointer items-center gap-1 text-base text-stone-700 underline underline-offset-2 transition-all hover:text-stone-800">
+            {/* More... Dropdown - CSS-based hover */}
+            <div className="group relative hidden md:block">
+              <span className="cursor-pointer text-base text-stone-700 underline underline-offset-2 transition-all hover:text-stone-800">
                 More...
-                <ChevronDown className="h-4 w-4" />
-              </button>
+              </span>
 
-              {/* Dropdown Menu */}
-              {moreMenuOpen && (
-                <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-stone-200 bg-white py-2 shadow-lg">
-                  <a
-                    href="https://docs.nexus.yogan.dev"
-                    className="block px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50"
-                  >
-                    Documentation
-                  </a>
-                  <Link
-                    to="/explore"
-                    className="block px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50"
-                  >
-                    Explore Libraries
-                  </Link>
-                  <Link
-                    to="/code"
-                    className="block px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50"
-                  >
-                    Code Editor
-                  </Link>
-                  {isSignedIn && (
-                    <>
-                      <div className="my-1 border-t border-stone-100" />
+              {/* Dropdown Menu - CSS hover controlled */}
+              <div className="pointer-events-none invisible absolute -left-[21px] -top-[17px] z-50 w-[200px] opacity-0 transition-all duration-200 ease-in-out group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100">
+                <div className="rounded-xl border border-stone-300 bg-white shadow-xl">
+                  <div className="rounded-xl bg-white px-2 py-2">
+                    {/* Header item */}
+                    <div className="flex w-full items-center rounded-lg px-3 py-2 text-left text-base font-normal text-stone-400">
+                      More...
+                    </div>
+
+                    {/* Documentation */}
+                    <a
+                      href="https://docs.nexus.yogan.dev"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-base font-normal text-stone-800 underline transition-colors hover:bg-stone-100"
+                    >
+                      <span>Documentation</span>
+                      <ArrowUpRight className="h-5 w-5" />
+                    </a>
+
+                    {/* Libraries */}
+                    <Link
+                      to="/explore/docs"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-base font-normal text-stone-800 underline transition-colors hover:bg-stone-100"
+                    >
+                      <span>Libraries</span>
+                      <BookOpen className="h-5 w-5" />
+                    </Link>
+
+                    {/* MCP Servers */}
+                    <Link
+                      to="/explore/servers"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-base font-normal text-stone-800 underline transition-colors hover:bg-stone-100"
+                    >
+                      <span>MCP Servers</span>
+                      <Server className="h-5 w-5" />
+                    </Link>
+
+                    {/* AI Skills */}
+                    <Link
+                      to="/explore/skills"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-base font-normal text-stone-800 underline transition-colors hover:bg-stone-100"
+                    >
+                      <span>AI Skills</span>
+                      <Brain className="h-5 w-5" />
+                    </Link>
+
+                    {/* Memory - Coming Soon */}
+                    <div className="flex w-full cursor-not-allowed items-center justify-between rounded-lg px-3 py-2 text-left text-base font-normal text-stone-400">
+                      <span>Memory</span>
+                      <Database className="h-5 w-5" />
+                    </div>
+
+                    {/* Divider and CTA */}
+                    <div className="py-2">
+                      <div className="border-b border-stone-200" />
+                    </div>
+
+                    {isSignedIn ? (
                       <Link
                         to="/dashboard/keys"
-                        className="block px-4 py-2 text-sm font-medium text-emerald-600 transition-colors hover:bg-stone-50"
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-normal text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
                       >
-                        Create API Key
+                        <span>Create API Key</span>
+                        <Plus className="h-5 w-5" />
                       </Link>
-                    </>
-                  )}
+                    ) : (
+                      <a
+                        href="/sign-in"
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-normal text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                      >
+                        <span>Sign In</span>
+                        <ArrowUpRight className="h-5 w-5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
             <span className="hidden h-4 w-px bg-stone-300 md:block" />
 
-            {/* Submit button - To the right of More... */}
+            {/* Submit button */}
             <Link
               to="/submit"
               className="hidden h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-base font-normal leading-none text-white transition-colors hover:bg-emerald-700 md:inline-flex"

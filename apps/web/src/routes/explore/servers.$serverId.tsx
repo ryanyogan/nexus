@@ -11,7 +11,6 @@ import {
   Star,
   Package,
   Globe,
-  Loader2,
   Shield,
   ShieldAlert,
   ShieldCheck,
@@ -19,29 +18,44 @@ import {
   CheckCircle,
   type LucideIcon,
 } from "lucide-react";
-import { Skeleton } from "../../components/skeletons";
 import { getDb } from "../../server/db";
 import * as schema from "@nexus/db";
 import { eq } from "drizzle-orm";
 import { API_URL } from "../../lib/api";
+import { logger } from "../../lib/server-fn";
 
 // ============================================================================
 // Server Functions
 // ============================================================================
 
 const getServerFn = createServerFn({ method: "GET" })
-  .validator((data: { serverId: string }) => data)
+  .inputValidator((data: { serverId: string }) => data)
   .handler(async ({ data }) => {
-    const db = getDb();
-    const server = await db.query.mcpServers.findFirst({
-      where: eq(schema.mcpServers.id, data.serverId),
-    });
+    const startTime = Date.now();
+    const fnName = "getServerFn";
 
-    if (!server) {
-      throw new Error("Server not found");
+    try {
+      logger.debug(`${fnName} started`, { serverId: data.serverId });
+
+      const db = getDb();
+      const server = await db.query.mcpServers.findFirst({
+        where: eq(schema.mcpServers.id, data.serverId),
+      });
+
+      if (!server) {
+        throw new Error("Server not found");
+      }
+
+      const durationMs = Date.now() - startTime;
+      logger.info(`${fnName} completed`, { durationMs, serverId: data.serverId });
+
+      return { server };
+    } catch (error) {
+      const durationMs = Date.now() - startTime;
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error(`${fnName} failed`, { durationMs, serverId: data.serverId }, err);
+      throw error;
     }
-
-    return { server };
   });
 
 // ============================================================================

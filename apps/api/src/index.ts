@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger";
 import { createDb } from "@nexus/db";
 import { createAuth } from "@nexus/auth";
 import { mcpRouter } from "./routes/mcp";
@@ -17,12 +16,13 @@ import { userRouter } from "./routes/user";
 import { adminAuth } from "./middleware/admin";
 import { usageMiddleware, mcpRateLimitMiddleware } from "./middleware/usage";
 import { authMiddleware } from "./middleware/auth";
+import { structuredLogger, logger } from "./middleware/logger";
 import type { AppContext, IngestionJob } from "./types";
 
 const app = new Hono<AppContext>();
 
-// Middleware
-app.use("*", logger());
+// Middleware - structured JSON logging for Cloudflare Workers Logs
+app.use("*", structuredLogger);
 app.use(
   "*",
   cors({
@@ -111,15 +111,18 @@ export default {
 
     for (const message of batch.messages) {
       const job = message.body;
-      console.log(`Processing ingestion job for library: ${job.libraryId}`);
+      logger.info("Processing ingestion job", { libraryId: job.libraryId, attempt: message.attempts });
 
       try {
         // Import dynamically to avoid circular deps
         const { processIngestionJob } = await import("./lib/ingestion");
         await processIngestionJob(job, env, db);
+        logger.info("Ingestion job completed", { libraryId: job.libraryId });
         message.ack();
       } catch (error) {
-        console.error(`Failed to process job for ${job.libraryId}:`, error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error("Ingestion job failed", { libraryId: job.libraryId, attempt: message.attempts }, err);
+        
         // Retry up to 3 times
         if (message.attempts < 3) {
           message.retry();
@@ -135,6 +138,7 @@ export default {
               updatedAt: new Date().toISOString(),
             })
             .where(eq(libraries.id, job.libraryId));
+          logger.error("Ingestion job permanently failed", { libraryId: job.libraryId, maxAttemptsReached: true }, err);
           message.ack();
         }
       }

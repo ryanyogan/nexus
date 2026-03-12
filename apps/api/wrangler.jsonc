@@ -8,6 +8,18 @@
     { "pattern": "api.nexus.yogan.dev", "custom_domain": true }
   ],
 
+  // Full observability - logs, traces, source maps
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "invocation_logs": true,
+      "head_sampling_rate": 1
+    }
+  },
+
+  // Upload source maps for readable stack traces
+  "upload_source_maps": true,
+
   // Environment variables (non-secret)
   "vars": {
     "BETTER_AUTH_URL": "https://api.nexus.yogan.dev"

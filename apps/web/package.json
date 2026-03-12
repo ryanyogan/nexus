@@ -28,6 +28,7 @@
     "@lezer/highlight": "^1.2.0",
     "@nexus/auth": "workspace:*",
     "@nexus/db": "workspace:*",
+    "@nexus/logger": "workspace:*",
     "@nexus/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-router": "^1.132.0",

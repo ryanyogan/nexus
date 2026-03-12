@@ -44,8 +44,8 @@ export const Route = createFileRoute("/_authed/admin/")({
 });
 
 function AdminPage() {
-  const { session } = Route.useRouteContext();
-
+  // Note: session available via Route.useRouteContext() if needed
+  
   // Local state
   const [seeding, setSeeding] = useState(false);
   const [indexing, setIndexing] = useState(false);
@@ -64,11 +64,17 @@ function AdminPage() {
   } | null>(null);
 
   // TODO: Convert to server functions - for now use placeholder data
-  const stats: AdminStats | null = null;
-  const statsLoading = false;
-  const pendingSubmissions: Submission[] = [];
-  const submissionsLoading = false;
-  const hasIndexingLibraries = false;
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [pendingSubmissions, setPendingSubmissions] = useState<Submission[]>([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const hasIndexingLibraries = stats?.libraries?.indexing ? stats.libraries.indexing > 0 : false;
+  
+  // Suppress unused setters warning - these will be used when server functions are implemented
+  void setStats;
+  void setStatsLoading;
+  void setPendingSubmissions;
+  void setSubmissionsLoading;
 
   const invalidateQueries = () => {
     // TODO: Implement query invalidation with server functions

@@ -4,18 +4,18 @@ import { z } from "zod";
 import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "@nexus/db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, count } from "drizzle-orm";
 import {
   Search,
   ExternalLink,
   X,
   Zap,
-  CheckCircle,
-  Sparkles,
   Star,
   Download,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { ServerCardSkeleton } from "../../components/skeletons";
+import { logger } from "../../lib/server-fn";
 
 // ============================================================================
 // Types
@@ -39,71 +39,114 @@ interface SkillCategory {
   count: number;
 }
 
+interface PaginatedResult {
+  skills: Skill[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 // ============================================================================
 // Server Functions
 // ============================================================================
 
 const getSkills = createServerFn({ method: "GET" })
-  .inputValidator((d: { search?: string; category?: string; type?: string }) => d)
-  .handler(async ({ data }) => {
-    const db = drizzle(env.DB, { schema });
+  .inputValidator((d: { search?: string; category?: string; type?: string; page?: number; pageSize?: number }) => d)
+  .handler(async ({ data }): Promise<PaginatedResult> => {
+    const startTime = Date.now();
+    const fnName = "getSkills";
 
-    const conditions = [eq(schema.skills.isActive, true)];
+    try {
+      logger.debug(`${fnName} started`, { input: data });
 
-    if (data.search) {
-      conditions.push(
-        sql`(${schema.skills.name} LIKE ${"%" + data.search + "%"} OR ${schema.skills.description} LIKE ${"%" + data.search + "%"})`
-      );
+      const db = drizzle(env.DB, { schema });
+      const { search, category, type, page = 1, pageSize = 20 } = data;
+      const offset = (page - 1) * pageSize;
+
+      const conditions = [eq(schema.skills.isActive, true)];
+
+      if (search) {
+        conditions.push(
+          sql`(${schema.skills.name} LIKE ${"%" + search + "%"} OR ${schema.skills.description} LIKE ${"%" + search + "%"})`
+        );
+      }
+
+      if (category) {
+        conditions.push(
+          sql`json_array_length(${schema.skills.categories}) > 0 AND EXISTS (SELECT 1 FROM json_each(${schema.skills.categories}) WHERE json_each.value = ${category})`
+        );
+      }
+
+      if (type) {
+        conditions.push(eq(schema.skills.type, type as schema.SkillType));
+      }
+
+      const whereClause = and(...conditions);
+
+      // Get total count
+      const [countResult] = await db
+        .select({ count: count() })
+        .from(schema.skills)
+        .where(whereClause);
+
+      const total = countResult?.count ?? 0;
+
+      // Get paginated results
+      const skills = await db
+        .select({
+          id: schema.skills.id,
+          name: schema.skills.name,
+          slug: schema.skills.slug,
+          description: schema.skills.description,
+          type: schema.skills.type,
+          categories: schema.skills.categories,
+          isOfficial: schema.skills.isOfficial,
+          isFeatured: schema.skills.isFeatured,
+          installCount: schema.skills.installCount,
+        })
+        .from(schema.skills)
+        .where(whereClause)
+        .orderBy(
+          desc(schema.skills.isOfficial),
+          desc(schema.skills.isFeatured),
+          desc(schema.skills.installCount)
+        )
+        .limit(pageSize)
+        .offset(offset);
+
+      const durationMs = Date.now() - startTime;
+      logger.info(`${fnName} completed`, { durationMs, count: skills.length, total });
+
+      return {
+        skills: skills as Skill[],
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      };
+    } catch (error) {
+      const durationMs = Date.now() - startTime;
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error(`${fnName} failed`, { durationMs, input: data }, err);
+      throw error;
     }
-
-    if (data.category) {
-      // Categories are stored as JSON array
-      conditions.push(
-        sql`json_array_length(${schema.skills.categories}) > 0 AND EXISTS (SELECT 1 FROM json_each(${schema.skills.categories}) WHERE json_each.value = ${data.category})`
-      );
-    }
-
-    if (data.type) {
-      conditions.push(eq(schema.skills.type, data.type as schema.SkillType));
-    }
-
-    const skills = await db
-      .select({
-        id: schema.skills.id,
-        name: schema.skills.name,
-        slug: schema.skills.slug,
-        description: schema.skills.description,
-        type: schema.skills.type,
-        categories: schema.skills.categories,
-        isOfficial: schema.skills.isOfficial,
-        isFeatured: schema.skills.isFeatured,
-        installCount: schema.skills.installCount,
-      })
-      .from(schema.skills)
-      .where(and(...conditions))
-      .orderBy(
-        desc(schema.skills.isOfficial),
-        desc(schema.skills.isFeatured),
-        desc(schema.skills.installCount)
-      )
-      .limit(100);
-
-    return { skills: skills as Skill[], total: skills.length };
   });
 
-const getSkillCategories = createServerFn({ method: "GET" }).handler(
-  async () => {
+const getSkillCategories = createServerFn({ method: "GET" }).handler(async () => {
+  const startTime = Date.now();
+  const fnName = "getSkillCategories";
+
+  try {
+    logger.debug(`${fnName} started`);
+
     const db = drizzle(env.DB, { schema });
 
-    // Get all active skills and count categories
     const skills = await db
-      .select({
-        categories: schema.skills.categories,
-      })
+      .select({ categories: schema.skills.categories })
       .from(schema.skills)
       .where(eq(schema.skills.isActive, true));
 
-    // Count occurrences of each category
     const categoryCounts = new Map<string, number>();
     for (const skill of skills) {
       if (skill.categories && Array.isArray(skill.categories)) {
@@ -113,7 +156,6 @@ const getSkillCategories = createServerFn({ method: "GET" }).handler(
       }
     }
 
-    // Convert to array and sort by count
     const categories: SkillCategory[] = Array.from(categoryCounts.entries())
       .map(([id, count]) => ({
         id,
@@ -122,9 +164,17 @@ const getSkillCategories = createServerFn({ method: "GET" }).handler(
       }))
       .sort((a, b) => b.count - a.count);
 
+    const durationMs = Date.now() - startTime;
+    logger.info(`${fnName} completed`, { durationMs, count: categories.length });
+
     return categories;
+  } catch (error) {
+    const durationMs = Date.now() - startTime;
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error(`${fnName} failed`, { durationMs }, err);
+    throw error;
   }
-);
+});
 
 // ============================================================================
 // Search Params Schema
@@ -134,6 +184,7 @@ const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
   category: z.string().optional().catch(undefined),
   type: z.string().optional().catch(undefined),
+  page: z.coerce.number().min(1).optional().catch(1),
 });
 
 type SearchParams = z.infer<typeof searchSchema>;
@@ -148,6 +199,7 @@ export const Route = createFileRoute("/explore/skills/")({
     q: search.q,
     category: search.category,
     type: search.type,
+    page: search.page ?? 1,
   }),
   loader: async ({ deps }) => {
     const [skillsData, categories] = await Promise.all([
@@ -156,6 +208,8 @@ export const Route = createFileRoute("/explore/skills/")({
           search: deps.q,
           category: deps.category,
           type: deps.type,
+          page: deps.page,
+          pageSize: 20,
         },
       }),
       getSkillCategories(),
@@ -168,16 +222,43 @@ export const Route = createFileRoute("/explore/skills/")({
 });
 
 // ============================================================================
+// Page Skeleton
+// ============================================================================
+
+function SkillsPageSkeleton() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mb-8">
+        <div className="h-12 animate-pulse rounded-xl bg-stone-200" />
+      </div>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-8 w-20 animate-pulse rounded-lg bg-stone-200" />
+        ))}
+      </div>
+      <div className="space-y-1">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="h-14 animate-pulse rounded-lg bg-stone-100" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
 function SkillsPage() {
   const navigate = useNavigate({ from: "/explore/skills/" });
-  const { q, category } = Route.useSearch();
+  const { q, category, page } = Route.useSearch();
   const { skillsData, categories } = Route.useLoaderData();
 
   const searchQuery = q || "";
-  const selectedCategory = category || "all";
+  const selectedCategory = category || "";
+  const currentPage = page ?? 1;
+
+  const { skills, total, totalPages } = skillsData;
 
   const updateSearch = (updates: Partial<SearchParams>) => {
     navigate({
@@ -187,10 +268,11 @@ function SkillsPage() {
         q: updates.q !== undefined ? updates.q || undefined : prev.q,
         category:
           updates.category !== undefined
-            ? updates.category === "all"
+            ? updates.category === ""
               ? undefined
               : updates.category
             : prev.category,
+        page: updates.page ?? (updates.q !== undefined || updates.category !== undefined ? 1 : prev.page),
       }),
     });
   };
@@ -207,18 +289,12 @@ function SkillsPage() {
     updateSearch({ q: "" });
   };
 
-  const clearAllFilters = () => {
-    updateSearch({ q: "", category: "all" });
+  const goToPage = (newPage: number) => {
+    updateSearch({ page: newPage });
   };
 
-  const skills = skillsData.skills;
-  const total = skillsData.total;
-
-  const officialSkills = skills.filter((s: Skill) => s.isOfficial);
-  const communitySkills = skills.filter((s: Skill) => !s.isOfficial);
-
   const allCategories = [
-    { id: "all", label: "All Skills", count: total },
+    { id: "", label: "All", count: total },
     ...categories.map((cat: SkillCategory) => ({
       id: cat.id,
       label: cat.label,
@@ -227,261 +303,186 @@ function SkillsPage() {
   ];
 
   return (
-    <div className="relative min-h-screen">
+    <div className="mx-auto max-w-3xl px-4 py-8">
       {/* Header */}
-      <div className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Agent Skills
-              </h1>
-              <p className="mt-1 text-muted-foreground">
-                Pre-built skills for AI agents. Copy to your project or use with OpenCode.
-              </p>
-            </div>
-          </div>
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold text-stone-900">AI Skills</h1>
+        <p className="mt-1 text-stone-600">Pre-built skills for AI agents</p>
+      </div>
 
-          {/* Search */}
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search skills..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="h-12 w-full rounded-lg border border-border bg-background pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
+      {/* Search bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400" />
+          <input
+            type="text"
+            placeholder="Search skills..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="h-12 w-full rounded-xl border border-stone-300 bg-white pl-12 pr-10 text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          />
+          {searchQuery && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Sidebar */}
-          <aside className="w-full shrink-0 lg:w-56">
-            <h2 className="mb-4 text-sm font-semibold text-foreground">
-              Categories
-            </h2>
-            <nav className="flex flex-row flex-wrap gap-2 lg:flex-col lg:gap-1">
-              {allCategories.map((cat) => (
+      {/* Category Pills */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {allCategories.slice(0, 10).map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => handleCategoryChange(cat.id)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              selectedCategory === cat.id
+                ? "bg-emerald-600 text-white"
+                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Results info */}
+      <div className="mb-4 flex items-center justify-between text-sm text-stone-500">
+        <span>
+          {total} skill{total !== 1 ? "s" : ""}
+          {searchQuery && ` for "${searchQuery}"`}
+        </span>
+      </div>
+
+      {/* Skill List - Minimal Design */}
+      {skills.length > 0 ? (
+        <div className="space-y-1">
+          {skills.map((skill: Skill) => (
+            <SkillRow key={skill.id} skill={skill} />
+          ))}
+        </div>
+      ) : (
+        <div className="py-16 text-center">
+          <Zap className="mx-auto h-12 w-12 text-stone-300" />
+          <p className="mt-4 text-stone-600">No skills found</p>
+          <button
+            onClick={() => updateSearch({ q: "", category: "" })}
+            className="mt-4 text-sm text-emerald-600 hover:underline"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-center gap-2">
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage <= 1}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+
+              return (
                 <button
-                  key={cat.id}
-                  onClick={() => handleCategoryChange(cat.id)}
-                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                    selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  key={pageNum}
+                  onClick={() => goToPage(pageNum)}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === pageNum
+                      ? "bg-emerald-600 text-white"
+                      : "border border-stone-300 text-stone-600 hover:bg-stone-100"
                   }`}
                 >
-                  <span className="capitalize">{cat.label}</span>
-                  {cat.count !== undefined && (
-                    <span className="ml-2 text-xs opacity-70">{cat.count}</span>
-                  )}
+                  {pageNum}
                 </button>
-              ))}
-            </nav>
-          </aside>
-
-          {/* Skill Grid */}
-          <div className="flex-1">
-            {/* Info banner */}
-            <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4">
-              <div className="flex items-start gap-3">
-                <Zap className="mt-0.5 h-5 w-5 shrink-0 text-purple-600" />
-                <div>
-                  <h3 className="font-medium text-purple-900">
-                    Agent Skills
-                  </h3>
-                  <p className="mt-1 text-sm text-purple-700">
-                    Pre-built skills for AI agents. Copy to your project or use with OpenCode&apos;s skill system.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {skills.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
-                <Zap className="mb-4 h-12 w-12 text-muted-foreground" />
-                <p className="text-lg font-medium text-foreground">
-                  No skills found
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  Try adjusting your search or filters
-                </p>
-                <button
-                  onClick={clearAllFilters}
-                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Clear filters
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Official Skills */}
-                {officialSkills.length > 0 && (
-                  <>
-                    <div className="mb-4 flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-semibold text-foreground">
-                        Official Skills
-                      </h3>
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                        {officialSkills.length}
-                      </span>
-                    </div>
-                    <div className="mb-8 grid gap-4 sm:grid-cols-2">
-                      {officialSkills.map((skill: Skill) => (
-                        <SkillCard key={skill.id} skill={skill} />
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {/* Community Skills */}
-                {communitySkills.length > 0 && (
-                  <>
-                    <div className="mb-4 flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold text-foreground">
-                        Community Skills
-                      </h3>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                        {communitySkills.length}
-                      </span>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {communitySkills.map((skill: Skill) => (
-                        <SkillCard key={skill.id} skill={skill} />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+              );
+            })}
           </div>
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 // ============================================================================
-// Skill Card Component
+// Skill Row Component - Minimal List Item
 // ============================================================================
 
 const typeColors: Record<string, string> = {
-  analysis: "bg-blue-100 text-blue-700",
-  generation: "bg-emerald-100 text-emerald-700",
-  transformation: "bg-yellow-100 text-yellow-700",
-  integration: "bg-purple-100 text-purple-700",
-  utility: "bg-stone-100 text-stone-700",
+  analysis: "text-blue-600",
+  generation: "text-emerald-600",
+  transformation: "text-yellow-600",
+  integration: "text-purple-600",
+  utility: "text-stone-600",
 };
 
-function SkillCard({ skill }: { skill: Skill }) {
+function SkillRow({ skill }: { skill: Skill }) {
   return (
     <Link
       to="/explore/skills/$skillId"
       params={{ skillId: skill.id }}
-      className="group flex flex-col rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+      className="group flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-stone-100"
     >
-      <div className="mb-4 flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Zap className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-foreground">{skill.name}</h3>
-              {skill.isOfficial && (
-                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                  Official
-                </span>
-              )}
-              {skill.isFeatured && !skill.isOfficial && (
-                <Star className="h-4 w-4 text-yellow-500" />
-              )}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className={`rounded-md px-1.5 py-0.5 capitalize ${typeColors[skill.type] || typeColors.utility}`}>
-                {skill.type}
-              </span>
-            </div>
-          </div>
-        </div>
-        <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      {/* Icon */}
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-purple-100">
+        <Zap className="h-4 w-4 text-purple-600" />
       </div>
 
-      <p className="mb-4 line-clamp-2 flex-1 text-sm text-muted-foreground">
-        {skill.description || "No description available"}
-      </p>
-
-      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        {skill.categories.slice(0, 2).map((cat) => (
-          <span
-            key={cat}
-            className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground capitalize"
-          >
-            {cat.replace(/-/g, " ")}
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-stone-900">{skill.name}</span>
+          {skill.isOfficial && (
+            <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+              Official
+            </span>
+          )}
+          {skill.isFeatured && !skill.isOfficial && (
+            <Star className="h-3.5 w-3.5 text-amber-500" />
+          )}
+          <span className={`text-xs capitalize ${typeColors[skill.type] || typeColors.utility}`}>
+            {skill.type}
           </span>
-        ))}
-        <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-          <Download className="h-3 w-3" />
-          <span>{skill.installCount}</span>
         </div>
+        {skill.description && (
+          <p className="truncate text-sm text-stone-500">{skill.description}</p>
+        )}
       </div>
+
+      {/* Meta */}
+      <div className="hidden shrink-0 items-center gap-1 text-xs text-stone-400 sm:flex">
+        <Download className="h-3.5 w-3.5" />
+        {skill.installCount}
+      </div>
+
+      {/* Arrow */}
+      <ExternalLink className="h-4 w-4 shrink-0 text-stone-300 transition-colors group-hover:text-stone-500" />
     </Link>
-  );
-}
-
-// ============================================================================
-// Skeleton Components
-// ============================================================================
-
-function SkillsPageSkeleton() {
-  return (
-    <div className="relative min-h-screen">
-      <div className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="h-9 w-48 animate-pulse rounded bg-muted" />
-          <div className="mt-2 h-5 w-96 animate-pulse rounded bg-muted" />
-          <div className="mt-6 h-12 w-full animate-pulse rounded-lg bg-muted" />
-        </div>
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <aside className="w-full shrink-0 lg:w-56">
-            <div className="h-5 w-24 animate-pulse rounded bg-muted" />
-            <div className="mt-4 space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-10 w-full animate-pulse rounded-lg bg-muted"
-                />
-              ))}
-            </div>
-          </aside>
-          <div className="flex-1">
-            <div className="mb-6 h-24 animate-pulse rounded-lg bg-purple-50" />
-            <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <ServerCardSkeleton key={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
