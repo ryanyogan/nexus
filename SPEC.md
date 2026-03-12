@@ -108,7 +108,7 @@ All explore pages now use minimal list design with pagination:
 - **File**: `/apps/docs/astro.config.mjs`
 - Added Architecture link to Features section
 
-### Phase 4: Nexus CLI (WIP)
+### Phase 4: Nexus CLI (Complete)
 
 #### Package Setup
 - **Location**: `/packages/cli/`
@@ -140,8 +140,32 @@ nexus skills add       # Add skill (stub)
 
 nexus init             # Setup wizard
 nexus stats            # Usage dashboard
-nexus serve            # Run MCP server locally (stub)
+nexus serve            # Run MCP server locally
 ```
+
+#### MCP Server Mode
+The CLI can run as a local MCP server via `nexus serve`:
+- **Transport**: stdio (for local integration)
+- **Tools exposed**:
+  - `resolve-library` - Find libraries by name
+  - `query-docs` - Search documentation
+  - `get-library-info` - Get library details
+  - `list-libraries` - List all indexed libraries
+  - `save-memory` - Store context/decisions
+  - `recall-memories` - Search stored memories
+  - `get-project-context` - Get all project context
+  - `discover-servers` - Find MCP servers
+  - `get-server-info` - Get server details
+  - `get-server-config` - Get installation config
+
+#### Browser Auth Flow
+CLI uses a polling-based browser auth flow:
+1. CLI calls `POST /api/cli/auth/start` to get a verification code
+2. CLI opens browser to `/auth/cli?code={code}`
+3. User signs in via OAuth (GitHub/Google)
+4. Web app calls `POST /api/cli/auth/complete`
+5. CLI polls `GET /api/cli/auth/poll` until complete
+6. CLI receives and stores API token
 
 #### Editor Adapters
 Full adapter system for managing MCP server configs across editors:
@@ -179,31 +203,22 @@ Full adapter system for managing MCP server configs across editors:
 
 ### High Priority
 
-1. **CLI Auth Flow**
-   - API endpoints for CLI OAuth (`/api/cli/auth/*`)
-   - Web route for browser callback (`/auth/cli`)
-   - Token exchange flow
-
-2. **Apply User Preferences to MCP Queries**
+1. **Apply User Preferences to MCP Queries**
    - Currently preferences are stored but not used
    - Need to read user's `defaultResponseFormat` when handling MCP tool calls
    - Apply `defaultTokenBudget` to limit response size
 
-3. **API Token Scopes**
+2. **API Token Scopes**
    - Tokens have scopes defined but not enforced
    - Implement scope checking in API routes
 
-4. **Usage Analytics**
+3. **Usage Analytics**
    - Analytics Engine binding exists but not used
    - Track API calls per user for billing/limits
 
 ### Medium Priority
 
-5. **CLI MCP Server Mode**
-   - `nexus serve` to run bundled MCP server locally
-   - Useful for development and testing
-
-6. **CLI Interactive TUI**
+4. **CLI Interactive TUI**
    - Ink-based React components for interactive selection
    - Better UX for `nexus init`, `nexus servers add`
 
@@ -323,7 +338,9 @@ cd apps/docs && pnpm run deploy
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-03-12 | WIP | CLI package with editor adapters |
+| 2026-03-12 | 4cfae32 | CLI MCP server mode (nexus serve) |
+| 2026-03-12 | 8ca6a9c | CLI browser auth flow |
+| 2026-03-12 | fdab0e0 | CLI package with editor adapters |
 | 2026-03-12 | b85a011c | Added user preferences API endpoints |
 | 2026-03-12 | 73185a21 | Settings page with API integration |
 | 2026-03-12 | - | Database migration for user_preferences table |
