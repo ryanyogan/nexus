@@ -14,6 +14,10 @@ import {
   CheckCircle,
   Sparkles,
   Star,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { ServerCardSkeleton } from "../../components/skeletons";
 
@@ -32,6 +36,9 @@ interface McpServer {
   iconUrl: string | null;
   repositoryUrl: string | null;
   packageName: string | null;
+  // Security
+  securityRiskLevel: "low" | "medium" | "high" | "critical" | null;
+  isSecurityAudited: boolean;
 }
 
 interface ServerCategory {
@@ -44,20 +51,25 @@ interface ServerCategory {
 // Server Functions
 // ============================================================================
 
-const getServers = createServerFn({ method: "GET" })
-  .inputValidator((d: { search?: string; category?: string }) => d)
-  .handler(async ({ data }) => {
+interface GetServersInput {
+  search?: string;
+  category?: string;
+}
+
+const getServers = createServerFn({ method: "GET" }).handler(
+  async (ctx: { data: GetServersInput }) => {
+    const { data } = ctx;
     const db = drizzle(env.DB, { schema });
 
     const conditions = [eq(schema.mcpServers.isActive, true)];
 
-    if (data.search) {
+    if (data?.search) {
       conditions.push(
         sql`(${schema.mcpServers.name} LIKE ${"%" + data.search + "%"} OR ${schema.mcpServers.displayName} LIKE ${"%" + data.search + "%"} OR ${schema.mcpServers.description} LIKE ${"%" + data.search + "%"})`
       );
     }
 
-    if (data.category) {
+    if (data?.category) {
       // Categories are stored as JSON array, so we need to check if the category is in the array
       conditions.push(
         sql`json_array_length(${schema.mcpServers.categories}) > 0 AND EXISTS (SELECT 1 FROM json_each(${schema.mcpServers.categories}) WHERE json_each.value = ${data.category})`
@@ -76,6 +88,9 @@ const getServers = createServerFn({ method: "GET" })
         iconUrl: schema.mcpServers.iconUrl,
         repositoryUrl: schema.mcpServers.repositoryUrl,
         packageName: schema.mcpServers.packageName,
+        // Security
+        securityRiskLevel: schema.mcpServers.securityRiskLevel,
+        isSecurityAudited: schema.mcpServers.isSecurityAudited,
       })
       .from(schema.mcpServers)
       .where(and(...conditions))
@@ -87,7 +102,8 @@ const getServers = createServerFn({ method: "GET" })
       .limit(100);
 
     return { servers: servers as McpServer[], total: servers.length };
-  });
+  }
+);
 
 const getServerCategories = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -361,9 +377,20 @@ function ServersPage() {
 // Server Card Component
 // ============================================================================
 
+// Security badge config
+const securityConfig = {
+  low: { icon: ShieldCheck, color: "text-green-500", bg: "bg-green-500/10", label: "Low Risk" },
+  medium: { icon: Shield, color: "text-yellow-500", bg: "bg-yellow-500/10", label: "Medium Risk" },
+  high: { icon: ShieldAlert, color: "text-orange-500", bg: "bg-orange-500/10", label: "High Risk" },
+  critical: { icon: AlertTriangle, color: "text-red-500", bg: "bg-red-500/10", label: "Critical" },
+} as const;
+
 function ServerCard({ server }: { server: McpServer }) {
   const displayName = server.displayName || server.name;
   const category = server.categories?.[0];
+  const riskLevel = server.securityRiskLevel || "medium";
+  const security = securityConfig[riskLevel];
+  const SecurityIcon = security.icon;
 
   return (
     <Link
@@ -414,6 +441,20 @@ function ServerCard({ server }: { server: McpServer }) {
       </p>
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+        {/* Security Badge */}
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs ${security.bg} ${security.color}`}
+          title={security.label}
+        >
+          <SecurityIcon className="h-3 w-3" />
+          {security.label}
+        </span>
+        {server.isSecurityAudited && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-500">
+            <CheckCircle className="h-3 w-3" />
+            Audited
+          </span>
+        )}
         {category && (
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground capitalize">
             {category}

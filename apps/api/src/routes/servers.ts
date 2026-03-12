@@ -89,6 +89,10 @@ serversRouter.get("/", async (c) => {
       isVerified: mcpServers.isVerified,
       isOfficial: mcpServers.isOfficial,
       isFeatured: mcpServers.isFeatured,
+      // Security profile
+      securityRiskLevel: mcpServers.securityRiskLevel,
+      securityCapabilities: mcpServers.securityCapabilities,
+      isSecurityAudited: mcpServers.isSecurityAudited,
       createdAt: mcpServers.createdAt,
     })
     .from(mcpServers)

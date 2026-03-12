@@ -1898,6 +1898,9 @@ async function toolDiscoverServers(
       categories: mcpServers.categories,
       isOfficial: mcpServers.isOfficial,
       isVerified: mcpServers.isVerified,
+      // Security
+      securityRiskLevel: mcpServers.securityRiskLevel,
+      isSecurityAudited: mcpServers.isSecurityAudited,
     })
     .from(mcpServers)
     .where(and(...conditions))
@@ -1923,9 +1926,11 @@ async function toolDiscoverServers(
       prompts: server.hasPrompts,
     },
     categories: server.categories,
+    securityRiskLevel: server.securityRiskLevel || "medium",
     badges: [
       server.isOfficial && "official",
       server.isVerified && "verified",
+      server.isSecurityAudited && "security-audited",
     ].filter(Boolean),
   }));
 
@@ -2011,10 +2016,19 @@ async function toolGetServerInfo(
       weeklyDownloads: server.weeklyDownloads,
     },
     
+    security: {
+      riskLevel: server.securityRiskLevel || "medium",
+      capabilities: server.securityCapabilities || [],
+      notes: server.securityNotes,
+      isAudited: server.isSecurityAudited || false,
+      auditedAt: server.securityAuditedAt,
+    },
+    
     badges: [
       server.isOfficial && "official",
       server.isVerified && "verified",
       server.isFeatured && "featured",
+      server.isSecurityAudited && "security-audited",
     ].filter(Boolean),
     
     hint: `Use get-server-config with serverId "${server.id}" to get ready-to-use installation config.`,

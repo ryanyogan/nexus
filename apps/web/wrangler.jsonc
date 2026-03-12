@@ -8,6 +8,11 @@
     { "pattern": "nexus.yogan.dev", "custom_domain": true }
   ],
 
+  // Observability - logs, metrics, traces
+  "observability": {
+    "enabled": true
+  },
+
   // D1 Database - shared with API
   "d1_databases": [
     {

@@ -543,6 +543,25 @@ export const mcpServers = sqliteTable(
     requiresAuth: integer("requires_auth", { mode: "boolean" }).notNull().default(false),
     authType: text("auth_type", { enum: ["oauth", "api_key", "env", "none"] }).default("none"),
     
+    // Security Profile - helps users understand what access the server needs
+    // Risk level: low (read-only/sandboxed), medium (writes to specific locations), high (system access), critical (full system/network)
+    securityRiskLevel: text("security_risk_level", { 
+      enum: ["low", "medium", "high", "critical"] 
+    }).default("medium"),
+    
+    // Access capabilities (JSON array of what the server can access)
+    // Examples: "filesystem:read", "filesystem:write", "network:outbound", "shell:execute", "database:read", "database:write"
+    securityCapabilities: text("security_capabilities", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+    
+    // Human-readable security notes (e.g., "Can read/write files in specified directories")
+    securityNotes: text("security_notes"),
+    
+    // Whether this server has been security audited
+    isSecurityAudited: integer("is_security_audited", { mode: "boolean" }).notNull().default(false),
+    securityAuditedAt: text("security_audited_at"),
+    
     // Metadata
     author: text("author"),
     license: text("license"),

@@ -12,6 +12,12 @@ import {
   Package,
   Globe,
   Loader2,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle,
+  type LucideIcon,
 } from "lucide-react";
 import { Skeleton } from "../../components/skeletons";
 import { getDb } from "../../server/db";
@@ -279,6 +285,9 @@ function ServerDetailPage() {
               </dl>
             </div>
 
+            {/* Security */}
+            <SecurityCard server={server} />
+
             {/* Need help? */}
             <div className="rounded-lg border border-border bg-card p-6">
               <h3 className="mb-2 text-sm font-semibold text-foreground">
@@ -331,5 +340,116 @@ function FormatButton({
         </span>
       )}
     </button>
+  );
+}
+
+// ============================================================================
+// Security Card Component
+// ============================================================================
+
+type RiskLevel = "low" | "medium" | "high" | "critical";
+
+const securityConfig: Record<
+  RiskLevel,
+  { icon: LucideIcon; color: string; bg: string; border: string; label: string; description: string }
+> = {
+  low: {
+    icon: ShieldCheck,
+    color: "text-green-500",
+    bg: "bg-green-500/10",
+    border: "border-green-500/30",
+    label: "Low Risk",
+    description: "Read-only or sandboxed access. Minimal security concerns.",
+  },
+  medium: {
+    icon: Shield,
+    color: "text-yellow-500",
+    bg: "bg-yellow-500/10",
+    border: "border-yellow-500/30",
+    label: "Medium Risk",
+    description: "Can write to specific locations or make network requests.",
+  },
+  high: {
+    icon: ShieldAlert,
+    color: "text-orange-500",
+    bg: "bg-orange-500/10",
+    border: "border-orange-500/30",
+    label: "High Risk",
+    description: "Has significant system access. Review permissions carefully.",
+  },
+  critical: {
+    icon: AlertTriangle,
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+    border: "border-red-500/30",
+    label: "Critical",
+    description: "Full system access. Use only if you trust the source.",
+  },
+};
+
+function SecurityCard({ server }: { server: { 
+  securityRiskLevel?: string | null;
+  securityCapabilities?: string[] | null;
+  securityNotes?: string | null;
+  isSecurityAudited?: boolean | null;
+}}) {
+  const riskLevel = (server.securityRiskLevel || "medium") as RiskLevel;
+  const security = securityConfig[riskLevel];
+  const SecurityIcon = security.icon;
+  const capabilities = server.securityCapabilities || [];
+
+  return (
+    <div className={`rounded-lg border ${security.border} ${security.bg} p-6`}>
+      <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
+        <SecurityIcon className={`h-5 w-5 ${security.color}`} />
+        Security Profile
+      </h3>
+
+      {/* Risk Level Badge */}
+      <div className="mb-4">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${security.bg} ${security.color}`}
+        >
+          <SecurityIcon className="h-4 w-4" />
+          {security.label}
+        </span>
+        {server.isSecurityAudited && (
+          <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-500">
+            <CheckCircle className="h-3 w-3" />
+            Audited
+          </span>
+        )}
+      </div>
+
+      <p className="mb-4 text-sm text-muted-foreground">
+        {security.description}
+      </p>
+
+      {/* Capabilities */}
+      {capabilities.length > 0 && (
+        <div className="mb-4">
+          <h4 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+            Access Capabilities
+          </h4>
+          <div className="flex flex-wrap gap-1.5">
+            {capabilities.map((cap) => (
+              <span
+                key={cap}
+                className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+              >
+                {cap}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Security Notes */}
+      {server.securityNotes && (
+        <p className="text-xs text-muted-foreground italic">
+          {server.securityNotes}
+        </p>
+      )}
+    </div>
   );
 }
