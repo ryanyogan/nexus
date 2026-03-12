@@ -17,6 +17,7 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as CodeIndexRouteImport } from './routes/code/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SettingsSecretsRouteImport } from './routes/settings/secrets'
 import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
@@ -29,6 +30,7 @@ import { Route as DocsGettingStartedRouteImport } from './routes/docs/getting-st
 import { Route as DashboardSkillsRouteImport } from './routes/dashboard/skills'
 import { Route as DashboardKeysRouteImport } from './routes/dashboard/keys'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
+import { Route as CodeSessionsRouteImport } from './routes/code/sessions'
 import { Route as AdminSubmissionsRouteImport } from './routes/admin/submissions'
 import { Route as AdminServerSubmissionsRouteImport } from './routes/admin/server-submissions'
 import { Route as AdminLibrariesRouteImport } from './routes/admin/libraries'
@@ -52,6 +54,7 @@ import { Route as DocsFeaturesDashboardRouteImport } from './routes/docs/feature
 import { Route as DocsApiSubmissionsRouteImport } from './routes/docs/api/submissions'
 import { Route as DocsApiStatsRouteImport } from './routes/docs/api/stats'
 import { Route as DocsApiLibrariesRouteImport } from './routes/docs/api/libraries'
+import { Route as CodeSessionSessionIdRouteImport } from './routes/code/session.$sessionId'
 
 const TerminalRoute = TerminalRouteImport.update({
   id: '/terminal',
@@ -93,6 +96,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CodeIndexRoute = CodeIndexRouteImport.update({
+  id: '/code/',
+  path: '/code/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/code/index.lazy').then((d) => d.Route))
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -153,6 +161,11 @@ const DashboardBillingRoute = DashboardBillingRouteImport.update({
   path: '/dashboard/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CodeSessionsRoute = CodeSessionsRouteImport.update({
+  id: '/code/sessions',
+  path: '/code/sessions',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/code/sessions.lazy').then((d) => d.Route))
 const AdminSubmissionsRoute = AdminSubmissionsRouteImport.update({
   id: '/admin/submissions',
   path: '/admin/submissions',
@@ -275,6 +288,13 @@ const DocsApiLibrariesRoute = DocsApiLibrariesRouteImport.update({
   path: '/docs/api/libraries',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CodeSessionSessionIdRoute = CodeSessionSessionIdRouteImport.update({
+  id: '/code/session/$sessionId',
+  path: '/code/session/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/code/session.$sessionId.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -286,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/admin/libraries': typeof AdminLibrariesRoute
   '/admin/server-submissions': typeof AdminServerSubmissionsRoute
   '/admin/submissions': typeof AdminSubmissionsRoute
+  '/code/sessions': typeof CodeSessionsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/skills': typeof DashboardSkillsRoute
@@ -298,8 +319,10 @@ export interface FileRoutesByFullPath {
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/settings/secrets': typeof SettingsSecretsRoute
   '/admin/': typeof AdminIndexRoute
+  '/code/': typeof CodeIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/docs/': typeof DocsIndexRoute
+  '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/docs/api/libraries': typeof DocsApiLibrariesRoute
   '/docs/api/stats': typeof DocsApiStatsRoute
   '/docs/api/submissions': typeof DocsApiSubmissionsRoute
@@ -331,6 +354,7 @@ export interface FileRoutesByTo {
   '/admin/libraries': typeof AdminLibrariesRoute
   '/admin/server-submissions': typeof AdminServerSubmissionsRoute
   '/admin/submissions': typeof AdminSubmissionsRoute
+  '/code/sessions': typeof CodeSessionsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/skills': typeof DashboardSkillsRoute
@@ -343,8 +367,10 @@ export interface FileRoutesByTo {
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/settings/secrets': typeof SettingsSecretsRoute
   '/admin': typeof AdminIndexRoute
+  '/code': typeof CodeIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/docs': typeof DocsIndexRoute
+  '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/docs/api/libraries': typeof DocsApiLibrariesRoute
   '/docs/api/stats': typeof DocsApiStatsRoute
   '/docs/api/submissions': typeof DocsApiSubmissionsRoute
@@ -377,6 +403,7 @@ export interface FileRoutesById {
   '/admin/libraries': typeof AdminLibrariesRoute
   '/admin/server-submissions': typeof AdminServerSubmissionsRoute
   '/admin/submissions': typeof AdminSubmissionsRoute
+  '/code/sessions': typeof CodeSessionsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/skills': typeof DashboardSkillsRoute
@@ -389,8 +416,10 @@ export interface FileRoutesById {
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/settings/secrets': typeof SettingsSecretsRoute
   '/admin/': typeof AdminIndexRoute
+  '/code/': typeof CodeIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/docs/': typeof DocsIndexRoute
+  '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/docs/api/libraries': typeof DocsApiLibrariesRoute
   '/docs/api/stats': typeof DocsApiStatsRoute
   '/docs/api/submissions': typeof DocsApiSubmissionsRoute
@@ -424,6 +453,7 @@ export interface FileRouteTypes {
     | '/admin/libraries'
     | '/admin/server-submissions'
     | '/admin/submissions'
+    | '/code/sessions'
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
@@ -436,8 +466,10 @@ export interface FileRouteTypes {
     | '/libraries/$libraryId'
     | '/settings/secrets'
     | '/admin/'
+    | '/code/'
     | '/dashboard/'
     | '/docs/'
+    | '/code/session/$sessionId'
     | '/docs/api/libraries'
     | '/docs/api/stats'
     | '/docs/api/submissions'
@@ -469,6 +501,7 @@ export interface FileRouteTypes {
     | '/admin/libraries'
     | '/admin/server-submissions'
     | '/admin/submissions'
+    | '/code/sessions'
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
@@ -481,8 +514,10 @@ export interface FileRouteTypes {
     | '/libraries/$libraryId'
     | '/settings/secrets'
     | '/admin'
+    | '/code'
     | '/dashboard'
     | '/docs'
+    | '/code/session/$sessionId'
     | '/docs/api/libraries'
     | '/docs/api/stats'
     | '/docs/api/submissions'
@@ -514,6 +549,7 @@ export interface FileRouteTypes {
     | '/admin/libraries'
     | '/admin/server-submissions'
     | '/admin/submissions'
+    | '/code/sessions'
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
@@ -526,8 +562,10 @@ export interface FileRouteTypes {
     | '/libraries/$libraryId'
     | '/settings/secrets'
     | '/admin/'
+    | '/code/'
     | '/dashboard/'
     | '/docs/'
+    | '/code/session/$sessionId'
     | '/docs/api/libraries'
     | '/docs/api/stats'
     | '/docs/api/submissions'
@@ -560,6 +598,7 @@ export interface RootRouteChildren {
   AdminLibrariesRoute: typeof AdminLibrariesRoute
   AdminServerSubmissionsRoute: typeof AdminServerSubmissionsRoute
   AdminSubmissionsRoute: typeof AdminSubmissionsRoute
+  CodeSessionsRoute: typeof CodeSessionsRoute
   DashboardBillingRoute: typeof DashboardBillingRoute
   DashboardKeysRoute: typeof DashboardKeysRoute
   DashboardSkillsRoute: typeof DashboardSkillsRoute
@@ -572,8 +611,10 @@ export interface RootRouteChildren {
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
   SettingsSecretsRoute: typeof SettingsSecretsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  CodeIndexRoute: typeof CodeIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
+  CodeSessionSessionIdRoute: typeof CodeSessionSessionIdRoute
   DocsApiLibrariesRoute: typeof DocsApiLibrariesRoute
   DocsApiStatsRoute: typeof DocsApiStatsRoute
   DocsApiSubmissionsRoute: typeof DocsApiSubmissionsRoute
@@ -650,6 +691,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/code/': {
+      id: '/code/'
+      path: '/code'
+      fullPath: '/code/'
+      preLoaderRoute: typeof CodeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -734,6 +782,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/billing'
       fullPath: '/dashboard/billing'
       preLoaderRoute: typeof DashboardBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/code/sessions': {
+      id: '/code/sessions'
+      path: '/code/sessions'
+      fullPath: '/code/sessions'
+      preLoaderRoute: typeof CodeSessionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/submissions': {
@@ -897,6 +952,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsApiLibrariesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/code/session/$sessionId': {
+      id: '/code/session/$sessionId'
+      path: '/code/session/$sessionId'
+      fullPath: '/code/session/$sessionId'
+      preLoaderRoute: typeof CodeSessionSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -923,6 +985,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLibrariesRoute: AdminLibrariesRoute,
   AdminServerSubmissionsRoute: AdminServerSubmissionsRoute,
   AdminSubmissionsRoute: AdminSubmissionsRoute,
+  CodeSessionsRoute: CodeSessionsRoute,
   DashboardBillingRoute: DashboardBillingRoute,
   DashboardKeysRoute: DashboardKeysRoute,
   DashboardSkillsRoute: DashboardSkillsRoute,
@@ -935,8 +998,10 @@ const rootRouteChildren: RootRouteChildren = {
   LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
   SettingsSecretsRoute: SettingsSecretsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  CodeIndexRoute: CodeIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
+  CodeSessionSessionIdRoute: CodeSessionSessionIdRoute,
   DocsApiLibrariesRoute: DocsApiLibrariesRoute,
   DocsApiStatsRoute: DocsApiStatsRoute,
   DocsApiSubmissionsRoute: DocsApiSubmissionsRoute,

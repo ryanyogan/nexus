@@ -13,7 +13,9 @@ function getBearerToken(): string {
 
 // Auth client for React - connects to the API
 export const authClient = createAuthClient({
-  baseURL: "https://api.nexus.yogan.dev",
+  baseURL: isBrowser() && window.location.hostname === "localhost" 
+    ? "http://localhost:3001" 
+    : "https://api.nexus.yogan.dev",
   fetchOptions: {
     credentials: "include",
     // Store bearer token on successful auth responses

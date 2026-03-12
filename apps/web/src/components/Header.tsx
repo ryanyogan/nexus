@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Layers, Menu, X, LogOut, User, Settings, Sun, Moon, Key, Github, Code2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useSession, signOut } from "@nexus/auth/client";
+import { useSession, signOut } from "@/lib/auth";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -75,15 +75,16 @@ export default function Header() {
           >
             Docs
           </Link>
-          <a
-            href="https://code.nexus.yogan.dev"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/code"
             className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            activeProps={{
+              className: "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium bg-muted text-foreground"
+            }}
           >
             <Code2 className="h-4 w-4" />
             Code
-          </a>
+          </Link>
           <a
             href="https://github.com/ryanyogan/nexus"
             target="_blank"
@@ -220,15 +221,14 @@ export default function Header() {
             >
               Docs
             </Link>
-            <a
-              href="https://code.nexus.yogan.dev"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/code"
               className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
             >
               <Code2 className="h-4 w-4" />
               Code
-            </a>
+            </Link>
             <a
               href="https://github.com/ryanyogan/nexus"
               target="_blank"

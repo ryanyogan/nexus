@@ -10,8 +10,9 @@ import {
   Clock,
   CheckCircle,
   Sparkles,
+  Code,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardPage,
@@ -288,6 +289,19 @@ function DashboardPage() {
             <div>
               <h3 className="font-medium text-foreground">Manage Secrets</h3>
               <p className="text-sm text-muted-foreground">Store API keys securely</p>
+            </div>
+          </Link>
+
+          <Link
+            to="/code"
+            className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
+              <Code className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">Code Editor</h3>
+              <p className="text-sm text-muted-foreground">Connect to OpenCode remotely</p>
             </div>
           </Link>
         </div>

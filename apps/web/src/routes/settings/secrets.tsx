@@ -12,7 +12,7 @@ import {
   Shield,
   AlertCircle,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 import { authFetch, SECRET_PROVIDERS, type SecretProvider } from "../../lib/api";
 
 export const Route = createFileRoute("/settings/secrets")({

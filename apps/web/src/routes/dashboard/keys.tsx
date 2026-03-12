@@ -10,7 +10,7 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 import { authFetch } from "../../lib/api";
 
 export const Route = createFileRoute("/dashboard/keys")({

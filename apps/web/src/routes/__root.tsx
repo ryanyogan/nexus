@@ -3,10 +3,13 @@ import {
   Scripts,
   createRootRouteWithContext,
   Outlet,
+  useMatches,
 } from "@tanstack/react-router";
 import type { RouterContext } from "../router";
 import Header from "../components/Header";
 import { Footer } from "../components/Footer";
+import { DevModeBadge } from "../components/DevModeBadge";
+import { cn } from "@/lib/utils";
 
 import appCss from "../styles.css?url";
 
@@ -54,18 +57,40 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
+  const matches = useMatches();
+
+  // Check if we're on a code editor route - hide footer for full height
+  const isCodeEditor = matches.some(
+    (match) => match.pathname.startsWith("/code")
+  );
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
+        {/* Add mobile PWA meta tags for code routes */}
+        {isCodeEditor && (
+          <>
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta
+              name="apple-mobile-web-app-status-bar-style"
+              content="black-translucent"
+            />
+          </>
+        )}
       </head>
       <body className="min-h-screen bg-background text-foreground">
         <Header />
-        <main>
+        <main
+          className={cn(
+            isCodeEditor && "h-[calc(100vh-4rem)] overflow-hidden"
+          )}
+        >
           <Outlet />
         </main>
-        <Footer />
+        {!isCodeEditor && <Footer />}
+        <DevModeBadge />
         <Scripts />
       </body>
     </html>

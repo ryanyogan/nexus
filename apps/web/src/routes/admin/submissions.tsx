@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, Check, X, ExternalLink, Clock } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 import { API_URL, adminFetch } from "../../lib/api";
 
 interface Submission {

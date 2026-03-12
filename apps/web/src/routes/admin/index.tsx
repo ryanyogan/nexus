@@ -13,7 +13,7 @@ import {
   Database,
   Server,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 import { API_URL, adminFetch } from "../../lib/api";
 import { adminStatsQueryOptions } from "../../lib/query-options";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";

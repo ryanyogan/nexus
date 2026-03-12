@@ -15,7 +15,7 @@ import {
   Search,
   Copy,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 import { adminFetch } from "../../lib/api";
 import { adminLibrariesQueryOptions } from "../../lib/query-options";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";

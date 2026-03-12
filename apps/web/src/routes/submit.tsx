@@ -14,7 +14,7 @@ import {
   ExternalLink,
   Github,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 import { API_URL, LIBRARY_CATEGORIES } from "../lib/api";
 
 export const Route = createFileRoute("/submit")({ component: SubmitPage });

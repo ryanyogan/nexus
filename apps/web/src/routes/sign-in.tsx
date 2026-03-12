@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { Layers, Github, ArrowLeft, Loader2 } from "lucide-react";
-import { signIn, useSession } from "@nexus/auth/client";
+import { signIn, useSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/sign-in")({
   component: SignInPage,

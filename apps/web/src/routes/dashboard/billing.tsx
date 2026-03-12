@@ -10,7 +10,7 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/dashboard/billing")({
   component: BillingPage,

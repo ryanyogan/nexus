@@ -11,7 +11,7 @@ import {
   Package,
   Plug,
 } from "lucide-react";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 import { API_URL } from "../lib/api";
 
 export const Route = createFileRoute("/submit-server")({ component: SubmitServerPage });

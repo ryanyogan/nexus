@@ -29,7 +29,7 @@ import {
   StatsSkeleton,
   ServerPreviewCardSkeleton,
 } from "../components/skeletons";
-import { useSession } from "@nexus/auth/client";
+import { useSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) => {

@@ -25,6 +25,22 @@ const config = defineConfig({
         manualChunks: {
           // Shiki is large (~1MB), keep it in a separate chunk (lazy-loaded)
           shiki: ['shiki', 'shiki/core', 'shiki/engine/javascript'],
+          // CodeMirror for /code routes - lazy loaded
+          codemirror: [
+            '@codemirror/state',
+            '@codemirror/view',
+            '@codemirror/lang-javascript',
+            '@codemirror/lang-css',
+            '@codemirror/lang-html',
+            '@codemirror/lang-json',
+            '@codemirror/lang-markdown',
+            '@codemirror/lang-python',
+            '@codemirror/lang-go',
+            '@codemirror/lang-rust',
+            '@codemirror/lang-java',
+            '@uiw/react-codemirror',
+            '@uiw/codemirror-themes',
+          ],
         },
       },
     },
