@@ -9,20 +9,13 @@ export default defineConfig({
   minify: false,
   target: "node18",
   outDir: "dist",
+  platform: "node",
   banner: {
     js: "#!/usr/bin/env node",
   },
-  external: [
-    // React and Ink should be bundled
-  ],
-  noExternal: [
-    // Bundle these packages
-    "ink",
-    "ink-spinner",
-    "ink-select-input",
-    "ink-text-input",
-    "react",
-  ],
+  // Don't bundle dependencies - let npm/pnpm resolve them at runtime
+  // This avoids CJS/ESM interop issues with packages like ink
+  skipNodeModulesBundle: true,
   esbuildOptions(options) {
     options.jsx = "automatic";
   },

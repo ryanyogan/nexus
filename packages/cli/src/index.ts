@@ -17,7 +17,16 @@
 import { program } from "./cli.js";
 
 // Run the CLI
-program.parseAsync(process.argv).catch((error) => {
-  console.error("Fatal error:", error.message);
-  process.exit(1);
+program.parseAsync(process.argv).catch((error: unknown) => {
+  // Commander.js exits via exception for --help and --version
+  // Only log actual errors
+  if (error instanceof Error && error.message) {
+    // Check if it's a Commander exit (help/version)
+    const msg = error.message;
+    if (msg.startsWith("(output") || msg === "0.1.0") {
+      process.exit(0);
+    }
+    console.error("Fatal error:", error.message);
+    process.exit(1);
+  }
 });
