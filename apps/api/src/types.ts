@@ -64,6 +64,22 @@ export interface MCPToolDefinition {
   };
 }
 
+/**
+ * Response format for token-efficient responses.
+ * - full: Complete response with all metadata (default)
+ * - compact: Essential data only, minimal formatting
+ * - code-only: Only code blocks and essential context
+ * - summary: Brief summary with key points
+ */
+export type ResponseFormat = "full" | "compact" | "code-only" | "summary";
+
+export interface MCPSession {
+  createdAt: number;
+  lastAccessedAt: number;
+  userId?: string;
+  requestCount: number;
+}
+
 // ============================================================================
 // Documentation Types
 // ============================================================================

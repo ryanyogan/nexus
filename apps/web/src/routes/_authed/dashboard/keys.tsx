@@ -10,10 +10,9 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { authFetch } from "../../lib/api";
+import { authFetch } from "../../../lib/api";
 
-export const Route = createFileRoute("/dashboard/keys")({
+export const Route = createFileRoute("/_authed/dashboard/keys")({
   component: ApiKeysPage,
 });
 
@@ -30,19 +29,13 @@ interface ApiKey {
 
 function ApiKeysPage() {
   const navigate = useNavigate();
-  const { data: session, isPending } = useSession();
+  const { session } = Route.useRouteContext();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      window.location.href = "/sign-in";
-    }
-  }, [session, isPending]);
 
   useEffect(() => {
     if (session?.user) {
@@ -82,7 +75,7 @@ function ApiKeysPage() {
     }
   }
 
-  if (isPending || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

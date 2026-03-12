@@ -16,9 +16,164 @@ import {
   type UpdateMemoryInput,
   type DeleteMemoryInput,
 } from "../lib/memory";
-import type { AppContext, MCPRequest, MCPResponse, MCPToolDefinition, MemoryType } from "../types";
+import type { AppContext, MCPRequest, MCPResponse, MCPToolDefinition, MemoryType, ResponseFormat, MCPSession } from "../types";
 
 const mcpRouter = new Hono<AppContext>();
+
+// ============================================================================
+// Response Format Helpers
+// ============================================================================
+
+/**
+ * Format tool response based on requested format for token efficiency.
+ */
+function formatToolResponse(
+  result: unknown,
+  toolName: string,
+  format: ResponseFormat = "full"
+): unknown {
+  if (format === "full" || typeof result !== "object" || result === null) {
+    return result;
+  }
+
+  const obj = result as Record<string, unknown>;
+
+  switch (format) {
+    case "compact":
+      return formatCompact(obj, toolName);
+    case "code-only":
+      return formatCodeOnly(obj, toolName);
+    case "summary":
+      return formatSummary(obj, toolName);
+    default:
+      return result;
+  }
+}
+
+/**
+ * Compact format - essential data only, no metadata.
+ */
+function formatCompact(obj: Record<string, unknown>, toolName: string): unknown {
+  // Remove verbose fields while keeping essential data
+  const { success, message, recommendation, hints, suggestions, availableCategories, ...rest } = obj;
+  
+  // For query-docs, only keep essential result fields
+  if (toolName === "query-docs" && Array.isArray(rest.results)) {
+    return {
+      library: rest.libraryName,
+      results: (rest.results as Array<Record<string, unknown>>).map((r) => ({
+        title: r.title,
+        content: r.content,
+        source: r.sourceFile,
+      })),
+    };
+  }
+
+  // For resolve-library, simplify results
+  if (toolName === "resolve-library" && Array.isArray(rest.results)) {
+    return {
+      results: (rest.results as Array<Record<string, unknown>>).map((r) => ({
+        id: r.libraryId,
+        name: r.name,
+        chunks: (r.documentationCoverage as Record<string, unknown>)?.chunks,
+      })),
+    };
+  }
+
+  // For recall-memories, keep just memories
+  if (toolName === "recall-memories" && Array.isArray(rest.memories)) {
+    return {
+      memories: (rest.memories as Array<Record<string, unknown>>).map((m) => ({
+        id: m.memoryId,
+        title: m.title,
+        content: m.content,
+        project: m.project,
+      })),
+    };
+  }
+
+  return rest;
+}
+
+/**
+ * Code-only format - extract code blocks and minimal context.
+ */
+function formatCodeOnly(obj: Record<string, unknown>, toolName: string): unknown {
+  // For query-docs, extract only code content
+  if (toolName === "query-docs" && Array.isArray(obj.results)) {
+    const codeResults = (obj.results as Array<Record<string, unknown>>)
+      .filter((r) => r.contentType === "code" || (r.content as string)?.includes("```"))
+      .map((r) => {
+        const content = r.content as string;
+        // Extract code blocks if mixed content
+        const codeBlocks = content.match(/```[\s\S]*?```/g);
+        return {
+          title: r.title,
+          code: codeBlocks ? codeBlocks.join("\n\n") : content,
+          source: r.sourceFile,
+        };
+      });
+    
+    return {
+      library: obj.libraryName,
+      codeExamples: codeResults,
+    };
+  }
+
+  // For other tools, return compact format
+  return formatCompact(obj, toolName);
+}
+
+/**
+ * Summary format - brief overview with key points.
+ */
+function formatSummary(obj: Record<string, unknown>, toolName: string): unknown {
+  // For query-docs, provide a brief summary
+  if (toolName === "query-docs" && Array.isArray(obj.results)) {
+    const results = obj.results as Array<Record<string, unknown>>;
+    return {
+      library: obj.libraryName,
+      query: obj.query,
+      found: results.length,
+      topics: results.slice(0, 3).map((r) => r.title).filter(Boolean),
+      hint: results.length > 0 
+        ? "Use 'compact' or 'full' format for complete content."
+        : "No results found. Try different search terms.",
+    };
+  }
+
+  // For resolve-library, summarize matches
+  if (toolName === "resolve-library" && Array.isArray(obj.results)) {
+    const results = obj.results as Array<Record<string, unknown>>;
+    const best = results[0];
+    return {
+      found: results.length,
+      bestMatch: best ? { id: best.libraryId, name: best.name } : null,
+      otherMatches: results.slice(1, 4).map((r) => r.name),
+    };
+  }
+
+  // For list-libraries, just show count and categories
+  if (toolName === "list-libraries" && Array.isArray(obj.libraries)) {
+    const libs = obj.libraries as Array<Record<string, unknown>>;
+    return {
+      total: libs.length,
+      featured: libs.filter((l) => l.isFeatured).map((l) => l.name),
+      categories: obj.availableCategories,
+    };
+  }
+
+  // Default: return key fields only
+  const { success, results, libraries, memories, ...rest } = obj;
+  return {
+    status: success ? "ok" : "error",
+    count: Array.isArray(results) ? results.length 
+         : Array.isArray(libraries) ? libraries.length
+         : Array.isArray(memories) ? memories.length
+         : undefined,
+    ...rest,
+  };
+}
 
 // ============================================================================
 // Tool Definitions
@@ -70,6 +225,13 @@ const TOOLS: MCPToolDefinition[] = [
         limit: {
           type: "number",
           description: "Maximum number of results to return (1-10, default 5)",
+        },
+        tokens: {
+          type: "string",
+          enum: ["full", "compact", "code-only", "summary"],
+          description:
+            "Response format for token efficiency. 'full' (default): complete response with metadata. " +
+            "'compact': essential data only. 'code-only': only code blocks. 'summary': brief overview.",
         },
       },
       required: ["libraryId", "query"],
@@ -382,48 +544,77 @@ const TOOLS: MCPToolDefinition[] = [
 // MCP Protocol Endpoint - Streamable HTTP with JSON Response Mode
 // ============================================================================
 
-// Session storage (in-memory for now, could use KV for persistence)
-const sessions = new Map<string, { createdAt: number; lastAccessedAt: number }>();
+// Session expiry in seconds (1 hour)
+const SESSION_EXPIRY_SECONDS = 60 * 60;
 
-// Clean up old sessions periodically (1 hour expiry)
-const SESSION_EXPIRY_MS = 60 * 60 * 1000;
-
-function cleanupSessions() {
-  const now = Date.now();
-  for (const [sessionId, session] of sessions) {
-    if (now - session.lastAccessedAt > SESSION_EXPIRY_MS) {
-      sessions.delete(sessionId);
+// KV-based session management
+async function getSession(kv: KVNamespace, sessionId: string): Promise<MCPSession | null> {
+  try {
+    const session = await kv.get<MCPSession>(`mcp:session:${sessionId}`, "json");
+    if (session) {
+      // Update last accessed time
+      const updated: MCPSession = {
+        ...session,
+        lastAccessedAt: Date.now(),
+        requestCount: session.requestCount + 1,
+      };
+      await kv.put(`mcp:session:${sessionId}`, JSON.stringify(updated), {
+        expirationTtl: SESSION_EXPIRY_SECONDS,
+      });
+      return updated;
     }
+    return null;
+  } catch {
+    return null;
   }
 }
 
-function generateSessionId(): string {
-  return crypto.randomUUID();
+async function createSession(kv: KVNamespace, userId?: string): Promise<string> {
+  const sessionId = crypto.randomUUID();
+  const session: MCPSession = {
+    createdAt: Date.now(),
+    lastAccessedAt: Date.now(),
+    userId,
+    requestCount: 0,
+  };
+  await kv.put(`mcp:session:${sessionId}`, JSON.stringify(session), {
+    expirationTtl: SESSION_EXPIRY_SECONDS,
+  });
+  return sessionId;
+}
+
+async function deleteSession(kv: KVNamespace, sessionId: string): Promise<boolean> {
+  try {
+    await kv.delete(`mcp:session:${sessionId}`);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // POST /mcp - Main MCP endpoint (supports both stateful and stateless)
 mcpRouter.post("/", async (c) => {
   const request = await c.req.json<MCPRequest>();
   const db = c.get("db");
+  const kv = c.env.KV;
+  const user = c.get("user");
 
-  // Session management
+  // Session management using KV
   let sessionId = c.req.header("Mcp-Session-Id");
   let isNewSession = false;
 
   // For initialize requests, create a new session
   if (request.method === "initialize") {
-    sessionId = generateSessionId();
-    sessions.set(sessionId, { createdAt: Date.now(), lastAccessedAt: Date.now() });
+    sessionId = await createSession(kv, user?.id);
     isNewSession = true;
-  } else if (sessionId && sessions.has(sessionId)) {
-    // Update last accessed time
-    const session = sessions.get(sessionId)!;
-    session.lastAccessedAt = Date.now();
-  }
-
-  // Cleanup old sessions periodically
-  if (Math.random() < 0.01) {
-    cleanupSessions();
+  } else if (sessionId) {
+    // Validate existing session
+    const session = await getSession(kv, sessionId);
+    if (!session) {
+      // Session expired or invalid - create new one
+      sessionId = await createSession(kv, user?.id);
+      isNewSession = true;
+    }
   }
 
   try {
@@ -451,14 +642,27 @@ mcpRouter.post("/", async (c) => {
 // GET /mcp - Server-Sent Events endpoint for streaming (optional)
 mcpRouter.get("/", async (c) => {
   const sessionId = c.req.header("Mcp-Session-Id");
+  const kv = c.env.KV;
   
-  if (!sessionId || !sessions.has(sessionId)) {
+  if (!sessionId) {
     return c.json({
       jsonrpc: "2.0",
       id: null,
       error: {
         code: -32000,
-        message: "Invalid or missing session ID. Initialize a session first with POST.",
+        message: "Missing session ID. Initialize a session first with POST.",
+      },
+    }, 400);
+  }
+
+  const session = await getSession(kv, sessionId);
+  if (!session) {
+    return c.json({
+      jsonrpc: "2.0",
+      id: null,
+      error: {
+        code: -32000,
+        message: "Invalid or expired session ID. Initialize a new session with POST.",
       },
     }, 400);
   }
@@ -470,6 +674,7 @@ mcpRouter.get("/", async (c) => {
     result: {
       status: "connected",
       sessionId,
+      requestCount: session.requestCount,
       message: "SSE streaming not yet implemented. Use POST for tool calls.",
     },
   });
@@ -478,10 +683,13 @@ mcpRouter.get("/", async (c) => {
 // DELETE /mcp - Close session
 mcpRouter.delete("/", async (c) => {
   const sessionId = c.req.header("Mcp-Session-Id");
+  const kv = c.env.KV;
   
-  if (sessionId && sessions.has(sessionId)) {
-    sessions.delete(sessionId);
-    return c.json({ success: true, message: "Session closed" });
+  if (sessionId) {
+    const deleted = await deleteSession(kv, sessionId);
+    if (deleted) {
+      return c.json({ success: true, message: "Session closed" });
+    }
   }
   
   return c.json({ success: false, message: "Session not found" }, 404);
@@ -584,6 +792,9 @@ async function handleToolsCall(
   }
 
   const args = params.arguments || {};
+  
+  // Extract response format from args (defaults to "full")
+  const responseFormat = (args.tokens as ResponseFormat) || "full";
 
   try {
     let result: unknown;
@@ -658,6 +869,12 @@ async function handleToolsCall(
         };
     }
 
+    // Apply response format transformation
+    const formattedResult = formatToolResponse(result, params.name, responseFormat);
+    
+    // Use compact JSON for non-full formats
+    const jsonIndent = responseFormat === "full" ? 2 : undefined;
+
     return {
       jsonrpc: "2.0",
       id: request.id,
@@ -665,7 +882,9 @@ async function handleToolsCall(
         content: [
           {
             type: "text",
-            text: typeof result === "string" ? result : JSON.stringify(result, null, 2),
+            text: typeof formattedResult === "string" 
+              ? formattedResult 
+              : JSON.stringify(formattedResult, null, jsonIndent),
           },
         ],
       },

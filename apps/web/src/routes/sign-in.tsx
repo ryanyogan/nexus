@@ -1,21 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
-import { Layers, Github, ArrowLeft, Loader2 } from "lucide-react";
-import { signIn, useSession } from "@/lib/auth";
-
-export const Route = createFileRoute("/sign-in")({
-  component: SignInPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
-  }),
-});
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { Layers, Github, ArrowLeft } from "lucide-react";
+import { signIn } from "@nexus/auth/client";
 
 // Only allow redirects to our own subdomains for security
 function getValidRedirectUrl(redirect: string | undefined): string {
   const defaultUrl = "https://nexus.yogan.dev/";
-  
+
   if (!redirect) return defaultUrl;
-  
+
   try {
     const url = new URL(redirect);
     // Only allow redirects to *.yogan.dev subdomains
@@ -25,23 +18,35 @@ function getValidRedirectUrl(redirect: string | undefined): string {
   } catch {
     // Invalid URL, use default
   }
-  
+
   return defaultUrl;
 }
 
-function SignInPage() {
-  const { data: session, isPending } = useSession();
-  const { redirect } = Route.useSearch();
-  
-  const callbackURL = useMemo(() => getValidRedirectUrl(redirect), [redirect]);
-
-  // Redirect if already signed in
-  useEffect(() => {
+export const Route = createFileRoute("/sign-in")({
+  component: SignInPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
+  beforeLoad: async ({ context, search }) => {
+    const { session } = context;
     if (session?.user) {
-      // Use the redirect URL if provided, otherwise go to dashboard
-      window.location.href = callbackURL;
+      // Redirect to callback URL or dashboard
+      const callbackURL =
+        getValidRedirectUrl(
+          (search as { redirect?: string })?.redirect
+        ) || "/dashboard";
+      throw redirect({ to: callbackURL });
     }
-  }, [session, callbackURL]);
+  },
+});
+
+function SignInPage() {
+  const { redirect: redirectParam } = Route.useSearch();
+
+  const callbackURL = useMemo(
+    () => getValidRedirectUrl(redirectParam),
+    [redirectParam]
+  );
 
   const handleGoogleSignIn = async () => {
     await signIn.social({
@@ -56,15 +61,6 @@ function SignInPage() {
       callbackURL,
     });
   };
-
-  // Show loading state while checking session
-  if (isPending) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">

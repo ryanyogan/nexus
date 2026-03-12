@@ -122,3 +122,66 @@ export const analyticsMiddleware = createMiddleware<AppContext>(
     });
   }
 );
+
+/**
+ * MCP-specific rate limiting middleware
+ * Uses tiered limits based on authentication:
+ * - Anonymous: 20 requests/minute
+ * - Authenticated user: 100 requests/minute
+ * - API token: 200 requests/minute
+ */
+export const mcpRateLimitMiddleware = createMiddleware<AppContext>(
+  async (c, next) => {
+    const authType = c.get("authType") || "anonymous";
+    const userId = c.get("user")?.id;
+    const apiKeyId = c.req.header("X-API-Key");
+    const ipAddress =
+      c.req.header("CF-Connecting-IP") ||
+      c.req.header("X-Forwarded-For")?.split(",")[0]?.trim();
+
+    // Build rate limit key with MCP prefix
+    const rateLimitKey = `mcp:${getRateLimitKey(apiKeyId, userId, ipAddress)}`;
+    const rateLimiter = (c.env as any).RATE_LIMITER;
+    
+    // Check rate limit
+    const rateResult = await checkRateLimit(rateLimiter, rateLimitKey);
+
+    if (!rateResult.success) {
+      // Return MCP-formatted error response
+      return c.json(
+        {
+          jsonrpc: "2.0",
+          id: null,
+          error: {
+            code: -32000,
+            message: "Rate limit exceeded. Please slow down.",
+            data: {
+              retryAfter: 60,
+              authType,
+              hint: authType === "anonymous" 
+                ? "Sign in or use an API token for higher rate limits."
+                : undefined,
+            },
+          },
+        },
+        429
+      );
+    }
+
+    await next();
+
+    // Track MCP usage
+    const analytics = (c.env as any).USAGE_ANALYTICS as
+      | AnalyticsEngineDataset
+      | undefined;
+
+    trackUsage(analytics, {
+      userId: userId,
+      apiKeyId: apiKeyId,
+      endpoint: "/mcp",
+      method: c.req.method,
+      statusCode: c.res.status,
+      responseTimeMs: 0, // MCP requests are fast, we don't track response time
+    });
+  }
+);

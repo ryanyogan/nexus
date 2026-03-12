@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { createServerFn } from "@tanstack/react-start";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Server,
@@ -11,18 +11,40 @@ import {
   Star,
   Package,
   Globe,
+  Loader2,
 } from "lucide-react";
-import { serverQueryOptions } from "../../lib/query-options";
 import { Skeleton } from "../../components/skeletons";
+import { getDb } from "../../server/db";
+import * as schema from "@nexus/db";
+import { eq } from "drizzle-orm";
 import { API_URL } from "../../lib/api";
+
+// ============================================================================
+// Server Functions
+// ============================================================================
+
+const getServerFn = createServerFn({ method: "GET" })
+  .validator((data: { serverId: string }) => data)
+  .handler(async ({ data }) => {
+    const db = getDb();
+    const server = await db.query.mcpServers.findFirst({
+      where: eq(schema.mcpServers.id, data.serverId),
+    });
+
+    if (!server) {
+      throw new Error("Server not found");
+    }
+
+    return { server };
+  });
 
 // ============================================================================
 // Route Definition
 // ============================================================================
 
 export const Route = createFileRoute("/explore/servers/$serverId")({
-  loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(serverQueryOptions(params.serverId));
+  loader: async ({ params }) => {
+    return getServerFn({ data: { serverId: params.serverId } });
   },
   component: ServerDetailPage,
 });
@@ -32,37 +54,40 @@ export const Route = createFileRoute("/explore/servers/$serverId")({
 // ============================================================================
 
 function ServerDetailPage() {
-  const { serverId } = Route.useParams();
-
-  return (
-    <div className="relative min-h-screen">
-      <Suspense fallback={<ServerDetailSkeleton />}>
-        <ServerDetail serverId={serverId} />
-      </Suspense>
-    </div>
-  );
-}
-
-// ============================================================================
-// Server Detail Component
-// ============================================================================
-
-function ServerDetail({ serverId }: { serverId: string }) {
-  const { data } = useSuspenseQuery(serverQueryOptions(serverId));
-  const server = data.server;
+  const { server } = Route.useLoaderData();
   const displayName = server.displayName || server.name;
   const category = server.categories?.[0];
   
   const [configFormat, setConfigFormat] = useState<"opencode" | "claude-desktop" | "vscode">("opencode");
   const [copied, setCopied] = useState(false);
+  const [config, setConfig] = useState<Record<string, unknown> | null>(null);
+  const [configLoading, setConfigLoading] = useState(true);
+
+  // Fetch config when format changes
+  useEffect(() => {
+    const fetchConfig = async () => {
+      setConfigLoading(true);
+      try {
+        const res = await fetch(
+          `${API_URL}/api/servers/${server.id}/config?format=${configFormat}`
+        );
+        if (res.ok) {
+          const data = (await res.json()) as { config: Record<string, unknown> };
+          setConfig(data.config);
+        }
+      } catch (error) {
+        console.error("Failed to fetch config:", error);
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+    fetchConfig();
+  }, [server.id, configFormat]);
 
   const copyConfig = async () => {
+    if (!config) return;
     try {
-      const res = await fetch(
-        `${API_URL}/api/servers/${serverId}/config?format=${configFormat}`
-      );
-      const configData = (await res.json()) as { config: Record<string, unknown> };
-      await navigator.clipboard.writeText(JSON.stringify(configData.config, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(config, null, 2));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -77,8 +102,7 @@ function ServerDetail({ serverId }: { serverId: string }) {
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Back link */}
           <Link
-            to="/explore"
-            search={{ tab: "servers" }}
+            to="/explore/servers"
             className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -197,14 +221,21 @@ function ServerDetail({ serverId }: { serverId: string }) {
               </div>
 
               {/* Config preview */}
-              <Suspense fallback={<ConfigSkeleton />}>
-                <ConfigPreview serverId={serverId} format={configFormat} />
-              </Suspense>
+              {configLoading ? (
+                <div className="h-32 animate-pulse rounded-lg bg-muted" />
+              ) : (
+                <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+                  <code className="text-muted-foreground">
+                    {config ? JSON.stringify(config, null, 2) : "Failed to load config"}
+                  </code>
+                </pre>
+              )}
 
               {/* Copy button */}
               <button
                 onClick={copyConfig}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                disabled={!config || configLoading}
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
                 {copied ? (
                   <>
@@ -300,81 +331,5 @@ function FormatButton({
         </span>
       )}
     </button>
-  );
-}
-
-// ============================================================================
-// Config Preview Component
-// ============================================================================
-
-function ConfigPreview({
-  serverId,
-  format,
-}: {
-  serverId: string;
-  format: string;
-}) {
-  const { data } = useSuspenseQuery<{ config: Record<string, unknown> }>({
-    queryKey: ["server-config", serverId, format],
-    queryFn: async () => {
-      const res = await fetch(
-        `${API_URL}/api/servers/${serverId}/config?format=${format}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch config");
-      return res.json() as Promise<{ config: Record<string, unknown> }>;
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-
-  return (
-    <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-      <code className="text-muted-foreground">
-        {JSON.stringify(data.config, null, 2)}
-      </code>
-    </pre>
-  );
-}
-
-function ConfigSkeleton() {
-  return (
-    <div className="h-32 animate-pulse rounded-lg bg-muted" />
-  );
-}
-
-// ============================================================================
-// Server Detail Skeleton
-// ============================================================================
-
-function ServerDetailSkeleton() {
-  return (
-    <>
-      <div className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <Skeleton className="mb-6 h-4 w-32" />
-          <div className="flex items-start gap-4">
-            <Skeleton className="h-16 w-16 rounded-xl" />
-            <div>
-              <Skeleton className="h-7 w-48 mb-2" />
-              <Skeleton className="h-5 w-96" />
-              <div className="mt-3 flex gap-2">
-                <Skeleton className="h-6 w-20 rounded-lg" />
-                <Skeleton className="h-6 w-32 rounded-lg" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <Skeleton className="h-64 w-full rounded-lg" />
-          </div>
-          <div className="space-y-6">
-            <Skeleton className="h-40 w-full rounded-lg" />
-            <Skeleton className="h-32 w-full rounded-lg" />
-          </div>
-        </div>
-      </div>
-    </>
   );
 }

@@ -15,7 +15,7 @@ import { secretsRouter } from "./routes/secrets";
 import { skillsRouter } from "./routes/skills";
 import { userRouter } from "./routes/user";
 import { adminAuth } from "./middleware/admin";
-import { usageMiddleware } from "./middleware/usage";
+import { usageMiddleware, mcpRateLimitMiddleware } from "./middleware/usage";
 import { authMiddleware } from "./middleware/auth";
 import type { AppContext, IngestionJob } from "./types";
 
@@ -77,9 +77,10 @@ app.route("/api/user", userRouter);
 app.use("/api/admin/*", adminAuth);
 app.route("/api/admin", adminRouter);
 
-// MCP Protocol endpoint (Streamable HTTP) - with optional auth
+// MCP Protocol endpoint (Streamable HTTP) - with optional auth and rate limiting
 // Auth is optional: anonymous users get lower rate limits
 app.use("/mcp/*", authMiddleware);
+app.use("/mcp/*", mcpRateLimitMiddleware);
 app.route("/mcp", mcpRouter);
 
 // Better Auth routes

@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Loader2,
@@ -15,13 +15,13 @@ import {
   Search,
   Copy,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { adminFetch } from "../../lib/api";
-import { adminLibrariesQueryOptions } from "../../lib/query-options";
+import { adminFetch } from "../../../lib/api";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { ResultModal } from "@/components/ui/result-modal";
+import { getDb } from "../../../server/db";
+import * as schema from "@nexus/db";
 
-export const Route = createFileRoute("/admin/libraries")({ component: AdminLibrariesPage });
+export const Route = createFileRoute("/_authed/admin/libraries")({ component: AdminLibrariesPage });
 
 // ============================================================================
 // Types
@@ -100,12 +100,30 @@ function ErrorDisplay({
 }
 
 // ============================================================================
+// Types for library data
+// ============================================================================
+
+interface LibraryData {
+  id: string;
+  name: string;
+  iconUrl: string | null;
+  repositoryUrl: string | null;
+  indexStatus: "pending" | "indexing" | "indexed" | "failed";
+  indexError: string | null;
+  isFeatured: boolean;
+  totalChunks: number;
+  totalTokens: number;
+  categories: string[];
+  lastIndexedAt: string | null;
+}
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
 function AdminLibrariesPage() {
-  const queryClient = useQueryClient();
-  const { data: session, isPending: sessionPending } = useSession();
+  const router = useRouter();
+  const { session } = Route.useRouteContext();
 
   // Local state
   const [filter, setFilter] = useState<string>("all");
@@ -113,45 +131,46 @@ function AdminLibrariesPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
   const [resultModal, setResultModal] = useState<ResultModalState | null>(null);
+  const [libraries, setLibraries] = useState<LibraryData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is admin
-  const isAdmin = session?.user && (session.user as any).role === "admin";
+  // Fetch libraries with useEffect (replaces TanStack Query)
+  const fetchLibraries = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filter !== "all") params.set("status", filter);
+      if (search) params.set("search", search);
+      const res = await adminFetch(`/api/admin/libraries?${params.toString()}`);
+      if (res.ok) {
+        const data = (await res.json()) as { libraries: LibraryData[] };
+        setLibraries(data.libraries || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch libraries:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // TanStack Query with smart polling
-  const { data, isLoading } = useQuery({
-    ...adminLibrariesQueryOptions({ status: filter, search }),
-    refetchInterval: (query) => {
-      // Only poll if there are libraries currently indexing
-      const hasIndexing = query.state.data?.libraries?.some(
-        (lib) => lib.indexStatus === "indexing"
-      );
-      return hasIndexing ? 5000 : false;
-    },
-    enabled: !!isAdmin,
-  });
+  useEffect(() => {
+    fetchLibraries();
+  }, [filter, search]);
 
-  const libraries = data?.libraries ?? [];
+  // Auto-refresh when indexing
   const hasIndexingLibraries = libraries.some((lib) => lib.indexStatus === "indexing");
-
-  // Redirect if not admin
-  if (!sessionPending && !session?.user) {
-    window.location.href = "/sign-in";
-    return null;
-  }
-
-  if (!sessionPending && !isAdmin) {
-    window.location.href = "/";
-    return null;
-  }
+  
+  useEffect(() => {
+    if (!hasIndexingLibraries) return;
+    const interval = setInterval(fetchLibraries, 5000);
+    return () => clearInterval(interval);
+  }, [hasIndexingLibraries, filter, search]);
 
   // ============================================================================
   // Action Handlers
   // ============================================================================
 
-  const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ["admin", "libraries"] });
-    queryClient.invalidateQueries({ queryKey: ["libraries"] });
-    queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+  const refreshData = () => {
+    fetchLibraries();
   };
 
   const handleIndex = (id: string, name: string) => {
@@ -167,7 +186,7 @@ function AdminLibrariesPage() {
         try {
           const res = await adminFetch(`/api/admin/index/${id}`, { method: "POST" });
           if (res.ok) {
-            invalidateQueries();
+            refreshData();
             setResultModal({
               open: true,
               type: "success",
@@ -210,7 +229,7 @@ function AdminLibrariesPage() {
         try {
           const res = await adminFetch(`/api/admin/reindex/${id}`, { method: "POST" });
           if (res.ok) {
-            invalidateQueries();
+            refreshData();
             setResultModal({
               open: true,
               type: "success",
@@ -253,7 +272,7 @@ function AdminLibrariesPage() {
         try {
           const res = await adminFetch(`/api/admin/libraries/${id}`, { method: "DELETE" });
           if (res.ok) {
-            invalidateQueries();
+            refreshData();
             setResultModal({
               open: true,
               type: "success",
@@ -288,7 +307,7 @@ function AdminLibrariesPage() {
     try {
       const res = await adminFetch(`/api/admin/index/${id}`, { method: "POST" });
       if (res.ok) {
-        invalidateQueries();
+        refreshData();
         setResultModal({
           open: true,
           type: "success",
@@ -320,7 +339,7 @@ function AdminLibrariesPage() {
   // Render
   // ============================================================================
 
-  if (sessionPending || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

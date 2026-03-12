@@ -9,10 +9,9 @@ import {
   Clock,
   Star,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { authFetch } from "../../lib/api";
+import { authFetch } from "../../../lib/api";
 
-export const Route = createFileRoute("/dashboard/skills")({
+export const Route = createFileRoute("/_authed/dashboard/skills")({
   component: InstalledSkillsPage,
 });
 
@@ -39,17 +38,11 @@ const typeColors: Record<string, string> = {
 };
 
 function InstalledSkillsPage() {
-  const { data: session, isPending } = useSession();
+  const { session } = Route.useRouteContext();
   const [skills, setSkills] = useState<InstalledSkill[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      window.location.href = "/sign-in";
-    }
-  }, [session, isPending]);
 
   useEffect(() => {
     if (session?.user) {
@@ -94,7 +87,7 @@ function InstalledSkillsPage() {
       s.skill.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (isPending || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

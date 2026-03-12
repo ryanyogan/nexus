@@ -14,10 +14,9 @@ import {
   ExternalLink,
   Github,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { API_URL, LIBRARY_CATEGORIES } from "../lib/api";
+import { API_URL, LIBRARY_CATEGORIES } from "../../lib/api";
 
-export const Route = createFileRoute("/submit")({ component: SubmitPage });
+export const Route = createFileRoute("/_authed/submit")({ component: SubmitPage });
 
 // Types for analysis result
 interface DocSource {
@@ -49,7 +48,7 @@ interface AnalysisResult {
 }
 
 function SubmitPage() {
-  const { data: session, isPending: sessionPending } = useSession();
+  const { session } = Route.useRouteContext();
 
   const [repoUrl, setRepoUrl] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
@@ -61,13 +60,6 @@ function SubmitPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Redirect to sign-in if not authenticated
-  useEffect(() => {
-    if (!sessionPending && !session?.user) {
-      window.location.href = "/sign-in";
-    }
-  }, [session, sessionPending]);
 
   // Update selected categories when analysis suggests some
   useEffect(() => {
@@ -145,18 +137,6 @@ function SubmitPage() {
         : [...prev, categoryId]
     );
   };
-
-  if (sessionPending) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!session?.user) {
-    return null;
-  }
 
   if (submitSuccess) {
     return (

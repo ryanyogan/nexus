@@ -1,7 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer, customSession } from "better-auth/plugins";
+import { admin, bearer } from "better-auth/plugins";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "@nexus/db";
 
@@ -46,28 +46,14 @@ export function createAuth(env: AuthEnv) {
         maxAge: 60 * 5, // 5 minutes
       },
     },
-    user: {
-      additionalFields: {
-        role: {
-          type: "string",
-          required: false,
-          defaultValue: "user",
-          input: false, // Users can't set their own role
-        },
-      },
-    },
     plugins: [
       // Enable bearer token auth for cross-domain API calls
       bearer(),
-      // Include role in session response so getSession returns it
-      customSession(async ({ user, session }) => {
-        return {
-          user: {
-            ...user,
-            role: (user as any).role || "user",
-          },
-          session,
-        };
+      // Admin plugin for role-based access control
+      // Adds `role` field to user with "user" as default
+      // Role is automatically included in session response
+      admin({
+        defaultRole: "user",
       }),
     ],
     // Cross-subdomain cookie settings - both nexus.yogan.dev and api.nexus.yogan.dev share .yogan.dev
@@ -112,24 +98,8 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    customSession(async ({ user, session }) => {
-      return {
-        user: {
-          ...user,
-          role: (user as any).role || "user",
-        },
-        session,
-      };
+    admin({
+      defaultRole: "user",
     }),
   ],
-  user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        required: false,
-        defaultValue: "user",
-        input: false,
-      },
-    },
-  },
 });

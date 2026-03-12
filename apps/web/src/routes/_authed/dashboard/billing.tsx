@@ -10,9 +10,8 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
 
-export const Route = createFileRoute("/dashboard/billing")({
+export const Route = createFileRoute("/_authed/dashboard/billing")({
   component: BillingPage,
 });
 
@@ -77,16 +76,10 @@ const plans = [
 ];
 
 function BillingPage() {
-  const { data: session, isPending } = useSession();
+  const { session } = Route.useRouteContext();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
-
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      window.location.href = "/sign-in";
-    }
-  }, [session, isPending]);
 
   useEffect(() => {
     if (session?.user) {
@@ -139,7 +132,7 @@ function BillingPage() {
     }
   }
 
-  if (isPending || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

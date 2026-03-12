@@ -21,6 +21,8 @@ const config = defineConfig({
   },
   build: {
     rollupOptions: {
+      // Cloudflare-specific imports should be external for client builds
+      external: ['cloudflare:workers'],
       output: {
         manualChunks: {
           // Shiki is large (~1MB), keep it in a separate chunk (lazy-loaded)

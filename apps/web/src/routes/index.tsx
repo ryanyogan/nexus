@@ -1,6 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useEffect } from "react";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { env } from "cloudflare:workers";
+import { drizzle } from "drizzle-orm/d1";
+import * as schema from "@nexus/db";
+import { sql, eq } from "drizzle-orm";
 import {
   ArrowRight,
   Github,
@@ -17,38 +20,80 @@ import {
   Cpu,
   Lock,
 } from "lucide-react";
-import {
-  statsQueryOptions,
-  featuredServersQueryOptions,
-  skillsQueryOptions,
-  type McpServer,
-  type Skill,
-} from "../lib/query-options";
-import {
-  StatsSkeleton,
-  ServerPreviewCardSkeleton,
-} from "../components/skeletons";
-import { useSession } from "@/lib/auth";
+
+type McpServer = typeof schema.mcpServers.$inferSelect;
+type Skill = typeof schema.skills.$inferSelect;
+
+const getHomePageData = createServerFn({ method: "GET" }).handler(async () => {
+  const db = drizzle(env.DB, { schema });
+
+  // Get stats
+  const [libraryStats] = await db
+    .select({
+      total: sql<number>`count(*)`,
+      indexed: sql<number>`sum(case when index_status = 'indexed' then 1 else 0 end)`,
+    })
+    .from(schema.libraries)
+    .where(eq(schema.libraries.isActive, true));
+
+  const [chunkStats] = await db
+    .select({
+      totalChunks: sql<number>`count(*)`,
+    })
+    .from(schema.chunks);
+
+  const [serverStats] = await db
+    .select({
+      total: sql<number>`count(*)`,
+    })
+    .from(schema.mcpServers)
+    .where(eq(schema.mcpServers.isActive, true));
+
+  // Get featured servers (limit 4)
+  const featuredServers = await db
+    .select()
+    .from(schema.mcpServers)
+    .where(eq(schema.mcpServers.isFeatured, true))
+    .limit(4);
+
+  // Get featured skills (limit 6)
+  const featuredSkills = await db
+    .select()
+    .from(schema.skills)
+    .where(eq(schema.skills.isFeatured, true))
+    .limit(6);
+
+  return {
+    stats: {
+      libraries: {
+        total: Number(libraryStats?.total ?? 0),
+        indexed: Number(libraryStats?.indexed ?? 0),
+      },
+      documentation: {
+        totalChunks: Number(chunkStats?.totalChunks ?? 0),
+        totalTokens: 0,
+      },
+      servers: { total: Number(serverStats?.total ?? 0) },
+      usage: { totalQueries: 0 },
+    },
+    featuredServers,
+    featuredSkills,
+  };
+});
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => {
-    context.queryClient.ensureQueryData(statsQueryOptions);
-    context.queryClient.ensureQueryData(featuredServersQueryOptions);
-    context.queryClient.ensureQueryData(skillsQueryOptions({ limit: 6, featured: true }));
+  beforeLoad: async ({ context }) => {
+    const { session } = context;
+    if (session?.user) {
+      throw redirect({ to: "/dashboard" });
+    }
   },
+  loader: () => getHomePageData(),
   component: HomePage,
 });
 
 function HomePage() {
-  const { data: session } = useSession();
-  const navigate = useNavigate();
-
-  // Redirect authenticated users to dashboard
-  useEffect(() => {
-    if (session?.user) {
-      navigate({ to: "/dashboard" });
-    }
-  }, [session, navigate]);
+  const { stats, featuredServers, featuredSkills } = Route.useLoaderData();
 
   return (
     <div className="relative overflow-y-auto overflow-x-hidden pb-0">
@@ -100,9 +145,7 @@ function HomePage() {
           </div>
 
           {/* Stats */}
-          <Suspense fallback={<StatsSkeleton />}>
-            <StatsDisplay />
-          </Suspense>
+          <StatsDisplay stats={stats} />
         </div>
       </section>
 
@@ -198,9 +241,7 @@ function HomePage() {
             </Link>
           </div>
 
-          <Suspense fallback={<SkillsSkeleton />}>
-            <FeaturedSkillsDisplay />
-          </Suspense>
+          <FeaturedSkillsDisplay skills={featuredSkills} />
 
           <div className="mt-6 sm:hidden">
             <Link
@@ -305,9 +346,7 @@ function HomePage() {
             </Link>
           </div>
 
-          <Suspense fallback={<FeaturedServersSkeleton />}>
-            <FeaturedServersDisplay />
-          </Suspense>
+          <FeaturedServersDisplay servers={featuredServers} />
 
           <div className="mt-6 sm:hidden">
             <Link
@@ -587,12 +626,17 @@ function HomePage() {
 }
 
 // ============================================================================
-// Stats Display Component (with Suspense)
+// Stats Display Component
 // ============================================================================
 
-function StatsDisplay() {
-  const { data: stats } = useSuspenseQuery(statsQueryOptions);
+interface StatsData {
+  libraries: { total: number; indexed: number };
+  documentation: { totalChunks: number; totalTokens: number };
+  servers: { total: number };
+  usage: { totalQueries: number };
+}
 
+function StatsDisplay({ stats }: { stats: StatsData }) {
   return (
     <div className="mx-auto mt-16 max-w-4xl">
       <div className="grid grid-cols-2 gap-6 rounded-lg border border-stone-200 bg-white p-6 sm:grid-cols-5">
@@ -624,10 +668,7 @@ function StatItem({ value, label }: { value: number; label: string }) {
 // Featured Skills Display
 // ============================================================================
 
-function FeaturedSkillsDisplay() {
-  const { data } = useSuspenseQuery(skillsQueryOptions({ limit: 6, featured: true }));
-  const skills = data?.skills || [];
-
+function FeaturedSkillsDisplay({ skills }: { skills: Skill[] }) {
   const typeColors: Record<string, string> = {
     analysis: "bg-blue-100 text-blue-700",
     generation: "bg-emerald-100 text-emerald-700",
@@ -703,45 +744,15 @@ function FeaturedSkillsDisplay() {
   );
 }
 
-function SkillsSkeleton() {
-  return (
-    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-lg border border-stone-200 bg-white p-5">
-          <div className="flex items-start gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-lg bg-stone-200" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-24 animate-pulse rounded bg-stone-200" />
-              <div className="h-3 w-full animate-pulse rounded bg-stone-200" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ============================================================================
-// Featured Servers Display (with Suspense)
+// Featured Servers Display
 // ============================================================================
 
-function FeaturedServersDisplay() {
-  const { data: servers } = useSuspenseQuery(featuredServersQueryOptions);
-
+function FeaturedServersDisplay({ servers }: { servers: McpServer[] }) {
   return (
     <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {servers.map((server) => (
         <ServerPreviewCard key={server.id} server={server} />
-      ))}
-    </div>
-  );
-}
-
-function FeaturedServersSkeleton() {
-  return (
-    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <ServerPreviewCardSkeleton key={i} />
       ))}
     </div>
   );

@@ -11,10 +11,9 @@ import {
   Package,
   Plug,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { API_URL } from "../lib/api";
+import { API_URL } from "../../lib/api";
 
-export const Route = createFileRoute("/submit-server")({ component: SubmitServerPage });
+export const Route = createFileRoute("/_authed/submit-server")({ component: SubmitServerPage });
 
 // Package types and transport types
 const PACKAGE_TYPES = [
@@ -32,7 +31,7 @@ const TRANSPORT_TYPES = [
 ] as const;
 
 function SubmitServerPage() {
-  const { data: session, isPending: sessionPending } = useSession();
+  const { session } = Route.useRouteContext();
 
   const [name, setName] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -45,13 +44,6 @@ function SubmitServerPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Redirect to sign-in if not authenticated
-  useEffect(() => {
-    if (!sessionPending && !session?.user) {
-      window.location.href = "/sign-in";
-    }
-  }, [session, sessionPending]);
 
   // Auto-generate name from repository URL
   useEffect(() => {
@@ -111,18 +103,6 @@ function SubmitServerPage() {
     setTransportType("stdio");
     setSubmitError(null);
   };
-
-  if (sessionPending) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!session?.user) {
-    return null;
-  }
 
   if (submitSuccess) {
     return (

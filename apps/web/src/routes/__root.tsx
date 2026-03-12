@@ -10,10 +10,16 @@ import Header from "../components/Header";
 import { Footer } from "../components/Footer";
 import { DevModeBadge } from "../components/DevModeBadge";
 import { cn } from "@/lib/utils";
+import { getSessionFn } from "../server/auth";
 
 import appCss from "../styles.css?url";
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async () => {
+    // Fetch session on every navigation - this runs on the server
+    const session = await getSessionFn();
+    return { session };
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -25,19 +31,18 @@ export const Route = createRootRouteWithContext<RouterContext>()({
           "Instant documentation search with persistent memory across sessions. The MCP server that remembers your project context.",
       },
     ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   component: RootComponent,
 });
 
 function RootComponent() {
   const matches = useMatches();
+  const { session } = Route.useRouteContext();
 
   // Check if we're on a code editor route - hide footer for full height
-  const isCodeEditor = matches.some(
-    (match) => match.pathname.startsWith("/code")
+  const isCodeEditor = matches.some((match) =>
+    match.pathname.startsWith("/code")
   );
 
   return (
@@ -65,7 +70,7 @@ function RootComponent() {
           }}
         />
 
-        <Header />
+        <Header session={session} />
         <main
           className={cn(
             "flex-grow pt-0",

@@ -1,5 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import {
   ArrowLeft,
   BookOpen,
@@ -16,7 +15,7 @@ import {
   Terminal,
   Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LibraryDetailSkeleton } from "../../components/skeletons";
 import { getLibrary, getLibraryChunks } from "../../lib/queries";
 import type { LibraryDetailResult, ChunkListResult } from "../../lib/types";
@@ -96,38 +95,23 @@ function LibraryNotFound() {
 // ============================================================================
 
 function LibraryDetailPage() {
-  const loaderData = Route.useLoaderData();
-  const { libraryId } = Route.useParams();
+  const { library, stats, chunks, totalChunks } = Route.useLoaderData();
+  const router = useRouter();
   const [copiedConfig, setCopiedConfig] = useState(false);
   const [expandedChunks, setExpandedChunks] = useState(false);
 
-  // Use client-side query with smart polling when library is indexing
-  const { data: liveData } = useQuery({
-    queryKey: ["library", libraryId],
-    queryFn: async () => {
-      const [libraryData, chunksData] = await Promise.all([
-        getLibrary({ data: libraryId }),
-        getLibraryChunks({ data: { libraryId, limit: 20, offset: 0 } }),
-      ]);
-      if (!libraryData) {
-        throw new Error("Library not found");
-      }
-      return {
-        library: libraryData.library,
-        stats: libraryData.stats,
-        chunks: chunksData.chunks,
-        totalChunks: chunksData.pagination.total,
-      };
-    },
-    initialData: loaderData,
-    refetchInterval: (query) => {
-      // Poll every 5s if library is indexing
-      return query.state.data?.library?.indexStatus === "indexing" ? 5000 : false;
-    },
-  });
+  const isIndexing = library.indexStatus === "indexing";
 
-  const { library, stats, chunks, totalChunks } = liveData;
-  const isPolling = library.indexStatus === "indexing";
+  // Auto-refresh when library is indexing
+  useEffect(() => {
+    if (!isIndexing) return;
+
+    const interval = setInterval(() => {
+      router.invalidate();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isIndexing, router]);
 
   const copyConfig = () => {
     const config = JSON.stringify(
@@ -209,7 +193,7 @@ function LibraryDetailPage() {
                           ? "Failed"
                           : "Pending"}
                   </span>
-                  {isPolling && (
+                  {isIndexing && (
                     <span className="flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       Auto-refreshing

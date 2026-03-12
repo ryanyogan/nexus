@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useSession } from "@/lib/auth";
 import { Button } from "@nexus/ui/components/button";
 import { Input } from "@nexus/ui/components/input";
 import {
@@ -18,9 +17,13 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useEditorStore } from "@/stores/editor-store";
+import type { SessionData } from "@/server/auth";
 
-export function ConnectionPage() {
-  const { data: session, isPending } = useSession();
+interface ConnectionPageProps {
+  session: SessionData | null;
+}
+
+export function ConnectionPage({ session }: ConnectionPageProps) {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [password, setPassword] = useState("");
@@ -47,10 +50,10 @@ export function ConnectionPage() {
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
-    if (!isPending && !session?.user) {
+    if (!session?.user) {
       navigate({ to: "/sign-in", search: { redirect: "/code" } });
     }
-  }, [isPending, session, navigate]);
+  }, [session, navigate]);
 
   const handleConnect = async (serverUrl: string, serverPassword?: string) => {
     setIsConnecting(true);
@@ -71,15 +74,6 @@ export function ConnectionPage() {
     if (!url.trim()) return;
     handleConnect(url.trim(), password || undefined);
   };
-
-  // Show loading while checking auth
-  if (isPending) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   // Don't render if not authenticated (will redirect)
   if (!session?.user) {

@@ -12,10 +12,9 @@ import {
   Shield,
   AlertCircle,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { authFetch, SECRET_PROVIDERS, type SecretProvider } from "../../lib/api";
+import { authFetch, SECRET_PROVIDERS, type SecretProvider } from "../../../lib/api";
 
-export const Route = createFileRoute("/settings/secrets")({
+export const Route = createFileRoute("/_authed/settings/secrets")({
   component: SecretsPage,
 });
 
@@ -54,20 +53,13 @@ const PROVIDER_COLORS: Record<SecretProvider, string> = {
 };
 
 function SecretsPage() {
-  const { data: session, isPending } = useSession();
+  const { session } = Route.useRouteContext();
   const [secrets, setSecrets] = useState<UserSecret[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [revealedSecrets, setRevealedSecrets] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      window.location.href = "/sign-in";
-    }
-  }, [session, isPending]);
 
   // Fetch secrets
   useEffect(() => {
@@ -130,7 +122,7 @@ function SecretsPage() {
     }
   }
 
-  if (isPending || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

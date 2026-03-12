@@ -1,13 +1,11 @@
-import { isDevAuthEnabled } from "@/lib/auth";
-
 /**
  * Visual indicator that dev auth bypass is active.
  * 
- * SAFETY: This component is completely tree-shaken out of production builds
- * because isDevAuthEnabled is a build-time constant that evaluates to false.
+ * Only shows when VITE_DEV_BYPASS_AUTH is set and running on localhost.
  */
 export function DevModeBadge() {
-  // Build-time check - entire component is removed in production
+  // Build-time check - only include in development
+  const isDevAuthEnabled = import.meta.env.VITE_DEV_BYPASS_AUTH === "true";
   if (!isDevAuthEnabled) return null;
 
   // Runtime failsafe - only show on localhost

@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Settings,
@@ -13,9 +12,7 @@ import {
   Database,
   Server,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { API_URL, adminFetch } from "../../lib/api";
-import { adminStatsQueryOptions } from "../../lib/query-options";
+import { adminFetch } from "../../../lib/api";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { ResultModal } from "@/components/ui/result-modal";
 
@@ -27,11 +24,27 @@ interface Submission {
   createdAt: string;
 }
 
-export const Route = createFileRoute("/admin/")({ component: AdminPage });
+interface AdminStats {
+  libraries: {
+    total: number;
+    indexed: number;
+    pending: number;
+    indexing: number;
+  };
+  documentation: {
+    totalChunks: number;
+  };
+  usage: {
+    totalQueries: number;
+  };
+}
+
+export const Route = createFileRoute("/_authed/admin/")({
+  component: AdminPage,
+});
 
 function AdminPage() {
-  const queryClient = useQueryClient();
-  const { data: session, isPending: sessionPending } = useSession();
+  const { session } = Route.useRouteContext();
 
   // Local state
   const [seeding, setSeeding] = useState(false);
@@ -50,49 +63,15 @@ function AdminPage() {
     description: string;
   } | null>(null);
 
-  // Check if user is admin
-  const isAdmin = session?.user && (session.user as any).role === "admin";
-
-  // TanStack Query with smart polling for stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    ...adminStatsQueryOptions,
-    refetchInterval: (query) => {
-      // Poll if there are libraries indexing
-      const indexingCount = query.state.data?.libraries?.indexing ?? 0;
-      return indexingCount > 0 ? 5000 : false;
-    },
-    enabled: !!isAdmin,
-  });
-
-  // Fetch pending submissions
-  const { data: submissionsData, isLoading: submissionsLoading } = useQuery({
-    queryKey: ["admin", "submissions", "pending"],
-    queryFn: async (): Promise<{ submissions: Submission[] }> => {
-      const res = await fetch(`${API_URL}/api/submissions?status=pending&limit=5`);
-      if (!res.ok) throw new Error("Failed to fetch submissions");
-      return res.json();
-    },
-    staleTime: 1000 * 60, // 1 minute
-    enabled: !!isAdmin,
-  });
-
-  const pendingSubmissions = submissionsData?.submissions ?? [];
-  const hasIndexingLibraries = (stats?.libraries?.indexing ?? 0) > 0;
-
-  // Redirect if not admin
-  if (!sessionPending && !session?.user) {
-    window.location.href = "/sign-in";
-    return null;
-  }
-
-  if (!sessionPending && !isAdmin) {
-    window.location.href = "/";
-    return null;
-  }
+  // TODO: Convert to server functions - for now use placeholder data
+  const stats: AdminStats | null = null;
+  const statsLoading = false;
+  const pendingSubmissions: Submission[] = [];
+  const submissionsLoading = false;
+  const hasIndexingLibraries = false;
 
   const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ["admin"] });
-    queryClient.invalidateQueries({ queryKey: ["libraries"] });
+    // TODO: Implement query invalidation with server functions
   };
 
   const handleSeed = () => {
@@ -181,7 +160,7 @@ function AdminPage() {
     });
   };
 
-  if (sessionPending || statsLoading || submissionsLoading) {
+  if (statsLoading || submissionsLoading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

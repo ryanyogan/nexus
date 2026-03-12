@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, Check, X, ExternalLink, Clock, Server, Package } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { API_URL, adminFetch } from "../../lib/api";
+import { API_URL, adminFetch } from "../../../lib/api";
 
 interface ServerSubmission {
   id: string;
@@ -21,27 +20,16 @@ interface ServerSubmission {
   processedAt: string | null;
 }
 
-export const Route = createFileRoute("/admin/server-submissions")({ component: AdminServerSubmissionsPage });
+export const Route = createFileRoute("/_authed/admin/server-submissions")({ component: AdminServerSubmissionsPage });
 
 function AdminServerSubmissionsPage() {
-  const { data: session, isPending } = useSession();
+  const { session } = Route.useRouteContext();
   const [submissions, setSubmissions] = useState<ServerSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [rejectDialogId, setRejectDialogId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
-
-  // Redirect if not admin
-  useEffect(() => {
-    if (!isPending) {
-      if (!session?.user) {
-        window.location.href = "/sign-in";
-      } else if ((session.user as any).role !== "admin") {
-        window.location.href = "/";
-      }
-    }
-  }, [session, isPending]);
 
   // Fetch submissions
   useEffect(() => {
@@ -62,10 +50,8 @@ function AdminServerSubmissionsPage() {
       }
     };
 
-    if (session?.user && (session.user as any).role === "admin") {
-      fetchSubmissions();
-    }
-  }, [session, filter]);
+    fetchSubmissions();
+  }, [filter]);
 
   const handleApprove = async (id: string) => {
     setActionLoading(id);
@@ -115,16 +101,12 @@ function AdminServerSubmissionsPage() {
     }
   };
 
-  if (isPending || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!session?.user || (session.user as any).role !== "admin") {
-    return null;
   }
 
   const statusColors = {

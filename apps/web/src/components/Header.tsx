@@ -1,20 +1,37 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, X, Plus, Github, ChevronDown, User, LogOut, Settings, Key } from "lucide-react";
+import {
+  Menu,
+  X,
+  Plus,
+  Github,
+  ChevronDown,
+  User,
+  LogOut,
+  Settings,
+  Key,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useSession, signOut } from "@/lib/auth";
+import { signOut } from "@nexus/auth/client";
+import type { SessionData } from "../server/auth";
 
-export default function Header() {
+interface HeaderProps {
+  session: SessionData | null;
+}
+
+export default function Header({ session }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { data: session } = useSession();
   const isSignedIn = !!session?.user;
 
   // Close user menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     }
@@ -25,6 +42,8 @@ export default function Header() {
   const handleSignOut = async () => {
     await signOut();
     setUserMenuOpen(false);
+    // Refresh the page to clear state
+    window.location.href = "/";
   };
 
   return (
@@ -34,7 +53,10 @@ export default function Header() {
         <div className="flex w-full items-center justify-between py-4 md:w-auto md:py-0">
           <div className="flex items-center gap-3">
             {/* Logo */}
-            <Link to={isSignedIn ? "/dashboard" : "/"} className="inline-flex items-center">
+            <Link
+              to={isSignedIn ? "/dashboard" : "/"}
+              className="inline-flex items-center"
+            >
               <div className="flex h-10 items-center justify-center rounded-lg border border-stone-300 bg-white px-3 hover:bg-stone-50">
                 <span className="text-lg font-semibold text-stone-800">
                   Nexus
@@ -83,7 +105,7 @@ export default function Header() {
                       <Key className="h-4 w-4" />
                       API Key Vault
                     </Link>
-                    {(session.user as any).role === "admin" && (
+                    {session.user.role === "admin" && (
                       <Link
                         to="/admin"
                         onClick={() => setUserMenuOpen(false)}
@@ -107,7 +129,7 @@ export default function Header() {
             ) : (
               <a
                 href="/sign-in"
-                className="h-10 items-center justify-center rounded-lg border border-stone-300 bg-white px-4 text-base font-medium text-stone-700 transition-colors hover:bg-stone-50 inline-flex"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-300 bg-white px-4 text-base font-medium text-stone-700 transition-colors hover:bg-stone-50"
               >
                 Log In
               </a>

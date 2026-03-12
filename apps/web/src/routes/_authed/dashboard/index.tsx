@@ -12,9 +12,8 @@ import {
   Sparkles,
   Code,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
 
-export const Route = createFileRoute("/dashboard/")({
+export const Route = createFileRoute("/_authed/dashboard/")({
   component: DashboardPage,
 });
 
@@ -40,16 +39,9 @@ interface DashboardStats {
 }
 
 function DashboardPage() {
-  const { data: session, isPending } = useSession();
+  const { session } = Route.useRouteContext();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      window.location.href = "/sign-in";
-    }
-  }, [session, isPending]);
 
   // Fetch dashboard stats
   useEffect(() => {
@@ -85,16 +77,12 @@ function DashboardPage() {
     }
   }
 
-  if (isPending || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
-  }
-
-  if (!session?.user) {
-    return null;
   }
 
   const planColors = {
@@ -109,7 +97,7 @@ function DashboardPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
         <p className="mt-1 text-muted-foreground">
-          Welcome back, {session.user.name || session.user.email}
+          Welcome back, {session?.user?.name || session?.user?.email}
         </p>
       </div>
 

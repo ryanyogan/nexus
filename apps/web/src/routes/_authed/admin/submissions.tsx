@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, Check, X, ExternalLink, Clock } from "lucide-react";
-import { useSession } from "@/lib/auth";
-import { API_URL, adminFetch } from "../../lib/api";
+import { API_URL, adminFetch } from "../../../lib/api";
 
 interface Submission {
   id: string;
@@ -16,25 +15,14 @@ interface Submission {
   processedAt: string | null;
 }
 
-export const Route = createFileRoute("/admin/submissions")({ component: AdminSubmissionsPage });
+export const Route = createFileRoute("/_authed/admin/submissions")({ component: AdminSubmissionsPage });
 
 function AdminSubmissionsPage() {
-  const { data: session, isPending } = useSession();
+  const { session } = Route.useRouteContext();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-
-  // Redirect if not admin
-  useEffect(() => {
-    if (!isPending) {
-      if (!session?.user) {
-        window.location.href = "/sign-in";
-      } else if ((session.user as any).role !== "admin") {
-        window.location.href = "/";
-      }
-    }
-  }, [session, isPending]);
 
   // Fetch submissions
   useEffect(() => {
@@ -55,10 +43,8 @@ function AdminSubmissionsPage() {
       }
     };
 
-    if (session?.user && (session.user as any).role === "admin") {
-      fetchSubmissions();
-    }
-  }, [session, filter]);
+    fetchSubmissions();
+  }, [filter]);
 
   const handleApprove = async (id: string) => {
     setActionLoading(id);
@@ -98,16 +84,12 @@ function AdminSubmissionsPage() {
     }
   };
 
-  if (isPending || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!session?.user || (session.user as any).role !== "admin") {
-    return null;
   }
 
   const statusColors = {

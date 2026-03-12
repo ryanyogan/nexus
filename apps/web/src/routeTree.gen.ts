@@ -10,40 +10,35 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TerminalRouteImport } from './routes/terminal'
-import { Route as SubmitServerRouteImport } from './routes/submit-server'
-import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as SignInRouteImport } from './routes/sign-in'
-import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as ExploreIndexRouteImport } from './routes/explore/index'
 import { Route as CodeIndexRouteImport } from './routes/code/index'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as SettingsSecretsRouteImport } from './routes/settings/secrets'
 import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
-import { Route as DashboardSkillsRouteImport } from './routes/dashboard/skills'
-import { Route as DashboardKeysRouteImport } from './routes/dashboard/keys'
-import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
+import { Route as ExploreDocsRouteImport } from './routes/explore/docs'
 import { Route as CodeSessionsRouteImport } from './routes/code/sessions'
-import { Route as AdminSubmissionsRouteImport } from './routes/admin/submissions'
-import { Route as AdminServerSubmissionsRouteImport } from './routes/admin/server-submissions'
-import { Route as AdminLibrariesRouteImport } from './routes/admin/libraries'
+import { Route as AuthedSubmitServerRouteImport } from './routes/_authed/submit-server'
+import { Route as AuthedSubmitRouteImport } from './routes/_authed/submit'
+import { Route as AuthedAdminRouteImport } from './routes/_authed/admin'
+import { Route as ExploreSkillsIndexRouteImport } from './routes/explore/skills.index'
 import { Route as ExploreServersIndexRouteImport } from './routes/explore/servers.index'
+import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
+import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
+import { Route as ExploreSkillsSkillIdRouteImport } from './routes/explore/skills.$skillId'
 import { Route as ExploreServersServerIdRouteImport } from './routes/explore/servers.$serverId'
 import { Route as CodeSessionSessionIdRouteImport } from './routes/code/session.$sessionId'
+import { Route as AuthedSettingsSecretsRouteImport } from './routes/_authed/settings/secrets'
+import { Route as AuthedDashboardSkillsRouteImport } from './routes/_authed/dashboard/skills'
+import { Route as AuthedDashboardKeysRouteImport } from './routes/_authed/dashboard/keys'
+import { Route as AuthedDashboardBillingRouteImport } from './routes/_authed/dashboard/billing'
+import { Route as AuthedAdminSubmissionsRouteImport } from './routes/_authed/admin/submissions'
+import { Route as AuthedAdminServerSubmissionsRouteImport } from './routes/_authed/admin/server-submissions'
+import { Route as AuthedAdminLibrariesRouteImport } from './routes/_authed/admin/libraries'
 
 const TerminalRoute = TerminalRouteImport.update({
   id: '/terminal',
   path: '/terminal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SubmitServerRoute = SubmitServerRouteImport.update({
-  id: '/submit-server',
-  path: '/submit-server',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SubmitRoute = SubmitRouteImport.update({
-  id: '/submit',
-  path: '/submit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignInRoute = SignInRouteImport.update({
@@ -51,9 +46,8 @@ const SignInRoute = SignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExploreRoute = ExploreRouteImport.update({
-  id: '/explore',
-  path: '/explore',
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,9 +55,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
+const ExploreIndexRoute = ExploreIndexRouteImport.update({
+  id: '/explore/',
+  path: '/explore/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CodeIndexRoute = CodeIndexRouteImport.update({
@@ -71,34 +65,14 @@ const CodeIndexRoute = CodeIndexRouteImport.update({
   path: '/code/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/code/index.lazy').then((d) => d.Route))
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsSecretsRoute = SettingsSecretsRouteImport.update({
-  id: '/settings/secrets',
-  path: '/settings/secrets',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LibrariesLibraryIdRoute = LibrariesLibraryIdRouteImport.update({
   id: '/libraries/$libraryId',
   path: '/libraries/$libraryId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardSkillsRoute = DashboardSkillsRouteImport.update({
-  id: '/dashboard/skills',
-  path: '/dashboard/skills',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardKeysRoute = DashboardKeysRouteImport.update({
-  id: '/dashboard/keys',
-  path: '/dashboard/keys',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardBillingRoute = DashboardBillingRouteImport.update({
-  id: '/dashboard/billing',
-  path: '/dashboard/billing',
+const ExploreDocsRoute = ExploreDocsRouteImport.update({
+  id: '/explore/docs',
+  path: '/explore/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CodeSessionsRoute = CodeSessionsRouteImport.update({
@@ -106,30 +80,50 @@ const CodeSessionsRoute = CodeSessionsRouteImport.update({
   path: '/code/sessions',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/code/sessions.lazy').then((d) => d.Route))
-const AdminSubmissionsRoute = AdminSubmissionsRouteImport.update({
-  id: '/admin/submissions',
-  path: '/admin/submissions',
-  getParentRoute: () => rootRouteImport,
+const AuthedSubmitServerRoute = AuthedSubmitServerRouteImport.update({
+  id: '/submit-server',
+  path: '/submit-server',
+  getParentRoute: () => AuthedRoute,
 } as any)
-const AdminServerSubmissionsRoute = AdminServerSubmissionsRouteImport.update({
-  id: '/admin/server-submissions',
-  path: '/admin/server-submissions',
-  getParentRoute: () => rootRouteImport,
+const AuthedSubmitRoute = AuthedSubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => AuthedRoute,
 } as any)
-const AdminLibrariesRoute = AdminLibrariesRouteImport.update({
-  id: '/admin/libraries',
-  path: '/admin/libraries',
+const AuthedAdminRoute = AuthedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const ExploreSkillsIndexRoute = ExploreSkillsIndexRouteImport.update({
+  id: '/explore/skills/',
+  path: '/explore/skills/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreServersIndexRoute = ExploreServersIndexRouteImport.update({
-  id: '/servers/',
-  path: '/servers/',
-  getParentRoute: () => ExploreRoute,
+  id: '/explore/servers/',
+  path: '/explore/servers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const ExploreSkillsSkillIdRoute = ExploreSkillsSkillIdRouteImport.update({
+  id: '/explore/skills/$skillId',
+  path: '/explore/skills/$skillId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreServersServerIdRoute = ExploreServersServerIdRouteImport.update({
-  id: '/servers/$serverId',
-  path: '/servers/$serverId',
-  getParentRoute: () => ExploreRoute,
+  id: '/explore/servers/$serverId',
+  path: '/explore/servers/$serverId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CodeSessionSessionIdRoute = CodeSessionSessionIdRouteImport.update({
   id: '/code/session/$sessionId',
@@ -138,169 +132,224 @@ const CodeSessionSessionIdRoute = CodeSessionSessionIdRouteImport.update({
 } as any).lazy(() =>
   import('./routes/code/session.$sessionId.lazy').then((d) => d.Route),
 )
+const AuthedSettingsSecretsRoute = AuthedSettingsSecretsRouteImport.update({
+  id: '/settings/secrets',
+  path: '/settings/secrets',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDashboardSkillsRoute = AuthedDashboardSkillsRouteImport.update({
+  id: '/dashboard/skills',
+  path: '/dashboard/skills',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDashboardKeysRoute = AuthedDashboardKeysRouteImport.update({
+  id: '/dashboard/keys',
+  path: '/dashboard/keys',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDashboardBillingRoute = AuthedDashboardBillingRouteImport.update({
+  id: '/dashboard/billing',
+  path: '/dashboard/billing',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAdminSubmissionsRoute = AuthedAdminSubmissionsRouteImport.update({
+  id: '/submissions',
+  path: '/submissions',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminServerSubmissionsRoute =
+  AuthedAdminServerSubmissionsRouteImport.update({
+    id: '/server-submissions',
+    path: '/server-submissions',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminLibrariesRoute = AuthedAdminLibrariesRouteImport.update({
+  id: '/libraries',
+  path: '/libraries',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRouteWithChildren
   '/sign-in': typeof SignInRoute
-  '/submit': typeof SubmitRoute
-  '/submit-server': typeof SubmitServerRoute
   '/terminal': typeof TerminalRoute
-  '/admin/libraries': typeof AdminLibrariesRoute
-  '/admin/server-submissions': typeof AdminServerSubmissionsRoute
-  '/admin/submissions': typeof AdminSubmissionsRoute
+  '/admin': typeof AuthedAdminRouteWithChildren
+  '/submit': typeof AuthedSubmitRoute
+  '/submit-server': typeof AuthedSubmitServerRoute
   '/code/sessions': typeof CodeSessionsRoute
-  '/dashboard/billing': typeof DashboardBillingRoute
-  '/dashboard/keys': typeof DashboardKeysRoute
-  '/dashboard/skills': typeof DashboardSkillsRoute
+  '/explore/docs': typeof ExploreDocsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
-  '/settings/secrets': typeof SettingsSecretsRoute
-  '/admin/': typeof AdminIndexRoute
   '/code/': typeof CodeIndexRoute
-  '/dashboard/': typeof DashboardIndexRoute
+  '/explore/': typeof ExploreIndexRoute
+  '/admin/libraries': typeof AuthedAdminLibrariesRoute
+  '/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
+  '/admin/submissions': typeof AuthedAdminSubmissionsRoute
+  '/dashboard/billing': typeof AuthedDashboardBillingRoute
+  '/dashboard/keys': typeof AuthedDashboardKeysRoute
+  '/dashboard/skills': typeof AuthedDashboardSkillsRoute
+  '/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
+  '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
+  '/admin/': typeof AuthedAdminIndexRoute
+  '/dashboard/': typeof AuthedDashboardIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
+  '/explore/skills/': typeof ExploreSkillsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRouteWithChildren
   '/sign-in': typeof SignInRoute
-  '/submit': typeof SubmitRoute
-  '/submit-server': typeof SubmitServerRoute
   '/terminal': typeof TerminalRoute
-  '/admin/libraries': typeof AdminLibrariesRoute
-  '/admin/server-submissions': typeof AdminServerSubmissionsRoute
-  '/admin/submissions': typeof AdminSubmissionsRoute
+  '/submit': typeof AuthedSubmitRoute
+  '/submit-server': typeof AuthedSubmitServerRoute
   '/code/sessions': typeof CodeSessionsRoute
-  '/dashboard/billing': typeof DashboardBillingRoute
-  '/dashboard/keys': typeof DashboardKeysRoute
-  '/dashboard/skills': typeof DashboardSkillsRoute
+  '/explore/docs': typeof ExploreDocsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
-  '/settings/secrets': typeof SettingsSecretsRoute
-  '/admin': typeof AdminIndexRoute
   '/code': typeof CodeIndexRoute
-  '/dashboard': typeof DashboardIndexRoute
+  '/explore': typeof ExploreIndexRoute
+  '/admin/libraries': typeof AuthedAdminLibrariesRoute
+  '/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
+  '/admin/submissions': typeof AuthedAdminSubmissionsRoute
+  '/dashboard/billing': typeof AuthedDashboardBillingRoute
+  '/dashboard/keys': typeof AuthedDashboardKeysRoute
+  '/dashboard/skills': typeof AuthedDashboardSkillsRoute
+  '/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
+  '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
+  '/admin': typeof AuthedAdminIndexRoute
+  '/dashboard': typeof AuthedDashboardIndexRoute
   '/explore/servers': typeof ExploreServersIndexRoute
+  '/explore/skills': typeof ExploreSkillsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRouteWithChildren
+  '/_authed': typeof AuthedRouteWithChildren
   '/sign-in': typeof SignInRoute
-  '/submit': typeof SubmitRoute
-  '/submit-server': typeof SubmitServerRoute
   '/terminal': typeof TerminalRoute
-  '/admin/libraries': typeof AdminLibrariesRoute
-  '/admin/server-submissions': typeof AdminServerSubmissionsRoute
-  '/admin/submissions': typeof AdminSubmissionsRoute
+  '/_authed/admin': typeof AuthedAdminRouteWithChildren
+  '/_authed/submit': typeof AuthedSubmitRoute
+  '/_authed/submit-server': typeof AuthedSubmitServerRoute
   '/code/sessions': typeof CodeSessionsRoute
-  '/dashboard/billing': typeof DashboardBillingRoute
-  '/dashboard/keys': typeof DashboardKeysRoute
-  '/dashboard/skills': typeof DashboardSkillsRoute
+  '/explore/docs': typeof ExploreDocsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
-  '/settings/secrets': typeof SettingsSecretsRoute
-  '/admin/': typeof AdminIndexRoute
   '/code/': typeof CodeIndexRoute
-  '/dashboard/': typeof DashboardIndexRoute
+  '/explore/': typeof ExploreIndexRoute
+  '/_authed/admin/libraries': typeof AuthedAdminLibrariesRoute
+  '/_authed/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
+  '/_authed/admin/submissions': typeof AuthedAdminSubmissionsRoute
+  '/_authed/dashboard/billing': typeof AuthedDashboardBillingRoute
+  '/_authed/dashboard/keys': typeof AuthedDashboardKeysRoute
+  '/_authed/dashboard/skills': typeof AuthedDashboardSkillsRoute
+  '/_authed/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
+  '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
+  '/_authed/admin/': typeof AuthedAdminIndexRoute
+  '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
+  '/explore/skills/': typeof ExploreSkillsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/explore'
     | '/sign-in'
+    | '/terminal'
+    | '/admin'
     | '/submit'
     | '/submit-server'
-    | '/terminal'
+    | '/code/sessions'
+    | '/explore/docs'
+    | '/libraries/$libraryId'
+    | '/code/'
+    | '/explore/'
     | '/admin/libraries'
     | '/admin/server-submissions'
     | '/admin/submissions'
-    | '/code/sessions'
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
-    | '/libraries/$libraryId'
     | '/settings/secrets'
-    | '/admin/'
-    | '/code/'
-    | '/dashboard/'
     | '/code/session/$sessionId'
     | '/explore/servers/$serverId'
+    | '/explore/skills/$skillId'
+    | '/admin/'
+    | '/dashboard/'
     | '/explore/servers/'
+    | '/explore/skills/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/explore'
     | '/sign-in'
+    | '/terminal'
     | '/submit'
     | '/submit-server'
-    | '/terminal'
+    | '/code/sessions'
+    | '/explore/docs'
+    | '/libraries/$libraryId'
+    | '/code'
+    | '/explore'
     | '/admin/libraries'
     | '/admin/server-submissions'
     | '/admin/submissions'
-    | '/code/sessions'
     | '/dashboard/billing'
     | '/dashboard/keys'
     | '/dashboard/skills'
-    | '/libraries/$libraryId'
     | '/settings/secrets'
-    | '/admin'
-    | '/code'
-    | '/dashboard'
     | '/code/session/$sessionId'
     | '/explore/servers/$serverId'
+    | '/explore/skills/$skillId'
+    | '/admin'
+    | '/dashboard'
     | '/explore/servers'
+    | '/explore/skills'
   id:
     | '__root__'
     | '/'
-    | '/explore'
+    | '/_authed'
     | '/sign-in'
-    | '/submit'
-    | '/submit-server'
     | '/terminal'
-    | '/admin/libraries'
-    | '/admin/server-submissions'
-    | '/admin/submissions'
+    | '/_authed/admin'
+    | '/_authed/submit'
+    | '/_authed/submit-server'
     | '/code/sessions'
-    | '/dashboard/billing'
-    | '/dashboard/keys'
-    | '/dashboard/skills'
+    | '/explore/docs'
     | '/libraries/$libraryId'
-    | '/settings/secrets'
-    | '/admin/'
     | '/code/'
-    | '/dashboard/'
+    | '/explore/'
+    | '/_authed/admin/libraries'
+    | '/_authed/admin/server-submissions'
+    | '/_authed/admin/submissions'
+    | '/_authed/dashboard/billing'
+    | '/_authed/dashboard/keys'
+    | '/_authed/dashboard/skills'
+    | '/_authed/settings/secrets'
     | '/code/session/$sessionId'
     | '/explore/servers/$serverId'
+    | '/explore/skills/$skillId'
+    | '/_authed/admin/'
+    | '/_authed/dashboard/'
     | '/explore/servers/'
+    | '/explore/skills/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ExploreRoute: typeof ExploreRouteWithChildren
+  AuthedRoute: typeof AuthedRouteWithChildren
   SignInRoute: typeof SignInRoute
-  SubmitRoute: typeof SubmitRoute
-  SubmitServerRoute: typeof SubmitServerRoute
   TerminalRoute: typeof TerminalRoute
-  AdminLibrariesRoute: typeof AdminLibrariesRoute
-  AdminServerSubmissionsRoute: typeof AdminServerSubmissionsRoute
-  AdminSubmissionsRoute: typeof AdminSubmissionsRoute
   CodeSessionsRoute: typeof CodeSessionsRoute
-  DashboardBillingRoute: typeof DashboardBillingRoute
-  DashboardKeysRoute: typeof DashboardKeysRoute
-  DashboardSkillsRoute: typeof DashboardSkillsRoute
+  ExploreDocsRoute: typeof ExploreDocsRoute
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
-  SettingsSecretsRoute: typeof SettingsSecretsRoute
-  AdminIndexRoute: typeof AdminIndexRoute
   CodeIndexRoute: typeof CodeIndexRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
+  ExploreIndexRoute: typeof ExploreIndexRoute
   CodeSessionSessionIdRoute: typeof CodeSessionSessionIdRoute
+  ExploreServersServerIdRoute: typeof ExploreServersServerIdRoute
+  ExploreSkillsSkillIdRoute: typeof ExploreSkillsSkillIdRoute
+  ExploreServersIndexRoute: typeof ExploreServersIndexRoute
+  ExploreSkillsIndexRoute: typeof ExploreSkillsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,20 +361,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TerminalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/submit-server': {
-      id: '/submit-server'
-      path: '/submit-server'
-      fullPath: '/submit-server'
-      preLoaderRoute: typeof SubmitServerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/submit': {
-      id: '/submit'
-      path: '/submit'
-      fullPath: '/submit'
-      preLoaderRoute: typeof SubmitRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sign-in': {
       id: '/sign-in'
       path: '/sign-in'
@@ -333,11 +368,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/explore': {
-      id: '/explore'
-      path: '/explore'
-      fullPath: '/explore'
-      preLoaderRoute: typeof ExploreRouteImport
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -347,11 +382,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/dashboard'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
+    '/explore/': {
+      id: '/explore/'
+      path: '/explore'
+      fullPath: '/explore/'
+      preLoaderRoute: typeof ExploreIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/code/': {
@@ -361,20 +396,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CodeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/admin'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings/secrets': {
-      id: '/settings/secrets'
-      path: '/settings/secrets'
-      fullPath: '/settings/secrets'
-      preLoaderRoute: typeof SettingsSecretsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/libraries/$libraryId': {
       id: '/libraries/$libraryId'
       path: '/libraries/$libraryId'
@@ -382,25 +403,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibrariesLibraryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/skills': {
-      id: '/dashboard/skills'
-      path: '/dashboard/skills'
-      fullPath: '/dashboard/skills'
-      preLoaderRoute: typeof DashboardSkillsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/keys': {
-      id: '/dashboard/keys'
-      path: '/dashboard/keys'
-      fullPath: '/dashboard/keys'
-      preLoaderRoute: typeof DashboardKeysRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/billing': {
-      id: '/dashboard/billing'
-      path: '/dashboard/billing'
-      fullPath: '/dashboard/billing'
-      preLoaderRoute: typeof DashboardBillingRouteImport
+    '/explore/docs': {
+      id: '/explore/docs'
+      path: '/explore/docs'
+      fullPath: '/explore/docs'
+      preLoaderRoute: typeof ExploreDocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/code/sessions': {
@@ -410,40 +417,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CodeSessionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/submissions': {
-      id: '/admin/submissions'
-      path: '/admin/submissions'
-      fullPath: '/admin/submissions'
-      preLoaderRoute: typeof AdminSubmissionsRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authed/submit-server': {
+      id: '/_authed/submit-server'
+      path: '/submit-server'
+      fullPath: '/submit-server'
+      preLoaderRoute: typeof AuthedSubmitServerRouteImport
+      parentRoute: typeof AuthedRoute
     }
-    '/admin/server-submissions': {
-      id: '/admin/server-submissions'
-      path: '/admin/server-submissions'
-      fullPath: '/admin/server-submissions'
-      preLoaderRoute: typeof AdminServerSubmissionsRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authed/submit': {
+      id: '/_authed/submit'
+      path: '/submit'
+      fullPath: '/submit'
+      preLoaderRoute: typeof AuthedSubmitRouteImport
+      parentRoute: typeof AuthedRoute
     }
-    '/admin/libraries': {
-      id: '/admin/libraries'
-      path: '/admin/libraries'
-      fullPath: '/admin/libraries'
-      preLoaderRoute: typeof AdminLibrariesRouteImport
+    '/_authed/admin': {
+      id: '/_authed/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthedAdminRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/explore/skills/': {
+      id: '/explore/skills/'
+      path: '/explore/skills'
+      fullPath: '/explore/skills/'
+      preLoaderRoute: typeof ExploreSkillsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore/servers/': {
       id: '/explore/servers/'
-      path: '/servers'
+      path: '/explore/servers'
       fullPath: '/explore/servers/'
       preLoaderRoute: typeof ExploreServersIndexRouteImport
-      parentRoute: typeof ExploreRoute
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed/dashboard/': {
+      id: '/_authed/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthedDashboardIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/admin/': {
+      id: '/_authed/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthedAdminIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/explore/skills/$skillId': {
+      id: '/explore/skills/$skillId'
+      path: '/explore/skills/$skillId'
+      fullPath: '/explore/skills/$skillId'
+      preLoaderRoute: typeof ExploreSkillsSkillIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/explore/servers/$serverId': {
       id: '/explore/servers/$serverId'
-      path: '/servers/$serverId'
+      path: '/explore/servers/$serverId'
       fullPath: '/explore/servers/$serverId'
       preLoaderRoute: typeof ExploreServersServerIdRouteImport
-      parentRoute: typeof ExploreRoute
+      parentRoute: typeof rootRouteImport
     }
     '/code/session/$sessionId': {
       id: '/code/session/$sessionId'
@@ -452,42 +487,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CodeSessionSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/settings/secrets': {
+      id: '/_authed/settings/secrets'
+      path: '/settings/secrets'
+      fullPath: '/settings/secrets'
+      preLoaderRoute: typeof AuthedSettingsSecretsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/skills': {
+      id: '/_authed/dashboard/skills'
+      path: '/dashboard/skills'
+      fullPath: '/dashboard/skills'
+      preLoaderRoute: typeof AuthedDashboardSkillsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/keys': {
+      id: '/_authed/dashboard/keys'
+      path: '/dashboard/keys'
+      fullPath: '/dashboard/keys'
+      preLoaderRoute: typeof AuthedDashboardKeysRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/billing': {
+      id: '/_authed/dashboard/billing'
+      path: '/dashboard/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof AuthedDashboardBillingRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/admin/submissions': {
+      id: '/_authed/admin/submissions'
+      path: '/submissions'
+      fullPath: '/admin/submissions'
+      preLoaderRoute: typeof AuthedAdminSubmissionsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/server-submissions': {
+      id: '/_authed/admin/server-submissions'
+      path: '/server-submissions'
+      fullPath: '/admin/server-submissions'
+      preLoaderRoute: typeof AuthedAdminServerSubmissionsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/libraries': {
+      id: '/_authed/admin/libraries'
+      path: '/libraries'
+      fullPath: '/admin/libraries'
+      preLoaderRoute: typeof AuthedAdminLibrariesRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
   }
 }
 
-interface ExploreRouteChildren {
-  ExploreServersServerIdRoute: typeof ExploreServersServerIdRoute
-  ExploreServersIndexRoute: typeof ExploreServersIndexRoute
+interface AuthedAdminRouteChildren {
+  AuthedAdminLibrariesRoute: typeof AuthedAdminLibrariesRoute
+  AuthedAdminServerSubmissionsRoute: typeof AuthedAdminServerSubmissionsRoute
+  AuthedAdminSubmissionsRoute: typeof AuthedAdminSubmissionsRoute
+  AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
 }
 
-const ExploreRouteChildren: ExploreRouteChildren = {
-  ExploreServersServerIdRoute: ExploreServersServerIdRoute,
-  ExploreServersIndexRoute: ExploreServersIndexRoute,
+const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
+  AuthedAdminLibrariesRoute: AuthedAdminLibrariesRoute,
+  AuthedAdminServerSubmissionsRoute: AuthedAdminServerSubmissionsRoute,
+  AuthedAdminSubmissionsRoute: AuthedAdminSubmissionsRoute,
+  AuthedAdminIndexRoute: AuthedAdminIndexRoute,
 }
 
-const ExploreRouteWithChildren =
-  ExploreRoute._addFileChildren(ExploreRouteChildren)
+const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(
+  AuthedAdminRouteChildren,
+)
+
+interface AuthedRouteChildren {
+  AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
+  AuthedSubmitRoute: typeof AuthedSubmitRoute
+  AuthedSubmitServerRoute: typeof AuthedSubmitServerRoute
+  AuthedDashboardBillingRoute: typeof AuthedDashboardBillingRoute
+  AuthedDashboardKeysRoute: typeof AuthedDashboardKeysRoute
+  AuthedDashboardSkillsRoute: typeof AuthedDashboardSkillsRoute
+  AuthedSettingsSecretsRoute: typeof AuthedSettingsSecretsRoute
+  AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAdminRoute: AuthedAdminRouteWithChildren,
+  AuthedSubmitRoute: AuthedSubmitRoute,
+  AuthedSubmitServerRoute: AuthedSubmitServerRoute,
+  AuthedDashboardBillingRoute: AuthedDashboardBillingRoute,
+  AuthedDashboardKeysRoute: AuthedDashboardKeysRoute,
+  AuthedDashboardSkillsRoute: AuthedDashboardSkillsRoute,
+  AuthedSettingsSecretsRoute: AuthedSettingsSecretsRoute,
+  AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
+}
+
+const AuthedRouteWithChildren =
+  AuthedRoute._addFileChildren(AuthedRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ExploreRoute: ExploreRouteWithChildren,
+  AuthedRoute: AuthedRouteWithChildren,
   SignInRoute: SignInRoute,
-  SubmitRoute: SubmitRoute,
-  SubmitServerRoute: SubmitServerRoute,
   TerminalRoute: TerminalRoute,
-  AdminLibrariesRoute: AdminLibrariesRoute,
-  AdminServerSubmissionsRoute: AdminServerSubmissionsRoute,
-  AdminSubmissionsRoute: AdminSubmissionsRoute,
   CodeSessionsRoute: CodeSessionsRoute,
-  DashboardBillingRoute: DashboardBillingRoute,
-  DashboardKeysRoute: DashboardKeysRoute,
-  DashboardSkillsRoute: DashboardSkillsRoute,
+  ExploreDocsRoute: ExploreDocsRoute,
   LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
-  SettingsSecretsRoute: SettingsSecretsRoute,
-  AdminIndexRoute: AdminIndexRoute,
   CodeIndexRoute: CodeIndexRoute,
-  DashboardIndexRoute: DashboardIndexRoute,
+  ExploreIndexRoute: ExploreIndexRoute,
   CodeSessionSessionIdRoute: CodeSessionSessionIdRoute,
+  ExploreServersServerIdRoute: ExploreServersServerIdRoute,
+  ExploreSkillsSkillIdRoute: ExploreSkillsSkillIdRoute,
+  ExploreServersIndexRoute: ExploreServersIndexRoute,
+  ExploreSkillsIndexRoute: ExploreSkillsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
