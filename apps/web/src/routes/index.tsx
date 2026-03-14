@@ -17,10 +17,6 @@ import {
   ArrowUpRight,
   X,
   Loader2,
-  TrendingUp,
-  Flame,
-  Clock,
-  ExternalLink,
 } from "lucide-react";
 
 // ============================================================================
@@ -96,38 +92,10 @@ const PAGE_SIZE = 10;
 // Utility Functions
 // ============================================================================
 
-function extractDomain(url: string | null): string {
-  if (!url) return "";
-  try {
-    return new URL(url).hostname.replace("www.", "");
-  } catch {
-    return "";
-  }
-}
-
 function formatNumber(n: number): string {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
   if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
   return n.toString();
-}
-
-function formatRelativeTime(dateStr: string | null): string {
-  if (!dateStr) return "";
-  try {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return "today";
-    if (diffDays === 1) return "yesterday";
-    if (diffDays < 7) return `${diffDays}d ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
-    return `${Math.floor(diffDays / 365)}y ago`;
-  } catch {
-    return "";
-  }
 }
 
 // ============================================================================
@@ -565,17 +533,17 @@ function HomePage() {
   };
 
   // Tabs configuration
-  const tabs: { id: SortMode | "search"; label: string; icon: React.ReactNode }[] = [
-    { id: "popular", label: "POPULAR", icon: <TrendingUp className="h-3.5 w-3.5" /> },
-    { id: "trending", label: "TRENDING", icon: <Flame className="h-3.5 w-3.5" /> },
-    { id: "recent", label: "RECENT", icon: <Clock className="h-3.5 w-3.5" /> },
+  const tabs: { id: SortMode | "search"; label: string }[] = [
+    { id: "popular", label: "POPULAR" },
+    { id: "trending", label: "TRENDING" },
+    { id: "recent", label: "RECENT" },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[880px] px-4 lg:px-0">
         {/* Hero */}
-        <div className="pt-24">
+        <div className="pt-32">
           <h1 className="font-mono text-2xl font-bold uppercase tracking-tight text-foreground sm:text-3xl">
             Ship faster with pre-indexed docs,
             <br />
@@ -591,24 +559,24 @@ function HomePage() {
         </div>
 
         {/* Pro section */}
-        <div className="mt-10">
+        <div className="mt-8 flex justify-center">
           <Link
             to="/plans"
-            className="group inline-flex items-center gap-3 border border-border bg-muted/50 px-4 py-2.5 font-mono text-xs font-bold transition-all hover:border-accent hover:bg-accent/5"
+            className="group inline-flex items-center gap-2 font-mono text-xs transition-colors"
           >
-            <span className="border border-accent bg-accent px-1.5 py-0.5 text-[10px] font-bold text-background">PRO</span>
-            <span className="text-foreground">Unlimited queries</span>
-            <span className="text-border">·</span>
-            <span className="text-muted-foreground group-hover:text-foreground">Unlimited memory</span>
-            <span className="hidden text-border sm:inline">·</span>
-            <span className="hidden text-muted-foreground group-hover:text-foreground sm:inline">Private repos</span>
+            <span className="font-bold text-accent">PRO</span>
+            <span className="text-muted-foreground">—</span>
+            <span className="text-muted-foreground group-hover:text-foreground">Unlimited queries, memory, private repos</span>
             <ArrowUpRight className="h-3 w-3 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
           </Link>
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="mt-16 mb-8">
-          <div className="flex h-11 max-w-xl items-center gap-3 border border-border bg-background px-4 font-mono transition-colors focus-within:border-foreground/50">
+        <form onSubmit={handleSearch} className="mt-16 mb-6">
+          <label className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Search
+          </label>
+          <div className="flex h-10 max-w-sm items-center gap-2 border border-foreground/20 bg-background px-3 font-mono transition-colors focus-within:border-foreground">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               ref={inputRef}
@@ -652,13 +620,12 @@ function HomePage() {
                   setInputValue("");
                   inputRef.current?.blur();
                 }}
-                className={`flex items-center gap-2 border-b px-4 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px ${
+                className={`border-b px-4 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px ${
                   isActive
                     ? "border-accent text-accent"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {t.icon}
                 {t.label}
               </Link>
             );
@@ -682,8 +649,23 @@ function HomePage() {
           </div>
         )}
 
-        {/* Content */}
+        {/* Content Table */}
         <div>
+          {/* Table Header */}
+          {sortedItems.length > 0 && (
+            <div className="flex items-center gap-3 border-b border-border py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="w-4 shrink-0" />
+              <span className="w-12 shrink-0">Type</span>
+              <div className="flex-1">Name</div>
+              <div className="hidden items-center justify-end gap-6 sm:flex">
+                <span className="w-12 text-right">Stat 1</span>
+                <span className="w-12 text-right">Stat 2</span>
+                <span className="w-12 text-right">Stat 3</span>
+                <span className="w-14 text-right">Updated</span>
+              </div>
+            </div>
+          )}
+          {/* Rows */}
           {sortedItems.map((item, idx) => (
             <ContentRow key={`${item.type}-${item.id}`} item={item} isLast={idx === sortedItems.length - 1} />
           ))}
@@ -800,11 +782,11 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
   const getIcon = () => {
     switch (item.type) {
       case "doc":
-        return <BookOpen className="h-4 w-4 text-muted-foreground" />;
+        return <BookOpen className="h-3.5 w-3.5" />;
       case "server":
-        return <Server className="h-4 w-4 text-muted-foreground" />;
+        return <Server className="h-3.5 w-3.5" />;
       case "skill":
-        return <Zap className="h-4 w-4 text-accent" />;
+        return <Zap className="h-3.5 w-3.5" />;
     }
   };
 
@@ -815,105 +797,85 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
     return item.name;
   };
 
-  const getDomain = () => {
+  // Returns [stat1, stat2, stat3] matching header columns (Tokens, Chunks, Queries)
+  const getStats = (): [string, string, string] => {
     if (item.type === "doc") {
-      return extractDomain(item.sourceUrl);
+      return [
+        formatNumber(item.totalTokens),
+        formatNumber(item.totalChunks),
+        formatNumber(item.totalQueries),
+      ];
     }
     if (item.type === "server") {
-      return extractDomain(item.repositoryUrl);
+      // stars, downloads, discoveries
+      return [
+        formatNumber(item.githubStars),
+        formatNumber(item.weeklyDownloads),
+        formatNumber(item.totalDiscoveries),
+      ];
     }
-    return extractDomain(item.sourceUrl);
+    // skills: installs, usage, -
+    return [
+      formatNumber(item.installCount),
+      formatNumber(item.usageCount),
+      "-",
+    ];
   };
 
-  const getStat1 = () => {
+  const getDate = () => {
+    let dateStr: string | null = null;
     if (item.type === "doc") {
-      return formatNumber(item.totalTokens);
+      dateStr = item.lastIndexedAt;
+    } else {
+      dateStr = item.updatedAt;
     }
-    if (item.type === "server") {
-      return formatNumber(item.weeklyDownloads);
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return "-";
     }
-    return formatNumber(item.installCount);
   };
 
-  const getStat2 = () => {
-    if (item.type === "doc") {
-      return item.totalChunks.toLocaleString();
-    }
-    if (item.type === "server") {
-      return `★ ${formatNumber(item.githubStars)}`;
-    }
-    return `↑ ${formatNumber(item.usageCount)}`;
-  };
+  const [stat1, stat2, stat3] = getStats();
 
-  const getRelativeTime = () => {
-    if (item.type === "doc") {
-      return formatRelativeTime(item.lastIndexedAt);
+  const getTypeLabel = () => {
+    switch (item.type) {
+      case "doc": return "DOC";
+      case "server": return "SERVER";
+      case "skill": return "SKILL";
     }
-    return formatRelativeTime(item.updatedAt);
   };
-
-  const getBadges = () => {
-    const badges: string[] = [];
-    if (item.type === "doc" && item.isFeatured) {
-      badges.push("Featured");
-    }
-    if (item.type === "server" && item.isOfficial) {
-      badges.push("Official");
-    }
-    return badges;
-  };
-
-  const domain = getDomain();
 
   return (
     <Link
       to={getDetailUrl()}
-      className={`group flex items-center gap-3 py-3 transition-colors ${!isLast ? "border-b border-border" : ""}`}
+      className={`group flex items-center gap-3 py-2.5 transition-colors hover:bg-muted/30 ${!isLast ? "border-b border-border/50" : ""}`}
     >
       {/* Icon */}
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-border bg-muted">
+      <div className="w-4 shrink-0 text-muted-foreground group-hover:text-foreground">
         {getIcon()}
       </div>
 
-      {/* Name + description */}
+      {/* Type badge */}
+      <span className="w-12 shrink-0 font-mono text-[10px] font-medium uppercase text-muted-foreground">
+        {getTypeLabel()}
+      </span>
+
+      {/* Name */}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate font-mono text-sm font-bold text-foreground transition-colors group-hover:text-accent">
-            {getName()}
-          </span>
-          {getBadges().map((badge) => (
-            <span
-              key={badge}
-              className="shrink-0 border border-accent bg-accent/10 px-1 py-0.5 font-mono text-[10px] font-bold uppercase text-accent"
-            >
-              {badge}
-            </span>
-          ))}
-        </div>
-        {item.description && (
-          <p className="truncate font-mono text-xs text-muted-foreground">{item.description}</p>
-        )}
+        <span className="truncate font-mono text-sm text-foreground transition-colors group-hover:text-accent">
+          {getName()}
+        </span>
       </div>
 
-      {/* Domain */}
-      {domain && (
-        <div className="hidden w-32 shrink-0 items-center gap-1 truncate font-mono text-xs text-muted-foreground sm:flex">
-          <ExternalLink className="h-3 w-3 shrink-0" />
-          {domain}
-        </div>
-      )}
-
-      {/* Stats */}
-      <div className="hidden w-14 shrink-0 text-right font-mono text-xs text-muted-foreground md:block">
-        {getStat1()}
-      </div>
-      <div className="hidden w-14 shrink-0 text-right font-mono text-xs text-muted-foreground md:block">
-        {getStat2()}
-      </div>
-
-      {/* Relative time */}
-      <div className="hidden w-16 shrink-0 text-right font-mono text-xs text-muted-foreground lg:block">
-        {getRelativeTime()}
+      {/* Stats - aligned with header columns */}
+      <div className="hidden items-center justify-end gap-6 font-mono text-[11px] tabular-nums text-muted-foreground sm:flex">
+        <span className="w-12 text-right">{stat1}</span>
+        <span className="w-12 text-right">{stat2}</span>
+        <span className="w-12 text-right">{stat3}</span>
+        <span className="w-14 text-right text-[10px] text-muted-foreground/60">{getDate()}</span>
       </div>
     </Link>
   );
