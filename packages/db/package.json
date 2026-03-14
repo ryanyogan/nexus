@@ -10,7 +10,8 @@
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.0"

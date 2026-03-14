@@ -32,11 +32,15 @@ export default function Header({ session }: HeaderProps) {
   const isSignedIn = !!session?.user;
 
   // Initialize dark mode from system/localStorage
+  // IMPORTANT: Use 'nexus-theme' key to match __root.tsx initialization script
   useEffect(() => {
-    const stored = localStorage.getItem("theme");
+    const stored = localStorage.getItem("nexus-theme");
     if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
       setIsDark(true);
       document.documentElement.classList.add("dark");
+    } else if (stored === "light") {
+      setIsDark(false);
+      document.documentElement.classList.remove("dark");
     }
   }, []);
 
@@ -45,10 +49,12 @@ export default function Header({ session }: HeaderProps) {
     setIsDark(newValue);
     if (newValue) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
+      document.documentElement.style.colorScheme = "dark";
+      localStorage.setItem("nexus-theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
+      document.documentElement.style.colorScheme = "light";
+      localStorage.setItem("nexus-theme", "light");
     }
   };
 
@@ -97,6 +103,13 @@ export default function Header({ session }: HeaderProps) {
             <Github className="h-4 w-4" />
             INSTALL
           </a>
+          <span className="text-border">|</span>
+          <Link
+            to="/plans"
+            className="px-3 py-2 hover:bg-muted transition-colors"
+          >
+            PLANS
+          </Link>
           <span className="text-border">|</span>
           
           {/* More Dropdown */}
@@ -276,18 +289,26 @@ export default function Header({ session }: HeaderProps) {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-4 py-4 space-y-2">
-            {/* First row: DOCS + SUBMIT split */}
-            <div className="grid grid-cols-2 gap-2">
-              <Link
-                to="/"
-                className="px-4 py-3 border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
+            {/* First row: DOCS + PLANS + SUBMIT */}
+            <div className="grid grid-cols-3 gap-2">
+              <a
+                href="https://docs.nexus.yogan.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
               >
                 DOCS
+              </a>
+              <Link
+                to="/plans"
+                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                PLANS
               </Link>
               <Link
                 to="/submit"
-                className="px-4 py-3 border border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-foreground/90 transition-colors"
+                className="px-2 py-3 border border-foreground bg-foreground text-background font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-foreground/90 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 SUBMIT

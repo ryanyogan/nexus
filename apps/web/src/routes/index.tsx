@@ -459,9 +459,6 @@ function HomePage() {
 
   // Determine if we're in search mode
   const isSearching = Boolean(searchQuery) || searchFocused;
-  
-  // Effective sort - when searching, we show search results
-  const effectiveSort = isSearching ? "search" : activeSort;
 
   // Sync input with URL
   useEffect(() => {
@@ -469,10 +466,21 @@ function HomePage() {
   }, [searchQuery]);
 
   // Auto-search when debounced value changes
+  // Only navigate if the debounced value matches current input (prevents race conditions on clear)
   useEffect(() => {
     const trimmed = debouncedInputValue.trim();
     const currentUrlQuery = searchQuery || "";
-    if (trimmed !== currentUrlQuery && !(trimmed === "" && currentUrlQuery === "")) {
+    const currentInputTrimmed = inputValue.trim();
+    
+    // Only update URL if:
+    // 1. Debounced value differs from URL
+    // 2. Debounced value matches current input (no pending changes)
+    // 3. Not both empty (no-op)
+    if (
+      trimmed !== currentUrlQuery && 
+      trimmed === currentInputTrimmed &&
+      !(trimmed === "" && currentUrlQuery === "")
+    ) {
       navigate({
         search: (prev) => ({
           ...prev,
@@ -480,7 +488,7 @@ function HomePage() {
         }),
       });
     }
-  }, [debouncedInputValue, navigate, searchQuery]);
+  }, [debouncedInputValue, navigate, searchQuery, inputValue]);
 
   // Reset state when loader data changes
   useEffect(() => {
@@ -518,18 +526,6 @@ function HomePage() {
       setIsLoadingMore(false);
     }
   }, [activeSort, hasMore, cursor, searchQuery, isLoadingMore]);
-
-  const handleSortChange = (newSort: SortMode) => {
-    // Blur search and clear search state
-    setSearchFocused(false);
-    inputRef.current?.blur();
-    navigate({
-      search: {
-        sort: newSort === "popular" ? undefined : newSort,
-        q: undefined, // Clear search when switching tabs
-      },
-    });
-  };
 
   const handleSearchTabClick = () => {
     inputRef.current?.focus();
@@ -579,13 +575,13 @@ function HomePage() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[880px] px-4 lg:px-0">
         {/* Hero */}
-        <div className="pt-20">
+        <div className="pt-24">
           <h1 className="font-mono text-2xl font-bold uppercase tracking-tight text-foreground sm:text-3xl">
             Ship faster with pre-indexed docs,
             <br />
             MCP servers, and AI skills
           </h1>
-          <p className="mt-4 font-mono text-sm text-muted-foreground">
+          <p className="mt-6 font-mono text-sm text-muted-foreground">
             <span className="font-bold text-foreground">~5K TOKENS</span> instead of ~500K{" "}
             <span className="text-border">|</span>{" "}
             Vector embeddings with semantic search{" "}
@@ -594,25 +590,25 @@ function HomePage() {
           </p>
         </div>
 
-        {/* Pro hint section */}
-        <div className="mb-12 mt-4">
+        {/* Pro section */}
+        <div className="mt-10">
           <Link
-            to="/dashboard/billing"
-            className="inline-flex items-center gap-2 font-mono text-xs font-bold text-muted-foreground transition-colors hover:text-accent"
+            to="/plans"
+            className="group inline-flex items-center gap-3 border border-border bg-muted/50 px-4 py-2.5 font-mono text-xs font-bold transition-all hover:border-accent hover:bg-accent/5"
           >
-            <span className="text-accent">PRO</span>
-            <span className="text-border">→</span>
-            <span>Unlimited queries</span>
+            <span className="border border-accent bg-accent px-1.5 py-0.5 text-[10px] font-bold text-background">PRO</span>
+            <span className="text-foreground">Unlimited queries</span>
+            <span className="text-border">·</span>
+            <span className="text-muted-foreground group-hover:text-foreground">Unlimited memory</span>
             <span className="hidden text-border sm:inline">·</span>
-            <span className="hidden sm:inline">Private repos</span>
-            <span className="hidden text-border sm:inline">·</span>
-            <span className="hidden sm:inline">Nexus Brain</span>
+            <span className="hidden text-muted-foreground group-hover:text-foreground sm:inline">Private repos</span>
+            <ArrowUpRight className="h-3 w-3 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
           </Link>
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="mb-12">
-          <div className="flex h-12 max-w-md items-center gap-2 border border-border bg-background px-3 font-mono">
+        <form onSubmit={handleSearch} className="mt-16 mb-8">
+          <div className="flex h-11 max-w-xl items-center gap-3 border border-border bg-background px-4 font-mono transition-colors focus-within:border-foreground/50">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               ref={inputRef}
@@ -621,6 +617,12 @@ function HomePage() {
               onChange={(e) => setInputValue(e.target.value)}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  clearSearch();
+                  inputRef.current?.blur();
+                }
+              }}
               placeholder="Search docs, servers, skills..."
               className="h-full flex-1 bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
             />
@@ -638,20 +640,29 @@ function HomePage() {
 
         {/* Tabs */}
         <div className="mb-6 flex items-center gap-0 border-b border-border">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => handleSortChange(t.id as SortMode)}
-              className={`flex items-center gap-2 border-b px-4 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px ${
-                effectiveSort === t.id
-                  ? "border-accent text-accent"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t.icon}
-              {t.label}
-            </button>
-          ))}
+          {tabs.map((t) => {
+            const isActive = !isSearching && activeSort === t.id;
+            return (
+              <Link
+                key={t.id}
+                to="."
+                search={{ sort: t.id === "popular" ? undefined : t.id }}
+                onClick={() => {
+                  setSearchFocused(false);
+                  setInputValue("");
+                  inputRef.current?.blur();
+                }}
+                className={`flex items-center gap-2 border-b px-4 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px ${
+                  isActive
+                    ? "border-accent text-accent"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.icon}
+                {t.label}
+              </Link>
+            );
+          })}
           {/* Search tab - only visible when searching */}
           {isSearching && (
             <button

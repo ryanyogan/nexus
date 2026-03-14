@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as PlansRouteImport } from './routes/plans'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExploreIndexRouteImport } from './routes/explore/index'
@@ -47,6 +48,11 @@ const TerminalRoute = TerminalRouteImport.update({
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansRoute = PlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedRoute = AuthedRouteImport.update({
@@ -189,6 +195,7 @@ const AuthedAdminLibrariesRoute = AuthedAdminLibrariesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/plans': typeof PlansRoute
   '/sign-in': typeof SignInRoute
   '/terminal': typeof TerminalRoute
   '/admin': typeof AuthedAdminRouteWithChildren
@@ -219,6 +226,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/plans': typeof PlansRoute
   '/sign-in': typeof SignInRoute
   '/terminal': typeof TerminalRoute
   '/submit': typeof AuthedSubmitRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
+  '/plans': typeof PlansRoute
   '/sign-in': typeof SignInRoute
   '/terminal': typeof TerminalRoute
   '/_authed/admin': typeof AuthedAdminRouteWithChildren
@@ -282,6 +291,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/plans'
     | '/sign-in'
     | '/terminal'
     | '/admin'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/plans'
     | '/sign-in'
     | '/terminal'
     | '/submit'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authed'
+    | '/plans'
     | '/sign-in'
     | '/terminal'
     | '/_authed/admin'
@@ -374,6 +386,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
+  PlansRoute: typeof PlansRoute
   SignInRoute: typeof SignInRoute
   TerminalRoute: typeof TerminalRoute
   AuthCliRoute: typeof AuthCliRoute
@@ -403,6 +416,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -657,6 +677,7 @@ const ExploreDocsRouteWithChildren = ExploreDocsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
+  PlansRoute: PlansRoute,
   SignInRoute: SignInRoute,
   TerminalRoute: TerminalRoute,
   AuthCliRoute: AuthCliRoute,

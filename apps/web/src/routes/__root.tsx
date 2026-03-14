@@ -59,17 +59,21 @@ function RootComponent() {
             />
           </>
         )}
-        {/* Dark mode initialization script - runs before paint to prevent flash */}
+        {/* Theme initialization script - runs before paint to prevent flash */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
                   var theme = localStorage.getItem('nexus-theme');
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.remove('light');
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  var isDark = theme === 'dark' || (theme !== 'light' && prefersDark);
+                  if (isDark) {
                     document.documentElement.classList.add('dark');
                     document.documentElement.style.colorScheme = 'dark';
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.style.colorScheme = 'light';
                   }
                 } catch (e) {}
               })();

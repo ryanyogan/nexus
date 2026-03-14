@@ -42,8 +42,11 @@ export default defineConfig({
   },
 
   themeConfig: {
-    logo: '/logo.svg',
-    siteTitle: 'Nexus',
+    logo: {
+      light: '/logo.svg',
+      dark: '/logo-dark.svg',
+    },
+    siteTitle: 'NEXUS',
 
     // Navigation bar
     nav: [

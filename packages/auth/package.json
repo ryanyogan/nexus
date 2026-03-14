@@ -8,7 +8,8 @@
     "./client": "./src/client.ts"
   },
   "scripts": {
-    "generate": "npx @better-auth/cli generate --config ./src/index.ts"
+    "generate": "npx @better-auth/cli generate --config ./src/index.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@nexus/db": "workspace:*",

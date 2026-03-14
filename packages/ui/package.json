@@ -8,7 +8,8 @@
     "./lib/*": "./src/lib/*.ts"
   },
   "scripts": {
-    "ui:add": "npx shadcn@latest add"
+    "ui:add": "npx shadcn@latest add",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
