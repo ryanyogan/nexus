@@ -1,0 +1,24 @@
+{
+  "id": "guides/project-memory",
+  "title": "Using Project Memory",
+  "description": "Nexus memory gives your AI persistent context across sessions. Instead of re-explaining your project architecture, coding conventions, and past decisions every time, save them once and recall them when needed.",
+  "source": "@site/docs/guides/project-memory.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/project-memory",
+  "permalink": "/guides/project-memory",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/guides/project-memory.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Token Savings with Nexus",
+    "permalink": "/guides/token-savings"
+  },
+  "next": {
+    "title": "Setting Up MCP Servers",
+    "permalink": "/guides/mcp-setup"
+  }
+}

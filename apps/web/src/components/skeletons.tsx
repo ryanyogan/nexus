@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 export function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-md bg-muted/50 ${className}`}
+      className={`animate-pulse bg-muted ${className}`}
     />
   );
 }
@@ -15,7 +15,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
 export function StatsSkeleton() {
   return (
     <div className="mx-auto mt-16 max-w-3xl">
-      <div className="grid grid-cols-2 gap-6 rounded-lg border border-border bg-card p-6 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-6 border border-border bg-background p-6 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="text-center">
             <Skeleton className="mx-auto h-7 w-16 mb-1" />
@@ -33,9 +33,9 @@ export function StatsSkeleton() {
 
 export function ServerCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-lg border border-border bg-card p-5">
+    <div className="flex flex-col border border-border bg-background p-5">
       <div className="mb-4 flex items-start gap-3">
-        <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+        <Skeleton className="h-10 w-10 shrink-0" />
         <div className="flex-1">
           <Skeleton className="h-5 w-32 mb-1.5" />
           <Skeleton className="h-3 w-20" />
@@ -43,8 +43,8 @@ export function ServerCardSkeleton() {
       </div>
       <Skeleton className="mb-4 h-10 w-full" />
       <div className="flex items-center gap-2 mt-auto">
-        <Skeleton className="h-5 w-16 rounded-full" />
-        <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton className="h-5 w-16" />
+        <Skeleton className="h-5 w-20" />
       </div>
     </div>
   );
@@ -56,8 +56,8 @@ export function ServerCardSkeleton() {
 
 export function ServerPreviewCardSkeleton() {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
-      <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+    <div className="flex items-center gap-3 border border-border bg-background p-4">
+      <Skeleton className="h-8 w-8 shrink-0" />
       <div className="flex-1 min-w-0">
         <Skeleton className="h-4 w-24 mb-1" />
         <Skeleton className="h-3 w-full max-w-[200px]" />
@@ -72,10 +72,10 @@ export function ServerPreviewCardSkeleton() {
 
 export function LibraryCardSkeleton() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm">
+    <div className="flex flex-col overflow-hidden border border-border bg-background p-5">
       <div className="mb-4 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <Skeleton className="h-10 w-10 rounded-lg" />
+          <Skeleton className="h-10 w-10" />
           <div>
             <Skeleton className="h-5 w-24 mb-1.5" />
             <Skeleton className="h-3 w-16" />
@@ -83,7 +83,7 @@ export function LibraryCardSkeleton() {
         </div>
       </div>
       <Skeleton className="mb-4 h-10 w-full" />
-      <div className="flex items-center gap-4 border-t border-border/50 pt-4">
+      <div className="flex items-center gap-4 border-t border-border pt-4">
         <Skeleton className="h-4 w-16" />
         <Skeleton className="h-4 w-20" />
         <Skeleton className="h-4 w-24" />
@@ -100,14 +100,11 @@ export function ExplorePageSkeleton() {
   return (
     <div className="relative min-h-screen">
       {/* Header skeleton */}
-      <div className="relative border-b border-border/50 bg-card/30 backdrop-blur-sm">
+      <div className="relative border-b border-border bg-background">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"
-              style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.2)" }}
-            >
-              <Sparkles className="h-6 w-6 text-primary" />
+            <div className="flex h-12 w-12 items-center justify-center border border-foreground bg-foreground">
+              <Sparkles className="h-6 w-6 text-background" />
             </div>
             <div>
               <Skeleton className="h-8 w-64 mb-2" />
@@ -117,8 +114,8 @@ export function ExplorePageSkeleton() {
 
           {/* Search skeleton */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <Skeleton className="h-12 flex-1 rounded-xl" />
-            <Skeleton className="h-12 w-24 rounded-xl" />
+            <Skeleton className="h-12 flex-1" />
+            <Skeleton className="h-12 w-24" />
           </div>
         </div>
       </div>
@@ -130,7 +127,7 @@ export function ExplorePageSkeleton() {
             <Skeleton className="h-4 w-20 mb-4" />
             <div className="flex flex-row flex-wrap gap-2 lg:flex-col lg:gap-1">
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-20 lg:w-full rounded-lg" />
+                <Skeleton key={i} className="h-10 w-20 lg:w-full" />
               ))}
             </div>
           </aside>
@@ -139,7 +136,7 @@ export function ExplorePageSkeleton() {
           <div className="flex-1">
             <div className="mb-4 flex items-center justify-between">
               <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-8 w-32 rounded-lg" />
+              <Skeleton className="h-8 w-32" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -161,7 +158,7 @@ export function LibraryDetailSkeleton() {
   return (
     <div className="relative min-h-screen">
       {/* Header skeleton */}
-      <div className="relative border-b border-border/50 bg-card/30 backdrop-blur-sm">
+      <div className="relative border-b border-border bg-background">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Back link */}
           <Skeleton className="h-4 w-32 mb-6" />
@@ -169,17 +166,17 @@ export function LibraryDetailSkeleton() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
               {/* Icon */}
-              <Skeleton className="h-16 w-16 rounded-xl" />
+              <Skeleton className="h-16 w-16" />
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <Skeleton className="h-7 w-40" />
-                  <Skeleton className="h-5 w-12 rounded-md" />
-                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-5 w-12" />
+                  <Skeleton className="h-5 w-16" />
                 </div>
                 <Skeleton className="h-5 w-80 mb-3" />
                 <div className="flex flex-wrap items-center gap-3">
-                  <Skeleton className="h-6 w-16 rounded-lg" />
-                  <Skeleton className="h-6 w-20 rounded-lg" />
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-20" />
                   <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-16" />
                 </div>
@@ -192,7 +189,7 @@ export function LibraryDetailSkeleton() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm"
+                className="border border-border bg-muted p-4"
               >
                 <Skeleton className="h-5 w-5 mb-2" />
                 <Skeleton className="h-8 w-16 mb-1" />
@@ -211,13 +208,13 @@ export function LibraryDetailSkeleton() {
               <Skeleton className="h-5 w-5" />
               <Skeleton className="h-6 w-48" />
             </div>
-            <div className="divide-y divide-border/50 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
+            <div className="divide-y divide-border border border-border bg-background">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="flex items-center justify-between p-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Skeleton className="h-5 w-40" />
-                      <Skeleton className="h-4 w-12 rounded" />
+                      <Skeleton className="h-4 w-12" />
                     </div>
                     <Skeleton className="h-3 w-32" />
                   </div>
@@ -232,13 +229,13 @@ export function LibraryDetailSkeleton() {
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm"
+                className="border border-border bg-background p-5"
               >
                 <div className="mb-4 flex items-center gap-2">
                   <Skeleton className="h-4 w-4" />
                   <Skeleton className="h-5 w-24" />
                 </div>
-                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full" />
               </div>
             ))}
           </div>

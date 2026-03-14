@@ -1,0 +1,24 @@
+{
+  "id": "guides/memory-best-practices",
+  "title": "Memory Best Practices",
+  "description": "Learn how to effectively use Nexus memory for persistent project context.",
+  "source": "@site/docs/guides/memory-best-practices.mdx",
+  "sourceDirName": "guides",
+  "slug": "/guides/memory-best-practices",
+  "permalink": "/guides/memory-best-practices",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/guides/memory-best-practices.mdx",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Working with AI Clients",
+    "permalink": "/guides/ai-clients"
+  },
+  "next": {
+    "title": "Token Savings with Nexus",
+    "permalink": "/guides/token-savings"
+  }
+}

@@ -131,6 +131,7 @@ export interface LibraryInfo {
 
 export interface IngestionJob {
   libraryId: string;
+  libraryName?: string;
   sourceUrl: string;
   sourceType: "github" | "website" | "npm" | "context7";
   context7Id?: string;

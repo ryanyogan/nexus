@@ -1,7 +1,18 @@
 import { eq } from "drizzle-orm";
 import { libraries, chunks, libraryStats, type Database } from "@nexus/db";
-import { fetchGitHubDocs, getGitHubRepoMetadata } from "./fetchers/github";
+import { 
+  fetchGitHubDocs, 
+  fetchGitHubDocsEnhanced, 
+  getGitHubRepoMetadata,
+  fetchIncrementalChanges,
+  parseGitHubUrl,
+  type FetchResult,
+  type FetchedFile,
+} from "./fetchers/github";
 import { fetchContext7Docs } from "./fetchers/context7";
+import { fetchWebsiteDocs, fetchWebsiteLlmTxt } from "./fetchers/website";
+import { parseMarkdown, parseMultipleDocuments, type ParsedDocument } from "./parsers/markdown";
+import { analyzeDocumentation, serializeAnalysis, quickBenchmarkScore } from "./analysis";
 import { chunkFiles } from "./chunker";
 import { generateEmbeddings } from "./embeddings";
 import type { IngestionJob, ChunkData } from "../types";
@@ -42,6 +53,8 @@ export async function processIngestionJob(
 
     // Step 2: Fetch documentation from source
     let files: Array<{ path: string; content: string }>;
+    let fetchResult: FetchResult | null = null;
+    let hasLlmTxt = false;
     
     if (sourceType === "context7") {
       // Fetch from Context7 API
@@ -54,20 +67,54 @@ export async function processIngestionJob(
     } else if (sourceType === "github") {
       // Try to get GitHub token from env for higher rate limits
       const token = (env as unknown as { GITHUB_TOKEN?: string }).GITHUB_TOKEN;
-      files = await fetchGitHubDocs(sourceUrl, token);
       
-      // Also fetch repo metadata to update library info
-      const metadata = await getGitHubRepoMetadata(sourceUrl, token);
-      if (metadata.description || metadata.homepage) {
-        await db
-          .update(libraries)
-          .set({
-            description: metadata.description,
-            homepageUrl: metadata.homepage,
-            updatedAt: new Date().toISOString(),
-          })
-          .where(eq(libraries.id, libraryId));
+      // Use enhanced fetcher with LLM.txt support
+      fetchResult = await fetchGitHubDocsEnhanced(sourceUrl, {
+        token,
+        preferLlmTxt: true,
+        fetchVersions: true,
+      });
+      
+      files = fetchResult.files.map(f => ({ path: f.path, content: f.content }));
+      hasLlmTxt = fetchResult.hasLlmTxt;
+      
+      console.log(`Fetched ${files.length} docs from GitHub for ${libraryId} (LLM.txt: ${hasLlmTxt})`);
+      
+      // Update library metadata
+      const { metadata, versions } = fetchResult;
+      await db
+        .update(libraries)
+        .set({
+          description: metadata.description || undefined,
+          homepageUrl: metadata.homepage || undefined,
+          githubOwner: metadata.owner,
+          githubRepo: metadata.repo,
+          githubBranch: metadata.branch,
+          lastCommitSha: metadata.commitSha,
+          versions: versions.slice(0, 50).map(v => v.version), // Store top 50 version strings
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(libraries.id, libraryId));
+    } else if (sourceType === "website") {
+      // Fetch from website
+      const websiteResult = await fetchWebsiteDocs(sourceUrl, {
+        maxPages: 100,
+      });
+      
+      // Check for LLM.txt first
+      const llmTxt = await fetchWebsiteLlmTxt(sourceUrl);
+      if (llmTxt) {
+        files = [{ path: llmTxt.url, content: llmTxt.content }];
+        hasLlmTxt = true;
+        console.log(`Found LLM.txt at ${llmTxt.url} for ${libraryId}`);
+      } else {
+        files = websiteResult.pages.map(p => ({ 
+          path: p.url, 
+          content: `# ${p.title}\n\n${p.content}` 
+        }));
       }
+      
+      console.log(`Fetched ${files.length} pages from website for ${libraryId}`);
     } else {
       throw new Error(`Unsupported source type: ${sourceType}`);
     }
@@ -114,7 +161,44 @@ export async function processIngestionJob(
 
     console.log(`Stored chunk metadata in D1 for ${libraryId}`);
 
-    // Step 9: Update library status to indexed
+    // Step 9: Analyze documentation quality
+    let benchmarkScore: number | undefined;
+    let trustScore: number | undefined;
+    let qualityAnalysis: string | undefined;
+    
+    try {
+      // Parse documents for analysis
+      const parsedDocs = parseMultipleDocuments(files);
+      
+      // Run quality analysis
+      const analysis = analyzeDocumentation({
+        documents: parsedDocs,
+        repoMetadata: fetchResult ? {
+          stars: fetchResult.metadata.stars,
+          updatedAt: fetchResult.metadata.updatedAt,
+          hasLlmTxt,
+        } : { hasLlmTxt },
+        libraryName: job.libraryName,
+      });
+      
+      benchmarkScore = analysis.benchmarkScore;
+      trustScore = analysis.trustScore;
+      qualityAnalysis = serializeAnalysis(analysis);
+      
+      console.log(`Quality analysis for ${libraryId}: benchmark=${benchmarkScore}, trust=${trustScore}`);
+    } catch (error) {
+      console.warn(`Quality analysis failed for ${libraryId}:`, error);
+      // Use quick score as fallback
+      benchmarkScore = quickBenchmarkScore(
+        files.length,
+        allChunks.reduce((sum, c) => sum + c.tokenCount, 0),
+        hasLlmTxt,
+        allChunks.filter(c => c.contentType === "code" || c.contentType === "mixed").length,
+        fetchResult?.metadata.stars
+      );
+    }
+
+    // Step 10: Update library status to indexed
     const totalTokens = allChunks.reduce((sum, c) => sum + c.tokenCount, 0);
     await db
       .update(libraries)
@@ -124,6 +208,9 @@ export async function processIngestionJob(
         totalTokens,
         lastIndexedAt: new Date().toISOString(),
         indexError: null,
+        benchmarkScore,
+        trustScore,
+        qualityAnalysis,
         updatedAt: new Date().toISOString(),
       })
       .where(eq(libraries.id, libraryId));

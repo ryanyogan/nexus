@@ -1,0 +1,160 @@
+# Query Documentation
+
+Search indexed library documentation for code examples and explanations.
+
+## The Two-Step Pattern
+
+Nexus documentation search works in two steps:
+
+<StepList>
+  <Step title="Resolve the library">
+    Find the library ID using `resolve-library`
+  </Step>
+  <Step title="Query documentation">
+    Search with `query-docs` using the library ID
+  </Step>
+</StepList>
+
+Your AI handles this automatically, but understanding it helps you write better prompts.
+
+---
+
+## Example: React Hooks
+
+Ask your AI:
+
+> "How do I properly clean up useEffect in React?"
+
+<Terminal title="What happens">
+<Line><Text color="gray">1. AI calls</Text> <Text color="green">resolve-library</Text></Line>
+<Line>   <Text color="gray">query:</Text> "react"</Line>
+<Line>   <Text color="gray">→ Returns:</Text> <Text color="cyan">/facebook/react</Text></Line>
+<Line />
+<Line><Text color="gray">2. AI calls</Text> <Text color="green">query-docs</Text></Line>
+<Line>   <Text color="gray">libraryId:</Text> "/facebook/react"</Line>
+<Line>   <Text color="gray">query:</Text> "useEffect cleanup"</Line>
+<Line>   <Text color="gray">→ Returns:</Text> Relevant code examples and explanations</Line>
+</Terminal>
+
+---
+
+## Tips for Better Results
+
+### Be Specific
+
+```
+❌ "Tell me about React"
+   → Returns general overview (many tokens)
+
+✓ "How do I clean up subscriptions in useEffect?"
+   → Returns specific cleanup pattern (fewer tokens)
+```
+
+### Include Context
+
+```
+❌ "How do middleware work?"
+   → Unclear which framework
+
+✓ "How do middleware work in Next.js App Router?"
+   → Specific to Next.js middleware
+```
+
+### Use Technical Terms
+
+```
+❌ "How do I make my page load faster?"
+   → Too vague
+
+✓ "How do I implement code splitting in Next.js?"
+   → Specific technique
+```
+
+---
+
+## Response Formats
+
+Control verbosity with the `tokens` parameter:
+
+| Format | Tokens | Best For |
+|--------|--------|----------|
+| `full` | ~5,000 | Debugging, exploration |
+| `compact` | ~2,000 | Normal usage |
+| `code-only` | ~1,000 | Quick examples |
+| `summary` | ~500 | Checking availability |
+
+Your AI can request specific formats:
+
+> "Search React docs for useState, give me code-only format"
+
+---
+
+## Available Libraries
+
+Over 50 libraries are indexed, including:
+
+**Frontend:**
+- React, Next.js, Vue, Nuxt, Svelte, SvelteKit
+- Tailwind CSS, Radix UI, shadcn/ui
+
+**Backend:**
+- Node.js, Express, Hono, Fastify
+- tRPC, GraphQL
+
+**Databases:**
+- Prisma, Drizzle, TypeORM
+- PostgreSQL, MongoDB
+
+**Cloud:**
+- Cloudflare Workers, Vercel, AWS
+
+**Tools:**
+- TypeScript, Vitest, Playwright
+
+---
+
+## CLI Alternative
+
+You can also query docs from the command line:
+
+<Terminal title="CLI documentation search">
+<Line prompt>nexus docs search react</Line>
+<Line />
+<Line><Text color="cyan">Found 3 libraries:</Text></Line>
+<Line>  react, react-router, react-query</Line>
+<Line />
+<Line prompt>nexus docs query react "useEffect cleanup"</Line>
+<Line />
+<Line><Text color="cyan">Found 5 results:</Text></Line>
+<Line><Text color="yellow">1.</Text> Cleaning up Effects</Line>
+<Line>   Return a cleanup function to avoid memory leaks...</Line>
+</Terminal>
+
+---
+
+## Troubleshooting
+
+### "Library not found"
+
+The library might not be indexed yet. Check available libraries:
+
+> "List all available Nexus libraries"
+
+Or submit a request to add it:
+
+> "How do I submit a library to Nexus?"
+
+### Results not relevant
+
+Try being more specific:
+
+```
+❌ "database queries"
+✓ "Drizzle ORM insert with returning"
+```
+
+### Too many tokens
+
+Request a compact format:
+
+> "Search Next.js docs for server actions, compact format"

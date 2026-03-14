@@ -1,0 +1,24 @@
+{
+  "id": "common-tasks/save-context",
+  "title": "Save Project Context",
+  "description": "Store project information so your AI remembers it across sessions.",
+  "source": "@site/docs/common-tasks/save-context.mdx",
+  "sourceDirName": "common-tasks",
+  "slug": "/common-tasks/save-context",
+  "permalink": "/common-tasks/save-context",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/common-tasks/save-context.mdx",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Query Documentation",
+    "permalink": "/common-tasks/query-docs"
+  },
+  "next": {
+    "title": "Find MCP Servers",
+    "permalink": "/common-tasks/find-servers"
+  }
+}

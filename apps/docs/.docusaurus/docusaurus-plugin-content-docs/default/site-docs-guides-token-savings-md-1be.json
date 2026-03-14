@@ -1,0 +1,24 @@
+{
+  "id": "guides/token-savings",
+  "title": "Token Savings with Nexus",
+  "description": "Every AI interaction costs tokens. When you paste documentation, re-explain your project structure, or provide context your AI already knew yesterday, you're burning through your budget on repetitive overhead.",
+  "source": "@site/docs/guides/token-savings.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/token-savings",
+  "permalink": "/guides/token-savings",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/guides/token-savings.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Memory Best Practices",
+    "permalink": "/guides/memory-best-practices"
+  },
+  "next": {
+    "title": "Using Project Memory",
+    "permalink": "/guides/project-memory"
+  }
+}

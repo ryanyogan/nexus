@@ -203,51 +203,53 @@ Full adapter system for managing MCP server configs across editors:
 
 ### High Priority
 
-1. **Apply User Preferences to MCP Queries**
+1. **Documentation Crawler Completion** (See "Current Work" section below)
+   - Public submission pages for libraries and skills
+   - Library detail page redesign with quality metrics
+   - Apply migration to production D1
+   - Weekly refresh cron job
+
+2. **Apply User Preferences to MCP Queries**
    - Currently preferences are stored but not used
    - Need to read user's `defaultResponseFormat` when handling MCP tool calls
    - Apply `defaultTokenBudget` to limit response size
 
-2. **API Token Scopes**
+3. **API Token Scopes**
    - Tokens have scopes defined but not enforced
    - Implement scope checking in API routes
 
-3. **Usage Analytics**
+4. **Usage Analytics**
    - Analytics Engine binding exists but not used
    - Track API calls per user for billing/limits
 
 ### Medium Priority
 
-4. **CLI Interactive TUI**
+5. **CLI Interactive TUI**
    - Ink-based React components for interactive selection
    - Better UX for `nexus init`, `nexus servers add`
 
-7. **Improve Search Quality**
+6. **Improve Search Quality**
    - Better ranking for library search results
    - Hybrid search (keyword + semantic)
 
-8. **Library Submission Flow**
-   - Users can submit libraries but approval workflow is basic
-   - Add admin notifications, better review UI
-
-9. **Memory System Enhancements**
+7. **Memory System Enhancements**
    - Memory tagging UI
    - Memory search in web UI (currently MCP only)
 
 ### Low Priority / Nice-to-Have
 
-7. **Dark Mode**
+8. **Dark Mode**
    - Design system supports it, needs implementation
 
-8. **Performance Optimization**
+9. **Performance Optimization**
    - Code splitting for CodeMirror (large bundle)
    - Lazy load explore pages
 
-9. **Email Integration**
-   - Weekly digest emails (preferences exist, no email service)
-   - Notification emails for submissions
+10. **Email Integration**
+    - Weekly digest emails (preferences exist, no email service)
+    - Notification emails for submissions
 
-10. **Team Features**
+11. **Team Features**
     - Team subscription exists in schema
     - Need team management UI, shared memories
 
@@ -262,10 +264,16 @@ Full adapter system for managing MCP server configs across editors:
 | `sessions` | Auth sessions |
 | `libraries` | Indexed documentation libraries |
 | `libraryVersions` | Version tracking for libraries |
-| `documentChunks` | Chunked docs for vector search |
-| `servers` | MCP server directory |
+| `libraryFiles` | Individual files per library (for incremental updates) |
+| `refreshJobs` | Documentation refresh job tracking |
+| `chunks` | Chunked docs for vector search |
+| `libraryStats` | Usage statistics per library |
+| `mcpServers` | MCP server directory |
+| `mcpServerDocs` | Links servers to their documentation |
+| `mcpServerStats` | Usage statistics per server |
 | `serverSubmissions` | User-submitted servers pending review |
 | `skills` | AI skill definitions |
+| `skillSubmissions` | User-submitted skills pending review |
 | `userSkills` | Installed skills per user |
 | `memories` | Persistent memory storage |
 | `userPreferences` | User settings (response format, etc.) |
@@ -274,6 +282,7 @@ Full adapter system for managing MCP server configs across editors:
 | `subscriptions` | User subscription status |
 | `teams` | Team organizations |
 | `teamMembers` | Team membership |
+| `syncJobs` | Context7 sync job history (legacy) |
 
 ---
 
@@ -344,3 +353,126 @@ cd apps/docs && pnpm run deploy
 | 2026-03-12 | b85a011c | Added user preferences API endpoints |
 | 2026-03-12 | 73185a21 | Settings page with API integration |
 | 2026-03-12 | - | Database migration for user_preferences table |
+| 2026-03-13 | - | Independent documentation crawler (replacing Context7 dependency) |
+
+---
+
+## Current Work: Documentation Crawler
+
+### Goal
+Build an independent documentation crawler to replace Context7 dependency (which rate-limits us). The crawler should:
+1. Fetch documentation from GitHub repositories (prioritizing LLM.txt files)
+2. Crawl documentation websites
+3. Parse markdown/MDX with smart chunking
+4. Generate quality metrics (benchmark score, trust score)
+5. Support user submissions for libraries and skills
+6. Create Context7-style detail pages with versions, metrics, and interactive search
+
+### Key Decisions Made
+- **Source Priority**: GitHub first, always seek `llms.txt`, `llms-full.txt`, `*llm*` files
+- **Quality Threshold**: Show all libraries but display warnings (yellow < 50, red < 25 benchmark score)
+- **Version Tracking**: Track ALL versions
+- **Refresh Schedule**: Weekly auto-refresh + manual "Refresh Docs" button on detail page
+- **Skills Format**: Markdown
+
+### Completed (2026-03-13)
+
+#### 1. Enhanced GitHub Fetcher
+**File**: `apps/api/src/lib/fetchers/github.ts`
+- LLM.txt detection and priority fetching (`llms.txt`, `llms-full.txt`)
+- Version tracking from GitHub tags/releases
+- Incremental update support (compare commits, fetch only changed files)
+- Repository metadata extraction (stars, branch, commit SHA)
+- Exports: `fetchGitHubDocsEnhanced()`, `fetchIncrementalChanges()`, `checkForLlmTxt()`
+
+#### 2. Website Fetcher
+**File**: `apps/api/src/lib/fetchers/website.ts`
+- Crawls documentation websites with depth control
+- CSS selector-based content extraction
+- LLM.txt detection for websites (`/llms.txt`, `/.well-known/llms.txt`)
+- Sitemap parsing support
+- Exports: `fetchWebsiteDocs()`, `fetchWebsiteLlmTxt()`, `checkWebsiteForLlmTxt()`
+
+#### 3. Markdown Parser
+**File**: `apps/api/src/lib/parsers/markdown.ts`
+- Extracts frontmatter, headings, sections, code blocks, links
+- Heading hierarchy tracking (parent/child relationships)
+- MDX component stripping
+- Metadata calculation (word count, estimated tokens, primary language)
+- Exports: `parseMarkdown()`, `parseMultipleDocuments()`, `stripMdxComponents()`
+
+#### 4. AI Quality Analysis
+**File**: `apps/api/src/lib/analysis.ts`
+- Calculates benchmark score (0-100) based on content quality, code examples, coverage, structure
+- Calculates trust score (0-100) based on stars, freshness, documentation depth
+- Generates quality breakdown with individual metrics
+- Generates improvement suggestions
+- Optional AI enhancement via Workers AI
+- Exports: `analyzeDocumentation()`, `quickBenchmarkScore()`, `serializeAnalysis()`
+
+#### 5. Database Migration Applied
+**File**: `packages/db/migrations/0017_crawler_enhancements.sql`
+- Applied manually to local D1 database
+
+**New columns on `libraries` table:**
+- `github_owner`, `github_repo`, `github_branch`, `github_docs_paths`, `last_commit_sha`
+- `website_url`, `website_content_selector`
+- `benchmark_score`, `trust_score`, `quality_analysis`
+- `last_refresh_requested_at`, `refresh_scheduled_at`
+
+**New tables:**
+- `library_files` - Track individual files for incremental updates
+- `library_versions` - Track multiple versions per library
+- `refresh_jobs` - Track documentation refresh requests
+- `skill_submissions` - User-submitted skills pending review
+
+#### 6. Updated Drizzle Schema
+**File**: `packages/db/src/schema.ts`
+- Added new columns to `libraries` table
+- Added new tables: `libraryFiles`, `libraryVersions`, `refreshJobs`, `skillSubmissions`
+- Added type exports
+
+#### 7. Updated Ingestion Pipeline
+**File**: `apps/api/src/lib/ingestion.ts`
+- Uses enhanced GitHub fetcher with LLM.txt priority
+- Supports `website` source type
+- Runs quality analysis after indexing
+- Stores benchmark/trust scores and quality analysis in database
+- Extracts and stores version information
+
+### Remaining Work
+
+#### High Priority
+1. **Public Submission Pages** - Allow library/skill submissions without auth
+   - `apps/web/src/routes/submit/index.tsx` - Library submission
+   - `apps/web/src/routes/submit/skill.tsx` - Skill submission
+
+2. **Library Detail Page Redesign** - Context7-style with:
+   - Versions dropdown
+   - Quality metrics display (benchmark score, trust score)
+   - Tabs: Context / Skills / Chat / Benchmark
+   - "Refresh Docs" button
+   - Token count and snippet count
+
+#### Medium Priority
+3. **API Endpoints for New Features**
+   - `POST /api/libraries/:id/refresh` - Trigger documentation refresh
+   - `GET /api/libraries/:id/versions` - List available versions
+   - `GET /api/libraries/:id/files` - List indexed files
+
+4. **Weekly Refresh Cron Job**
+   - Scheduled trigger to refresh all libraries
+   - Use incremental updates where possible
+
+5. **Apply Migration to Production D1**
+   - Run `0017_crawler_enhancements.sql` on production
+
+### Database Location (Local Dev)
+```
+/home/ryan/personal/nexus/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/396fc0c6b453bd2bb61c1acdb35a47ea7fff62811b0495bd7470f0cc69221e44.sqlite
+```
+
+### Testing Notes
+- Analyze endpoint works: `GET /api/analyze?url=https://github.com/honojs/hono`
+- Most repos don't have LLM.txt yet (Hono, Drizzle, Next.js, Anthropic SDK all lack it)
+- Crawler falls back to docs folder when no LLM.txt found

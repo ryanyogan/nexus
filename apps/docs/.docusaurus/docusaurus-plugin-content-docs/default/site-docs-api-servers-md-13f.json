@@ -1,0 +1,24 @@
+{
+  "id": "api/servers",
+  "title": "Servers API",
+  "description": "The Servers API provides access to the MCP server registry for discovering and configuring MCP servers.",
+  "source": "@site/docs/api/servers.md",
+  "sourceDirName": "api",
+  "slug": "/api/servers",
+  "permalink": "/api/servers",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/api/servers.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Libraries API",
+    "permalink": "/api/libraries"
+  },
+  "next": {
+    "title": "Skills API",
+    "permalink": "/api/skills"
+  }
+}

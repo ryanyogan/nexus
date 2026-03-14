@@ -64,16 +64,16 @@ function SignInPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-lg border border-border bg-card p-8">
+      <div className="w-full max-w-sm border border-border bg-background p-8">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
-            <Layers className="h-7 w-7 text-primary-foreground" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center border border-foreground bg-foreground">
+            <Layers className="h-7 w-7 text-background" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="font-mono text-xl font-bold uppercase tracking-tight text-foreground">
             Sign in to Nexus
           </h1>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 font-mono text-sm text-muted-foreground">
             Connect your account to get started
           </p>
         </div>
@@ -82,7 +82,7 @@ function SignInPage() {
         <div className="space-y-3">
           <button
             onClick={handleGoogleSignIn}
-            className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="flex h-12 w-full items-center justify-center gap-3 border border-border bg-background font-mono text-sm font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-muted"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -102,41 +102,41 @@ function SignInPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            Google
           </button>
 
           <button
             onClick={handleGitHubSignIn}
-            className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="flex h-12 w-full items-center justify-center gap-3 border border-border bg-background font-mono text-sm font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-muted"
           >
             <Github className="h-5 w-5" />
-            Continue with GitHub
+            GitHub
           </button>
         </div>
 
         {/* Divider */}
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
+          <span className="font-mono text-xs uppercase text-muted-foreground">or</span>
           <div className="h-px flex-1 bg-border" />
         </div>
 
         {/* Email option (future) */}
         <button
           disabled
-          className="flex h-12 w-full items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground"
+          className="flex h-12 w-full items-center justify-center border border-dashed border-border font-mono text-xs uppercase text-muted-foreground"
         >
-          Continue with Email (coming soon)
+          Email (coming soon)
         </button>
 
         {/* Terms */}
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p className="mt-6 text-center font-mono text-xs text-muted-foreground">
           By signing in, you agree to our{" "}
-          <a href="#" className="text-primary hover:underline">
-            Terms of Service
+          <a href="#" className="text-accent hover:underline">
+            Terms
           </a>{" "}
           and{" "}
-          <a href="#" className="text-primary hover:underline">
+          <a href="#" className="text-accent hover:underline">
             Privacy Policy
           </a>
         </p>
@@ -145,7 +145,7 @@ function SignInPage() {
         <div className="mt-6 text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1.5 font-mono text-xs uppercase text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to home

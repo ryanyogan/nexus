@@ -1,0 +1,120 @@
+# Add to Claude Desktop
+
+Configure Nexus in Claude Desktop in under a minute.
+
+## Automatic Setup (Recommended)
+
+<Terminal title="One command setup">
+<Line prompt>npx @nexus/cli init</Line>
+<Line />
+<Line><Text bold>Select your editors:</Text></Line>
+<Line><Text color="green">  ✓ Claude Code</Text></Line>
+<Line />
+<Line><Check><Text color="green">Setup complete!</Text></Check></Line>
+</Terminal>
+
+---
+
+## Manual Setup
+
+### Step 1: Find Your Config File
+
+| OS | Path |
+|-------|------|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Linux | `~/.config/Claude/claude_desktop_config.json` |
+
+### Step 2: Add Nexus Server
+
+Open the config file and add the Nexus server:
+
+```json title="claude_desktop_config.json"
+{
+  "mcpServers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+If you already have other MCP servers configured, add `nexus` to the existing `mcpServers` object:
+
+```json title="With existing servers"
+{
+  "mcpServers": {
+    "existing-server": {
+      "command": "some-command"
+    },
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+### Step 3: Restart Claude Desktop
+
+Close and reopen Claude Desktop to apply the changes.
+
+---
+
+## Verify It Works
+
+Ask Claude:
+
+> "What Nexus tools do you have access to?"
+
+You should see a response mentioning tools like:
+- `resolve-library`
+- `query-docs`
+- `save-memory`
+- `recall-memories`
+- `discover-servers`
+
+---
+
+## Using Local Server (Alternative)
+
+If you prefer to run Nexus locally:
+
+```json title="claude_desktop_config.json"
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": ["-y", "@nexus/cli", "serve"]
+    }
+  }
+}
+```
+
+This runs the Nexus CLI as a local MCP server, which is useful for:
+- Offline development
+- Custom library indexing
+- Privacy-sensitive environments
+
+---
+
+## Troubleshooting
+
+### Server not connecting
+
+1. Check that the URL is exactly: `https://mcp.nexus.yogan.dev/sse`
+2. Ensure your firewall allows HTTPS connections
+3. Try the local server alternative above
+
+### Tools not appearing
+
+1. Fully quit Claude Desktop (not just close the window)
+2. Reopen Claude Desktop
+3. Wait a few seconds for the MCP connection to establish
+
+### Rate limiting
+
+Sign up for a free account to increase rate limits:
+
+```bash
+npx @nexus/cli auth login
+```

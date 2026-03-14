@@ -1,0 +1,255 @@
+# query-docs
+
+Search documentation for a specific library using semantic search. Returns relevant code examples, API references, and explanations.
+
+<ApiEndpoint method="POST" path="/mcp/tools/query-docs" />
+
+## Overview
+
+The `query-docs` tool performs vector-based semantic search across indexed library documentation. It understands the meaning of your query, not just keywords, so it can find relevant results even when exact terms don't match.
+
+:::note Two-step pattern
+You must call `resolve-library` first to get the library ID, unless you already know it.
+:::
+
+---
+
+## Parameters
+
+<ApiParam name="libraryId" type="string" required>
+  The library ID obtained from `resolve-library` (e.g., `/vercel/next.js`, `react`, `hono`)
+</ApiParam>
+
+<ApiParam name="query" type="string" required>
+  The question or task you need help with. Be specific for better results.
+</ApiParam>
+
+<ApiParam name="limit" type="number">
+  Maximum results to return (1-10, default 5)
+</ApiParam>
+
+<ApiParam name="tokens" type="string">
+  Response format: `full`, `compact`, `code-only`, or `summary`
+</ApiParam>
+
+---
+
+## Query Tips
+
+### Good Queries
+
+```
+✓ "How to set up authentication with JWT"
+✓ "Server component data fetching patterns"
+✓ "Form validation with error messages"
+✓ "useEffect cleanup function best practices"
+```
+
+### Poor Queries
+
+```
+✗ "auth" (too vague)
+✗ "help" (not specific)
+✗ "how do I do the thing" (unclear)
+✗ "react" (library name, not a question)
+```
+
+---
+
+## Response Formats
+
+| Format | Tokens | Best For |
+|--------|--------|----------|
+| `full` | ~5,000 | Debugging, exploration |
+| `compact` | ~2,000 | Normal usage (recommended) |
+| `code-only` | ~1,000 | Quick code examples |
+| `summary` | ~500 | Check if results exist |
+
+---
+
+## Example Usage
+
+### Basic Query
+
+<Terminal title="AI queries Next.js documentation">
+<Line><Text color="gray">→ User:</Text> "How do I create API routes in Next.js?"</Line>
+<Line />
+<Line><Text color="gray">→ AI calls</Text> <Text color="green">query-docs</Text></Line>
+<Line>   <Text color="gray">libraryId:</Text> "nextjs"</Line>
+<Line>   <Text color="gray">query:</Text> "how to create API routes"</Line>
+<Line />
+<Line><Text color="cyan">Result:</Text></Line>
+<Line />
+<Line><Text color="yellow">1.</Text> <Text bold>Route Handlers</Text> <Text color="gray">(relevance: 0.89)</Text></Line>
+<Line>   Route Handlers allow you to create custom request handlers...</Line>
+<Line />
+<Line>   <Text color="magenta">```typescript</Text></Line>
+<Line>   <Text color="blue">export async function</Text> <Text color="green">GET</Text>(request: Request) {"{"}</Line>
+<Line>     <Text color="blue">return</Text> Response.json({"{"} message: <Text color="yellow">'Hello'</Text> {"}"})</Line>
+<Line>   {"}"}</Line>
+<Line>   <Text color="magenta">```</Text></Line>
+</Terminal>
+
+### Code-Only Response
+
+```json
+{
+  "name": "query-docs",
+  "arguments": {
+    "libraryId": "react",
+    "query": "useEffect cleanup function",
+    "tokens": "code-only"
+  }
+}
+```
+
+Returns only the code blocks, minimal prose:
+
+```typescript
+useEffect(() => {
+  const subscription = dataSource.subscribe();
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [dataSource]);
+```
+
+### Compact Response
+
+```json
+{
+  "name": "query-docs",
+  "arguments": {
+    "libraryId": "hono",
+    "query": "middleware authentication",
+    "limit": 3,
+    "tokens": "compact"
+  }
+}
+```
+
+---
+
+## Response Schema
+
+```typescript
+interface QueryDocsResponse {
+  success: boolean;
+  libraryId: string;
+  libraryName: string;
+  version: string;
+  query: string;
+  resultCount: number;
+  results: Array<{
+    title: string;
+    content: string;
+    contentType: 'prose' | 'code' | 'mixed';
+    sourceFile: string;
+    relevanceScore: number; // 0-1
+  }>;
+}
+```
+
+---
+
+## Full Example Response
+
+```json
+{
+  "success": true,
+  "libraryId": "nextjs",
+  "libraryName": "Next.js",
+  "version": "15.0.0",
+  "query": "how to create API routes",
+  "resultCount": 5,
+  "results": [
+    {
+      "title": "Route Handlers",
+      "content": "Route Handlers allow you to create custom request handlers for a given route using the Web Request and Response APIs.\n\n```typescript\nexport async function GET(request: Request) {\n  return Response.json({ message: 'Hello' })\n}\n```",
+      "contentType": "mixed",
+      "sourceFile": "app/building-your-application/routing/route-handlers.mdx",
+      "relevanceScore": 0.89
+    },
+    {
+      "title": "Dynamic Route Segments",
+      "content": "You can access dynamic route segments...",
+      "contentType": "mixed",
+      "sourceFile": "app/building-your-application/routing/dynamic-routes.mdx",
+      "relevanceScore": 0.76
+    }
+  ]
+}
+```
+
+---
+
+## AI Conversation Example
+
+<Terminal title="Real-world conversation">
+<Line><Text color="cyan" bold>User:</Text></Line>
+<Line>I'm getting an error with React hooks in a server component</Line>
+<Line />
+<Line><Text color="green" bold>AI:</Text></Line>
+<Line>Let me search the React documentation for information about hooks</Line>
+<Line>and server components.</Line>
+<Line />
+<Line><Text color="gray">→ Calling</Text> <Text color="green">query-docs</Text></Line>
+<Line>   <Text color="gray">libraryId:</Text> "react"</Line>
+<Line>   <Text color="gray">query:</Text> "hooks server components limitations"</Line>
+<Line />
+<Line><Text color="green" bold>AI:</Text></Line>
+<Line>Based on the documentation, React hooks cannot be used in Server</Line>
+<Line>Components because hooks require client-side interactivity.</Line>
+<Line />
+<Line>The docs recommend these patterns:</Line>
+<Line />
+<Line><Text color="yellow">1.</Text> Move hooks to Client Components using <Text color="cyan">'use client'</Text></Line>
+<Line><Text color="yellow">2.</Text> Pass data as props from Server to Client Components</Line>
+<Line><Text color="yellow">3.</Text> Use server-only data fetching patterns</Line>
+</Terminal>
+
+---
+
+## Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `libraryId is required` | Missing library ID | Call `resolve-library` first |
+| `Library not found` | Invalid library ID | Use `resolve-library` to find valid ID |
+| `Library not yet indexed` | Library still processing | Wait and retry later |
+| No results | Query doesn't match | Try different search terms |
+
+---
+
+## Notes
+
+- Results are ranked by **semantic similarity**, not keyword matching
+- Each result includes the **source file** for reference
+- Large documentation libraries may have more relevant results
+- The `tokens` parameter helps manage response size for token efficiency
+- Queries are processed using vector embeddings for conceptual matching
+
+---
+
+## Related Tools
+
+<FeatureGrid>
+  <FeatureCard
+    icon={<SearchIcon />}
+    title="resolve-library"
+    description="Find library IDs before querying documentation"
+    link="/mcp-tools/resolve-library"
+  />
+  <FeatureCard
+    icon={<BookOpenIcon />}
+    title="get-library-info"
+    description="Check library metadata and coverage"
+    link="/mcp-tools/get-library-info"
+  />
+  <FeatureCard
+    icon={<DatabaseIcon />}
+    title="list-libraries"
+    description="Browse all available libraries"
+    link="/mcp-tools/list-libraries"
+  />
+</FeatureGrid>

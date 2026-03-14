@@ -120,26 +120,24 @@ export function MobileLayout({ sessionId }: MobileLayoutProps) {
 
       {/* Files Drawer */}
       <Drawer.Root open={isFilesOpen} onOpenChange={setIsFilesOpen}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-2xl outline-none max-h-[85vh] flex flex-col">
-            <div className="p-4 border-b border-border shrink-0">
-              <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
-              <div className="flex items-center justify-between">
-                <Drawer.Title className="font-semibold">Files</Drawer.Title>
-                <button
-                  onClick={() => setIsFilesOpen(false)}
-                  className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-2xl outline-none max-h-[85vh] flex flex-col">
+          <div className="p-4 border-b border-border shrink-0">
+            <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
+            <div className="flex items-center justify-between">
+              <Drawer.Title className="font-semibold">Files</Drawer.Title>
+              <button
+                onClick={() => setIsFilesOpen(false)}
+                className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <div className="flex-1 overflow-y-auto">
-              <FileExplorer onFileSelect={() => setIsFilesOpen(false)} />
-            </div>
-          </Drawer.Content>
-        </Drawer.Portal>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <FileExplorer onFileSelect={() => setIsFilesOpen(false)} />
+          </div>
+        </Drawer.Content>
       </Drawer.Root>
 
       {/* Menu Dropdown */}

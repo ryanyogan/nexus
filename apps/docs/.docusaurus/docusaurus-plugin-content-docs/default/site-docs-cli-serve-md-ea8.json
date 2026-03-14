@@ -1,0 +1,24 @@
+{
+  "id": "cli/serve",
+  "title": "nexus serve",
+  "description": "Run Nexus as a local MCP (Model Context Protocol) server. This allows AI editors to access Nexus documentation, memories, and server discovery directly.",
+  "source": "@site/docs/cli/serve.md",
+  "sourceDirName": "cli",
+  "slug": "/cli/serve",
+  "permalink": "/cli/serve",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/cli/serve.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "nexus servers",
+    "permalink": "/cli/servers"
+  },
+  "next": {
+    "title": "Configuration",
+    "permalink": "/cli/configuration"
+  }
+}

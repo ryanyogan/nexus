@@ -1,0 +1,188 @@
+# Find MCP Servers
+
+Discover MCP servers for databases, APIs, cloud services, and more.
+
+## Quick Search
+
+Ask your AI:
+
+> "Find me an MCP server for PostgreSQL"
+
+<Terminal title="Server discovery">
+<Line><Text color="gray">→ AI calls</Text> <Text color="green">discover-servers</Text></Line>
+<Line>   <Text color="gray">query:</Text> "postgresql"</Line>
+<Line />
+<Line><Text color="cyan" bold>Found 1 server:</Text></Line>
+<Line />
+<Line><Text color="green" bold>postgres</Text></Line>
+<Line>PostgreSQL database access via MCP</Line>
+<Line />
+<Line><Text color="gray">Category:</Text> database</Line>
+<Line><Text color="gray">Capabilities:</Text> tools, resources</Line>
+<Line><Text color="gray">Official:</Text> <Check>Yes (modelcontextprotocol)</Check></Line>
+</Terminal>
+
+---
+
+## Get Installation Config
+
+After finding a server:
+
+> "Give me the config to install the postgres MCP server"
+
+<Terminal title="Installation config">
+<Line><Text color="gray">→ AI calls</Text> <Text color="green">get-server-config</Text></Line>
+<Line>   <Text color="gray">serverId:</Text> "postgres"</Line>
+<Line>   <Text color="gray">format:</Text> "claude-desktop"</Line>
+<Line />
+<Line><Text color="cyan">Add this to your claude_desktop_config.json:</Text></Line>
+</Terminal>
+
+```json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "postgresql://user:pass@localhost:5432/db"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Search by Category
+
+> "Show me all database MCP servers"
+
+| Category | Examples |
+|----------|----------|
+| `database` | PostgreSQL, SQLite, MongoDB, Redis |
+| `filesystem` | Local files, cloud storage |
+| `cloud` | AWS, GCP, Cloudflare |
+| `devtools` | Git, Docker, npm |
+| `productivity` | Notion, Slack, Linear |
+| `ai` | OpenAI, Anthropic, Hugging Face |
+
+---
+
+## Search by Capability
+
+> "Find MCP servers that provide both tools and resources"
+
+| Capability | Description |
+|------------|-------------|
+| `tools` | Executable actions (query DB, send message) |
+| `resources` | Data access (read files, list items) |
+| `prompts` | Pre-built prompt templates |
+
+---
+
+## Popular Servers
+
+### Databases
+
+<Terminal title="Database servers">
+<Line prompt>nexus servers search database</Line>
+<Line />
+<Line>  <Text color="green">postgres</Text>     PostgreSQL access</Line>
+<Line>  <Text color="green">sqlite</Text>       SQLite operations</Line>
+<Line>  <Text color="green">mysql</Text>        MySQL connector</Line>
+<Line>  <Text color="green">mongodb</Text>      MongoDB document DB</Line>
+<Line>  <Text color="green">redis</Text>        Redis key-value store</Line>
+</Terminal>
+
+### File Systems
+
+<Terminal title="Filesystem servers">
+<Line prompt>nexus servers search filesystem</Line>
+<Line />
+<Line>  <Text color="green">filesystem</Text>   Local file operations</Line>
+<Line>  <Text color="green">s3</Text>           AWS S3 storage</Line>
+<Line>  <Text color="green">gdrive</Text>       Google Drive access</Line>
+</Terminal>
+
+### Dev Tools
+
+<Terminal title="Dev tool servers">
+<Line prompt>nexus servers search devtools</Line>
+<Line />
+<Line>  <Text color="green">git</Text>          Git operations</Line>
+<Line>  <Text color="green">github</Text>       GitHub API access</Line>
+<Line>  <Text color="green">docker</Text>       Container management</Line>
+<Line>  <Text color="green">npm</Text>          NPM package info</Line>
+</Terminal>
+
+---
+
+## CLI Commands
+
+<Terminal title="Server discovery via CLI">
+<Line prompt>nexus servers search postgres</Line>
+<Line />
+<Line><Text color="cyan">Found 1 server: postgres</Text></Line>
+<Line />
+<Line prompt>nexus servers info postgres</Line>
+<Line />
+<Line><Text color="cyan" bold>postgres</Text></Line>
+<Line>PostgreSQL database access</Line>
+<Line />
+<Line>Category: database</Line>
+<Line>Official: Yes</Line>
+<Line>Capabilities: tools, resources</Line>
+<Line />
+<Line>Tools:</Line>
+<Line>  - query: Execute SQL queries</Line>
+<Line>  - list-tables: List database tables</Line>
+<Line>  - describe: Describe table schema</Line>
+<Line />
+<Line prompt>nexus servers config postgres --format cursor</Line>
+<Line />
+<Line><Text color="cyan">Add to .cursor/mcp.json:</Text></Line>
+</Terminal>
+
+---
+
+## Configuration Formats
+
+Get config for different clients:
+
+| Format | Client |
+|--------|--------|
+| `claude-desktop` | Claude Desktop app |
+| `cursor` | Cursor editor |
+| `vscode` | VS Code with MCP extension |
+| `generic` | Generic JSON format |
+
+<Terminal title="Different formats">
+<Line prompt>nexus servers config postgres --format claude-desktop</Line>
+<Line prompt>nexus servers config postgres --format cursor</Line>
+<Line prompt>nexus servers config postgres --format vscode</Line>
+</Terminal>
+
+---
+
+## Adding Environment Variables
+
+Most database servers need connection strings:
+
+```json title="With environment variables"
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "postgresql://user:pass@localhost:5432/mydb"
+      }
+    }
+  }
+}
+```
+
+:::warning Keep secrets safe
+Don't commit connection strings to git. Use environment variables or a secrets manager.
+:::

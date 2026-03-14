@@ -1,0 +1,288 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "api/authentication",
+              "path": "/api/authentication",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/index",
+              "path": "/api/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/libraries",
+              "path": "/api/libraries",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/memory",
+              "path": "/api/memory",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/rate-limits",
+              "path": "/api/rate-limits",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/servers",
+              "path": "/api/servers",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/skills",
+              "path": "/api/skills",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/auth",
+              "path": "/cli/auth",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/configuration",
+              "path": "/cli/configuration",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/docs",
+              "path": "/cli/docs",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/index",
+              "path": "/cli/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/init",
+              "path": "/cli/init",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/serve",
+              "path": "/cli/serve",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/servers",
+              "path": "/cli/servers",
+              "sidebar": "docs"
+            },
+            {
+              "id": "cli/skills",
+              "path": "/cli/skills",
+              "sidebar": "docs"
+            },
+            {
+              "id": "common-tasks/add-to-claude",
+              "path": "/common-tasks/add-to-claude",
+              "sidebar": "docs"
+            },
+            {
+              "id": "common-tasks/add-to-cursor",
+              "path": "/common-tasks/add-to-cursor",
+              "sidebar": "docs"
+            },
+            {
+              "id": "common-tasks/add-to-vscode",
+              "path": "/common-tasks/add-to-vscode",
+              "sidebar": "docs"
+            },
+            {
+              "id": "common-tasks/find-servers",
+              "path": "/common-tasks/find-servers",
+              "sidebar": "docs"
+            },
+            {
+              "id": "common-tasks/index",
+              "path": "/common-tasks/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "common-tasks/query-docs",
+              "path": "/common-tasks/query-docs",
+              "sidebar": "docs"
+            },
+            {
+              "id": "common-tasks/save-context",
+              "path": "/common-tasks/save-context",
+              "sidebar": "docs"
+            },
+            {
+              "id": "getting-started/cli-quickstart",
+              "path": "/getting-started/cli-quickstart",
+              "sidebar": "docs"
+            },
+            {
+              "id": "getting-started/installation",
+              "path": "/getting-started/installation",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/ai-clients",
+              "path": "/guides/ai-clients",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/mcp-setup",
+              "path": "/guides/mcp-setup",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/memory-best-practices",
+              "path": "/guides/memory-best-practices",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/project-memory",
+              "path": "/guides/project-memory",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/submitting",
+              "path": "/guides/submitting",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/token-savings",
+              "path": "/guides/token-savings",
+              "sidebar": "docs"
+            },
+            {
+              "id": "intro",
+              "path": "/intro",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/delete-memory",
+              "path": "/mcp-tools/delete-memory",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/discover-servers",
+              "path": "/mcp-tools/discover-servers",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/get-library-info",
+              "path": "/mcp-tools/get-library-info",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/get-project-context",
+              "path": "/mcp-tools/get-project-context",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/get-server-config",
+              "path": "/mcp-tools/get-server-config",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/get-server-info",
+              "path": "/mcp-tools/get-server-info",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/index",
+              "path": "/mcp-tools/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/list-libraries",
+              "path": "/mcp-tools/list-libraries",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/list-memories",
+              "path": "/mcp-tools/list-memories",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/query-docs",
+              "path": "/mcp-tools/query-docs",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/recall-memories",
+              "path": "/mcp-tools/recall-memories",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/resolve-library",
+              "path": "/mcp-tools/resolve-library",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/save-memory",
+              "path": "/mcp-tools/save-memory",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp-tools/update-memory",
+              "path": "/mcp-tools/update-memory",
+              "sidebar": "docs"
+            },
+            {
+              "id": "quick-start",
+              "path": "/quick-start",
+              "sidebar": "docs"
+            },
+            {
+              "id": "sdk/examples",
+              "path": "/sdk/examples",
+              "sidebar": "docs"
+            },
+            {
+              "id": "sdk/index",
+              "path": "/sdk/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "sdk/installation",
+              "path": "/sdk/installation",
+              "sidebar": "docs"
+            },
+            {
+              "id": "troubleshooting",
+              "path": "/troubleshooting",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/category/getting-started",
+              "path": "/category/getting-started",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/category/guides",
+              "path": "/category/guides",
+              "sidebar": "docs"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docs": {
+              "link": {
+                "path": "/intro",
+                "label": "intro"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

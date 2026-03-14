@@ -1,0 +1,24 @@
+{
+  "id": "mcp-tools/discover-servers",
+  "title": "discover-servers",
+  "description": "Search for MCP servers by capability, category, or name. Returns matching servers with their installation instructions and capabilities.",
+  "source": "@site/docs/mcp-tools/discover-servers.md",
+  "sourceDirName": "mcp-tools",
+  "slug": "/mcp-tools/discover-servers",
+  "permalink": "/mcp-tools/discover-servers",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/mcp-tools/discover-servers.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "delete-memory",
+    "permalink": "/mcp-tools/delete-memory"
+  },
+  "next": {
+    "title": "get-server-info",
+    "permalink": "/mcp-tools/get-server-info"
+  }
+}

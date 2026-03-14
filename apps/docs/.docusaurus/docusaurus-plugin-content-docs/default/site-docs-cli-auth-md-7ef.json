@@ -1,0 +1,24 @@
+{
+  "id": "cli/auth",
+  "title": "nexus auth",
+  "description": "Manage authentication with Nexus. Includes subcommands for login, logout, and checking status.",
+  "source": "@site/docs/cli/auth.md",
+  "sourceDirName": "cli",
+  "slug": "/cli/auth",
+  "permalink": "/cli/auth",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/cli/auth.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "nexus init",
+    "permalink": "/cli/init"
+  },
+  "next": {
+    "title": "nexus docs",
+    "permalink": "/cli/docs"
+  }
+}

@@ -105,6 +105,47 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 export default {
   fetch: app.fetch,
 
+  // Scheduled handler for cron triggers
+  async scheduled(
+    event: ScheduledEvent,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<void> {
+    switch (event.cron) {
+      case "0 2 * * 0": {
+        // Weekly Context7 sync - runs every Sunday at 2am UTC
+        logger.info("Starting weekly Context7 sync", {
+          cron: event.cron,
+          scheduledTime: new Date(event.scheduledTime).toISOString(),
+        });
+
+        try {
+          const { syncAllLibraries } = await import("./services/context7-sync");
+          
+          // Use waitUntil to ensure the sync completes even after response
+          ctx.waitUntil(
+            syncAllLibraries(env, "cron").then((result) => {
+              logger.info("Weekly Context7 sync completed", {
+                jobId: result.jobId,
+                status: result.status,
+                successful: result.successfulItems,
+                failed: result.failedItems,
+                durationMs: result.durationMs,
+              });
+            }).catch((error) => {
+              logger.error("Weekly Context7 sync failed", {}, error as Error);
+            })
+          );
+        } catch (error) {
+          logger.error("Failed to start Context7 sync", {}, error as Error);
+        }
+        break;
+      }
+      default:
+        logger.warn("Unknown cron trigger", { cron: event.cron });
+    }
+  },
+
   // Queue consumer for ingestion jobs
   async queue(
     batch: MessageBatch<IngestionJob>,

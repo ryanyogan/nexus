@@ -1,37 +1,51 @@
 import { Link } from "@tanstack/react-router";
-import { Github, BookOpen } from "lucide-react";
+import { Github } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-stone-200 py-8">
+    <footer className="border-t border-border bg-background py-6">
       <div className="mx-auto max-w-[880px] px-4 lg:px-0">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          {/* Logo */}
           <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-emerald-600" />
-            <span className="font-semibold text-stone-800">Nexus</span>
+            <div className="flex h-6 w-6 items-center justify-center border border-foreground bg-foreground">
+              <span className="font-mono text-xs font-bold text-background">N</span>
+            </div>
+            <span className="font-mono text-sm font-bold uppercase tracking-tight text-foreground">
+              Nexus
+            </span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-stone-500">
-            <a 
-              href="https://docs.nexus.yogan.dev" 
-              className="transition-colors hover:text-stone-800"
+
+          {/* Links with pipe separators */}
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide">
+            <a
+              href="https://docs.nexus.yogan.dev"
+              className="text-muted-foreground transition-colors hover:text-accent"
             >
               Docs
             </a>
-            <Link to="/explore" className="transition-colors hover:text-stone-800">
+            <span className="text-border">|</span>
+            <Link
+              to="/explore"
+              className="text-muted-foreground transition-colors hover:text-accent"
+            >
               Explore
             </Link>
+            <span className="text-border">|</span>
             <a
               href="https://github.com/ryanyogan/nexus"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 transition-colors hover:text-stone-800"
+              className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-accent"
             >
-              <Github className="h-4 w-4" />
+              <Github className="h-3 w-3" />
               GitHub
             </a>
           </div>
-          <p className="text-sm text-stone-500">
-            &copy; {new Date().getFullYear()} Nexus
+
+          {/* Copyright */}
+          <p className="font-mono text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} NEXUS
           </p>
         </div>
       </div>

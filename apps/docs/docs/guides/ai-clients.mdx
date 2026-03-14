@@ -1,0 +1,328 @@
+# Working with AI Clients
+
+A comprehensive guide to using Nexus with different AI clients and editors.
+
+## Supported Clients
+
+| Client | MCP Support | Setup Method |
+|--------|-------------|--------------|
+| Claude Code | Native | CLI or manual |
+| Claude Desktop | Native | Manual config |
+| Cursor | Native | CLI or manual |
+| VS Code | Via extension | Extension config |
+| OpenCode | Native | Manual config |
+| Zed | Native | Settings file |
+| Continue | Via extension | Extension config |
+
+---
+
+## Claude Code
+
+Claude Code has the best MCP integration with a single command setup.
+
+### Quick Setup
+
+<Terminal title="Claude Code setup">
+<Line prompt>claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://mcp.nexus.yogan.dev/sse</Line>
+<Line />
+<Line><Check>Added MCP server nexus</Check></Line>
+</Terminal>
+
+### Verify
+
+<Terminal title="List MCP servers">
+<Line prompt>claude mcp list</Line>
+<Line />
+<Line><Text color="green">nexus</Text> <Text color="gray">(connected)</Text></Line>
+</Terminal>
+
+### Remove
+
+```bash
+claude mcp remove nexus
+```
+
+---
+
+## Claude Desktop
+
+### Config Location
+
+| OS | Path |
+|-------|------|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Linux | `~/.config/Claude/claude_desktop_config.json` |
+
+### Configuration
+
+```json title="claude_desktop_config.json"
+{
+  "mcpServers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+### Tips
+
+- **Restart required** after config changes
+- Check the MCP icon in the bottom-left to see connected servers
+- Use "Developer Mode" in settings for debugging
+
+---
+
+## Cursor
+
+Cursor uses a `.cursor/mcp.json` file.
+
+### Global Config
+
+```bash
+# Location
+~/.cursor/mcp.json
+```
+
+### Project Config
+
+```bash
+# In project root
+.cursor/mcp.json
+```
+
+### Configuration
+
+```json title=".cursor/mcp.json"
+{
+  "mcpServers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+### Tips
+
+- Project config overrides global config
+- Restart Cursor after changes
+- Check the Composer panel for MCP status
+
+---
+
+## VS Code
+
+VS Code requires an MCP extension.
+
+### Recommended Extensions
+
+1. **Anthropic MCP** - Official Anthropic extension
+2. **Continue** - AI coding assistant with MCP support
+
+### Configuration
+
+```json title="settings.json"
+{
+  "mcp.servers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+### Workspace Settings
+
+For project-specific config, use `.vscode/settings.json`:
+
+```json title=".vscode/settings.json"
+{
+  "mcp.servers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+---
+
+## Zed
+
+Zed has native MCP support in recent versions.
+
+### Configuration
+
+```json title="~/.config/zed/settings.json"
+{
+  "context_servers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+---
+
+## OpenCode
+
+OpenCode supports MCP via its config file.
+
+### Configuration
+
+```json title="mcp.json"
+{
+  "mcpServers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+Or in `opencode.json`:
+
+```json title="opencode.json"
+{
+  "mcp": {
+    "nexus": {
+      "type": "remote",
+      "url": "https://mcp.nexus.yogan.dev/sse",
+      "enabled": true
+    }
+  }
+}
+```
+
+---
+
+## Local Server Mode
+
+All clients support running Nexus locally instead of using the remote server.
+
+### Benefits
+
+- **Offline access** - Works without internet
+- **Privacy** - Data stays local
+- **Custom libraries** - Index your own docs
+- **Lower latency** - No network round trip
+
+### Configuration
+
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": ["-y", "@nexus/cli", "serve"]
+    }
+  }
+}
+```
+
+### Pre-installed CLI
+
+If you have the CLI installed globally:
+
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "nexus",
+      "args": ["serve"]
+    }
+  }
+}
+```
+
+---
+
+## Troubleshooting
+
+### Connection Issues
+
+1. **Check URL**: Must be `https://mcp.nexus.yogan.dev/sse`
+2. **Firewall**: Allow outbound HTTPS
+3. **Proxy**: Configure proxy settings if needed
+4. **VPN**: Some VPNs block SSE connections
+
+### Tools Not Appearing
+
+1. **Restart**: Fully restart the client
+2. **Wait**: MCP connections take a few seconds
+3. **Check logs**: Look for connection errors
+
+### Rate Limiting
+
+Authenticate for higher limits:
+
+<Terminal title="Login">
+<Line prompt>npx @nexus/cli auth login</Line>
+<Line />
+<Line><Check>Authenticated as user@example.com</Check></Line>
+</Terminal>
+
+### SSE Not Supported
+
+Some clients don't support Server-Sent Events. Use local mode:
+
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": ["-y", "@nexus/cli", "serve"]
+    }
+  }
+}
+```
+
+---
+
+## Best Practices
+
+### Use Project-Specific Memory
+
+Tell your AI which project you're working on:
+
+> "I'm working on the my-app project. Load the context."
+
+### Combine with Other MCP Servers
+
+Nexus works alongside other MCP servers:
+
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"]
+    },
+    "filesystem": {
+      "command": "npx", 
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/project"]
+    }
+  }
+}
+```
+
+### Keep Configs in Sync
+
+Use the CLI to configure all your editors at once:
+
+<Terminal title="Configure all editors">
+<Line prompt>npx @nexus/cli init</Line>
+<Line />
+<Line><Text bold>Select your editors:</Text></Line>
+<Line><Text color="green">  ✓ Claude Code</Text></Line>
+<Line><Text color="green">  ✓ Cursor</Text></Line>
+<Line><Text color="green">  ✓ VS Code</Text></Line>
+<Line />
+<Line><Check>Configured 3 editor(s)</Check></Line>
+</Terminal>

@@ -25,6 +25,8 @@
     "@codemirror/merge": "^6.6.0",
     "@codemirror/state": "^6.5.4",
     "@codemirror/view": "^6.39.15",
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/geist-mono": "^5.2.7",
     "@lezer/highlight": "^1.2.0",
     "@nexus/auth": "workspace:*",
     "@nexus/db": "workspace:*",

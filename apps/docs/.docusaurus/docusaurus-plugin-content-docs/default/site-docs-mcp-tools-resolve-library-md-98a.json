@@ -1,0 +1,24 @@
+{
+  "id": "mcp-tools/resolve-library",
+  "title": "resolve-library",
+  "description": "Search for a library or package by name to get its library ID. Use this tool before query-docs to find the correct library identifier.",
+  "source": "@site/docs/mcp-tools/resolve-library.md",
+  "sourceDirName": "mcp-tools",
+  "slug": "/mcp-tools/resolve-library",
+  "permalink": "/mcp-tools/resolve-library",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/mcp-tools/resolve-library.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "MCP Tools",
+    "permalink": "/mcp-tools/"
+  },
+  "next": {
+    "title": "query-docs",
+    "permalink": "/mcp-tools/query-docs"
+  }
+}

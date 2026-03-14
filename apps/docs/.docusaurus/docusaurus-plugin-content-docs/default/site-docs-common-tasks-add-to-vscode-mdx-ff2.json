@@ -1,0 +1,24 @@
+{
+  "id": "common-tasks/add-to-vscode",
+  "title": "Add to VS Code",
+  "description": "Configure Nexus in Visual Studio Code.",
+  "source": "@site/docs/common-tasks/add-to-vscode.mdx",
+  "sourceDirName": "common-tasks",
+  "slug": "/common-tasks/add-to-vscode",
+  "permalink": "/common-tasks/add-to-vscode",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/common-tasks/add-to-vscode.mdx",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Add to Cursor",
+    "permalink": "/common-tasks/add-to-cursor"
+  },
+  "next": {
+    "title": "Query Documentation",
+    "permalink": "/common-tasks/query-docs"
+  }
+}

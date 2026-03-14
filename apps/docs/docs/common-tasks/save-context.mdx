@@ -1,0 +1,153 @@
+# Save Project Context
+
+Store project information so your AI remembers it across sessions.
+
+## Why Save Context?
+
+Without memory, you re-explain your project every session:
+
+> "This is a monorepo using Turborepo. We use TypeScript, Hono for the API, React for frontend. We deploy to Cloudflare. Our auth uses JWT..."
+
+With Nexus memory, you say this **once** and recall it forever.
+
+---
+
+## Quick Start
+
+Ask your AI to save context:
+
+> "Remember that this project uses TypeScript, Hono for the API, React for frontend, and deploys to Cloudflare Workers"
+
+<Terminal title="Memory saved">
+<Line><Text color="gray">→ AI calls</Text> <Text color="green">save-memory</Text></Line>
+<Line>   <Text color="gray">title:</Text> "Project Tech Stack"</Line>
+<Line>   <Text color="gray">type:</Text> project_context</Line>
+<Line>   <Text color="gray">content:</Text> "TypeScript, Hono API, React frontend, Cloudflare Workers"</Line>
+<Line />
+<Line><Check>Memory saved!</Check></Line>
+</Terminal>
+
+---
+
+## Memory Types
+
+| Type | Use For | Example |
+|------|---------|---------|
+| `project_context` | Tech stack, architecture, conventions | "Monorepo with Turborepo" |
+| `decision` | Architectural decisions with rationale | "Using JWT because..." |
+| `session_summary` | What was accomplished | "Implemented user auth" |
+| `correction` | Lessons learned, things to avoid | "Don't use library X because..." |
+
+### Project Context
+
+> "Remember our project architecture: Monorepo with apps/web (Next.js), apps/api (Hono), and packages/shared"
+
+### Decisions
+
+> "Remember that we decided to use Drizzle instead of Prisma because of edge runtime support"
+
+### Corrections
+
+> "Remember: don't suggest using moment.js - we use date-fns instead"
+
+---
+
+## Recalling Context
+
+At the start of a new session:
+
+> "What do you remember about this project?"
+
+<Terminal title="Context recalled">
+<Line><Text color="gray">→ AI calls</Text> <Text color="green">get-project-context</Text></Line>
+<Line>   <Text color="gray">project:</Text> "my-project"</Line>
+<Line />
+<Line><Text color="cyan">Found 3 memories:</Text></Line>
+<Line />
+<Line><Text color="yellow">1.</Text> <Text bold>Project Architecture</Text> <Text color="gray">(project_context)</Text></Line>
+<Line>   Monorepo with Turborepo. apps/web (Next.js)...</Line>
+<Line />
+<Line><Text color="yellow">2.</Text> <Text bold>Auth Decision</Text> <Text color="gray">(decision)</Text></Line>
+<Line>   Using JWT with httpOnly cookies...</Line>
+<Line />
+<Line><Text color="yellow">3.</Text> <Text bold>Avoid moment.js</Text> <Text color="gray">(correction)</Text></Line>
+<Line>   Use date-fns instead of moment.js...</Line>
+</Terminal>
+
+---
+
+## Best Practices
+
+### Name Your Project
+
+Always specify a project name for organization:
+
+> "Save this to project 'my-app': We use Tailwind CSS with the default config"
+
+### Use Tags
+
+Tags help with semantic search:
+
+> "Remember (tags: auth, security): We use httpOnly cookies for JWT storage"
+
+### Be Specific
+
+```
+❌ "We use React"
+   → Too vague
+
+✓ "We use React 18 with Server Components in Next.js App Router"
+   → Specific and searchable
+```
+
+### Include Rationale
+
+For decisions, include the *why*:
+
+```
+❌ "We use Drizzle"
+
+✓ "We use Drizzle instead of Prisma because:
+   1. Edge runtime support
+   2. SQL-like syntax we prefer
+   3. Smaller bundle size"
+```
+
+---
+
+## CLI Commands
+
+<Terminal title="Memory management via CLI">
+<Line prompt>nexus memory save --title "Project Architecture" --type project_context --project my-app --content "Monorepo..."</Line>
+<Line />
+<Line><Check>Memory saved: mem_abc123</Check></Line>
+<Line />
+<Line prompt>nexus memory search "authentication"</Line>
+<Line />
+<Line><Text color="cyan">Found 2 memories:</Text></Line>
+<Line>  1. Auth Pattern (decision)</Line>
+<Line>  2. Login Flow (session_summary)</Line>
+<Line />
+<Line prompt>nexus memory context --project my-app</Line>
+<Line />
+<Line><Text color="cyan">Project context for my-app:</Text></Line>
+<Line>  3 project_context memories</Line>
+<Line>  2 decision memories</Line>
+<Line>  1 correction memory</Line>
+</Terminal>
+
+---
+
+## Authentication Required
+
+Memory write operations require authentication:
+
+<Terminal title="Login to save memories">
+<Line prompt>npx @nexus/cli auth login</Line>
+<Line />
+<Line><Text color="cyan">Opening browser...</Text></Line>
+<Line />
+<Line><Check>Authenticated as user@example.com</Check></Line>
+</Terminal>
+
+Once authenticated, your AI can save and recall memories automatically.

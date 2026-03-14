@@ -114,8 +114,7 @@ function InstalledSkillsPage() {
             </p>
           </div>
           <Link
-            to="/explore"
-            search={{ tab: "skills" }}
+            to="/"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Search className="h-4 w-4" />
@@ -160,8 +159,7 @@ function InstalledSkillsPage() {
           </p>
           {skills.length === 0 && (
             <Link
-              to="/explore"
-              search={{ tab: "skills" }}
+              to="/"
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Search className="h-4 w-4" />
@@ -218,8 +216,7 @@ function InstalledSkillsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Link
-                    to="/explore"
-                    search={{ tab: "skills" }}
+                    to="/"
                     className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     title="View Details"
                   >

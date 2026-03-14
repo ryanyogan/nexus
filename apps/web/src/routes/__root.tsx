@@ -46,7 +46,7 @@ function RootComponent() {
   );
 
   return (
-    <html lang="en">
+    <html lang="en" className="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <head>
         <HeadContent />
         {/* Add mobile PWA meta tags for code routes */}
@@ -59,17 +59,25 @@ function RootComponent() {
             />
           </>
         )}
-      </head>
-      <body className="flex min-h-screen flex-col overflow-x-hidden bg-stone-50 antialiased">
-        {/* Green gradient background */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[260px]"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(0, 153, 101, 0.08) 0%, rgba(0, 153, 101, 0) 100%)",
+        {/* Dark mode initialization script - runs before paint to prevent flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('nexus-theme');
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.style.colorScheme = 'dark';
+                  }
+                } catch (e) {}
+              })();
+            `,
           }}
         />
-
+      </head>
+      <body className="flex min-h-screen flex-col overflow-x-hidden bg-background font-sans text-foreground antialiased">
         <Header session={session} />
         <main
           className={cn(

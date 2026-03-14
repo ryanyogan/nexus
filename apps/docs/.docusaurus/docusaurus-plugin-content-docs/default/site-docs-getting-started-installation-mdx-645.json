@@ -1,0 +1,24 @@
+{
+  "id": "getting-started/installation",
+  "title": "Installation",
+  "description": "Nexus works as an MCP (Model Context Protocol) server. You can connect to the hosted version instantly, or run it locally for full control.",
+  "source": "@site/docs/getting-started/installation.mdx",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/installation",
+  "permalink": "/getting-started/installation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/getting-started/installation.mdx",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Getting Started",
+    "permalink": "/category/getting-started"
+  },
+  "next": {
+    "title": "CLI Quickstart",
+    "permalink": "/getting-started/cli-quickstart"
+  }
+}

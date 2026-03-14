@@ -1,0 +1,24 @@
+{
+  "id": "api/memory",
+  "title": "Memory API",
+  "description": "The Memory API provides persistent storage for AI context, decisions, and learnings. Access memories via the MCP protocol tools or directly through the REST API.",
+  "source": "@site/docs/api/memory.md",
+  "sourceDirName": "api",
+  "slug": "/api/memory",
+  "permalink": "/api/memory",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/api/memory.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Skills API",
+    "permalink": "/api/skills"
+  },
+  "next": {
+    "title": "TypeScript SDK",
+    "permalink": "/sdk/"
+  }
+}

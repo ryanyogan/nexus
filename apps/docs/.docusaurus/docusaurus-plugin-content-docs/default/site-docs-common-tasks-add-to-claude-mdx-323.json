@@ -1,0 +1,24 @@
+{
+  "id": "common-tasks/add-to-claude",
+  "title": "Add to Claude Desktop",
+  "description": "Configure Nexus in Claude Desktop in under a minute.",
+  "source": "@site/docs/common-tasks/add-to-claude.mdx",
+  "sourceDirName": "common-tasks",
+  "slug": "/common-tasks/add-to-claude",
+  "permalink": "/common-tasks/add-to-claude",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/common-tasks/add-to-claude.mdx",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Common Tasks",
+    "permalink": "/common-tasks/"
+  },
+  "next": {
+    "title": "Add to Cursor",
+    "permalink": "/common-tasks/add-to-cursor"
+  }
+}

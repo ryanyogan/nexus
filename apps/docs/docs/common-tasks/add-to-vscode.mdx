@@ -1,0 +1,130 @@
+# Add to VS Code
+
+Configure Nexus in Visual Studio Code.
+
+## Prerequisites
+
+VS Code requires an MCP extension to use MCP servers. Install one of these:
+
+- [Anthropic MCP Extension](https://marketplace.visualstudio.com/items?itemName=anthropic.mcp) (recommended)
+- [Continue](https://marketplace.visualstudio.com/items?itemName=Continue.continue)
+
+---
+
+## Automatic Setup
+
+<Terminal title="CLI setup">
+<Line prompt>npx @nexus/cli init</Line>
+<Line />
+<Line><Text bold>Select your editors:</Text></Line>
+<Line><Text color="green">  ✓ VS Code</Text></Line>
+<Line />
+<Line><Check><Text color="green">Setup complete!</Text></Check></Line>
+</Terminal>
+
+---
+
+## Manual Setup
+
+### Option 1: VS Code Settings
+
+Add to your VS Code settings (`settings.json`):
+
+```json title="settings.json"
+{
+  "mcp.servers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+To open settings.json:
+1. Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
+2. Type "Preferences: Open Settings (JSON)"
+3. Add the configuration above
+
+### Option 2: Workspace Settings
+
+For project-specific config, create `.vscode/settings.json`:
+
+```json title=".vscode/settings.json"
+{
+  "mcp.servers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+---
+
+## Using with Continue
+
+If you're using the Continue extension:
+
+```json title="~/.continue/config.json"
+{
+  "mcpServers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+---
+
+## Verify It Works
+
+1. Open the MCP extension panel (or Continue sidebar)
+2. Check that "nexus" appears in the connected servers list
+3. Ask: "What Nexus tools do you have access to?"
+
+---
+
+## Local Server Alternative
+
+For offline use or custom setups:
+
+```json title="settings.json"
+{
+  "mcp.servers": {
+    "nexus": {
+      "command": "npx",
+      "args": ["-y", "@nexus/cli", "serve"]
+    }
+  }
+}
+```
+
+---
+
+## Troubleshooting
+
+### Extension not finding servers
+
+1. Reload VS Code window (`Cmd+Shift+P` → "Reload Window")
+2. Check extension is enabled
+3. Verify JSON syntax is correct
+
+### Connection timeouts
+
+The remote server may be blocked by corporate firewalls. Use the local server:
+
+```json
+{
+  "mcp.servers": {
+    "nexus": {
+      "command": "npx",
+      "args": ["-y", "@nexus/cli", "serve"]
+    }
+  }
+}
+```
+
+### Multiple extensions
+
+If you have multiple MCP extensions, they may conflict. Disable unused ones.

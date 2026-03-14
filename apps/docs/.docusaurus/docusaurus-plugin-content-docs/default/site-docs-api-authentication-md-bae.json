@@ -1,0 +1,24 @@
+{
+  "id": "api/authentication",
+  "title": "Authentication",
+  "description": "The Nexus API supports two authentication methods: session cookies for browser applications and API tokens for programmatic access.",
+  "source": "@site/docs/api/authentication.md",
+  "sourceDirName": "api",
+  "slug": "/api/authentication",
+  "permalink": "/api/authentication",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/api/authentication.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "REST API Overview",
+    "permalink": "/api/"
+  },
+  "next": {
+    "title": "Rate Limits",
+    "permalink": "/api/rate-limits"
+  }
+}

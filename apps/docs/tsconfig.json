@@ -1,6 +1,30 @@
 {
-  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "strictNullChecks": true
-  }
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    ".vitepress/**/*.ts",
+    ".vitepress/**/*.vue",
+    "**/*.md",
+    "**/*.vue"
+  ],
+  "exclude": [
+    "node_modules",
+    "docs",
+    "src",
+    ".docusaurus",
+    ".astro",
+    "build"
+  ]
 }

@@ -111,9 +111,16 @@
         }
       }
     ]
+  },
+
+  // Cron Triggers for scheduled tasks
+  // weekly-context7-sync: runs every Sunday at 2am UTC
+  "triggers": {
+    "crons": ["0 2 * * sun"]
   }
 
   // Secrets (set via .dev.vars locally, wrangler secret put for production):
   // - ADMIN_API_KEY (for protecting /api/admin/* routes)
   // - GITHUB_TOKEN (for fetching repo contents during indexing)
+  // - CONTEXT7_API_KEY (for Context7 API higher rate limits)
 }

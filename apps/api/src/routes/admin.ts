@@ -1937,4 +1937,142 @@ adminRouter.post("/seed-servers", async (c) => {
   });
 });
 
+// ============================================================================
+// Context7 Sync Endpoints
+// ============================================================================
+
+/**
+ * POST /api/admin/sync/libraries
+ * Trigger a manual sync of all libraries from Context7
+ */
+adminRouter.post("/sync/libraries", async (c) => {
+  const { syncAllLibraries } = await import("../services/context7-sync");
+  
+  // Start the sync in the background
+  const env = c.env;
+  const syncPromise = syncAllLibraries(env, "admin-manual");
+  
+  // Use waitUntil to ensure sync completes even after response
+  c.executionCtx.waitUntil(syncPromise);
+  
+  return c.json({
+    message: "Context7 library sync started",
+    info: "Sync is running in the background. Check /api/admin/sync/jobs for status.",
+  });
+});
+
+/**
+ * POST /api/admin/sync/library/:name
+ * Trigger sync for a single library
+ */
+adminRouter.post("/sync/library/:name", async (c) => {
+  const { name } = c.req.param();
+  const { syncLibrary } = await import("../services/context7-sync");
+  
+  try {
+    await syncLibrary(c.env, name);
+    return c.json({
+      message: `Library "${name}" synced successfully`,
+    });
+  } catch (error) {
+    return c.json({
+      error: "Sync failed",
+      message: error instanceof Error ? error.message : String(error),
+    }, 500);
+  }
+});
+
+/**
+ * GET /api/admin/sync/jobs
+ * List recent sync jobs
+ */
+adminRouter.get("/sync/jobs", async (c) => {
+  const { listSyncJobs } = await import("../services/context7-sync");
+  
+  const limit = parseInt(c.req.query("limit") || "20");
+  const offset = parseInt(c.req.query("offset") || "0");
+  
+  const jobs = await listSyncJobs(c.env, { limit, offset });
+  
+  return c.json({
+    jobs,
+    pagination: { limit, offset },
+  });
+});
+
+/**
+ * GET /api/admin/sync/jobs/latest
+ * Get the most recent sync job
+ */
+adminRouter.get("/sync/jobs/latest", async (c) => {
+  const { getLatestSyncJob } = await import("../services/context7-sync");
+  
+  const job = await getLatestSyncJob(c.env);
+  
+  if (!job) {
+    return c.json({ error: "No sync jobs found" }, 404);
+  }
+  
+  return c.json({ job });
+});
+
+/**
+ * GET /api/admin/sync/jobs/:id
+ * Get details for a specific sync job
+ */
+adminRouter.get("/sync/jobs/:id", async (c) => {
+  const { id } = c.req.param();
+  const { getSyncStatus } = await import("../services/context7-sync");
+  
+  const job = await getSyncStatus(c.env, id);
+  
+  if (!job) {
+    return c.json({ error: "Sync job not found" }, 404);
+  }
+  
+  return c.json({ job });
+});
+
+/**
+ * GET /api/admin/sync/stats
+ * Get overall sync statistics
+ */
+adminRouter.get("/sync/stats", async (c) => {
+  const db = c.get("db");
+  
+  // Count libraries with Context7 data
+  const syncedResult = await c.env.DB.prepare(
+    `SELECT COUNT(*) as count FROM libraries WHERE context7_synced_at IS NOT NULL`
+  ).first<{ count: number }>();
+  
+  const totalResult = await c.env.DB.prepare(
+    `SELECT COUNT(*) as count FROM libraries WHERE is_active = 1`
+  ).first<{ count: number }>();
+  
+  const lastSyncResult = await c.env.DB.prepare(
+    `SELECT MAX(context7_synced_at) as last_sync FROM libraries`
+  ).first<{ last_sync: string | null }>();
+  
+  const jobsResult = await c.env.DB.prepare(
+    `SELECT 
+      COUNT(*) as total_jobs,
+      SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_jobs,
+      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_jobs
+    FROM sync_jobs`
+  ).first<{ total_jobs: number; completed_jobs: number; failed_jobs: number }>();
+  
+  return c.json({
+    libraries: {
+      synced: syncedResult?.count || 0,
+      total: totalResult?.count || 0,
+      lastSyncAt: lastSyncResult?.last_sync || null,
+    },
+    jobs: {
+      total: jobsResult?.total_jobs || 0,
+      completed: jobsResult?.completed_jobs || 0,
+      failed: jobsResult?.failed_jobs || 0,
+    },
+  });
+});
+
 export { adminRouter };

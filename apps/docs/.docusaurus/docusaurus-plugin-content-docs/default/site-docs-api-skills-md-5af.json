@@ -1,0 +1,24 @@
+{
+  "id": "api/skills",
+  "title": "Skills API",
+  "description": "The Skills API provides access to AI skills - reusable prompts and workflows that enhance AI assistant capabilities.",
+  "source": "@site/docs/api/skills.md",
+  "sourceDirName": "api",
+  "slug": "/api/skills",
+  "permalink": "/api/skills",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/api/skills.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Servers API",
+    "permalink": "/api/servers"
+  },
+  "next": {
+    "title": "Memory API",
+    "permalink": "/api/memory"
+  }
+}

@@ -6,11 +6,11 @@ import {
   Zap,
   CreditCard,
   ArrowRight,
-  TrendingUp,
   Clock,
-  CheckCircle,
-  Sparkles,
-  Code,
+  Lock,
+  Database,
+  Brain,
+  Folder,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/dashboard/")({
@@ -80,91 +80,82 @@ function DashboardPage() {
   if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="h-6 w-6 animate-spin border-2 border-accent border-t-transparent" />
       </div>
     );
   }
 
-  const planColors = {
-    free: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-    pro: "bg-primary/10 text-primary",
-    team: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-  };
-
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="mt-1 text-muted-foreground">
+      <div className="mb-8 border-b border-border pb-8">
+        <h1 className="font-mono text-2xl font-bold uppercase tracking-tight text-foreground">
+          Dashboard
+        </h1>
+        <p className="mt-2 font-mono text-sm text-muted-foreground">
           Welcome back, {session?.user?.name || session?.user?.email}
         </p>
       </div>
 
       {/* Plan Banner */}
-      <div className="mb-8 rounded-lg border border-border bg-card p-6">
+      <div className="mb-8 border border-border p-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-              <Sparkles className="h-6 w-6 text-primary" />
+          <div>
+            <div className="flex items-center gap-3">
+              <h2 className="font-mono text-sm font-bold uppercase text-foreground">
+                {stats?.plan === "free" ? "Free Plan" : stats?.plan === "pro" ? "Pro Plan" : "Team Plan"}
+              </h2>
+              <span className="border border-border px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-muted-foreground">
+                {stats?.plan?.toUpperCase()}
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-foreground">
-                  {stats?.plan === "free" ? "Free Plan" : stats?.plan === "pro" ? "Pro Plan" : "Team Plan"}
-                </h2>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${planColors[stats?.plan || "free"]}`}>
-                  {stats?.plan?.toUpperCase()}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {stats?.plan === "free" 
-                  ? "Upgrade to Pro for unlimited API calls and more features"
-                  : stats?.plan === "pro"
-                    ? "You have access to all Pro features"
-                    : "Team plan with shared resources"
-                }
-              </p>
-            </div>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">
+              {stats?.plan === "free" 
+                ? "Upgrade to Pro for unlimited API calls"
+                : stats?.plan === "pro"
+                  ? "You have access to all Pro features"
+                  : "Team plan with shared resources"
+              }
+            </p>
           </div>
           {stats?.plan === "free" && (
             <Link
               to="/dashboard/billing"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex items-center gap-2 border border-accent bg-accent px-4 py-2 font-mono text-xs font-bold uppercase text-accent-foreground transition-colors hover:bg-accent/90"
             >
-              Upgrade to Pro
-              <ArrowRight className="h-4 w-4" />
+              Upgrade
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           )}
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* API Calls */}
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-              <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+        <div className="border border-border p-4">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <span className="font-mono text-[10px] font-bold uppercase text-muted-foreground">
+              API Calls
+            </span>
           </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-foreground">
+          <div className="mt-3">
+            <p className="font-mono text-2xl font-bold text-foreground">
               {stats?.apiCalls.used.toLocaleString()}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-mono text-[10px] uppercase text-muted-foreground">
               {stats?.apiCalls.limit 
-                ? `of ${stats.apiCalls.limit.toLocaleString()} API calls`
-                : "API calls this month"
+                ? `of ${stats.apiCalls.limit.toLocaleString()}`
+                : "this month"
               }
             </p>
           </div>
           {stats?.apiCalls.limit && (
             <div className="mt-3">
-              <div className="h-2 rounded-full bg-muted">
+              <div className="h-1 bg-muted">
                 <div 
-                  className="h-2 rounded-full bg-blue-600"
+                  className="h-1 bg-accent"
                   style={{ width: `${Math.min(stats.apiCalls.percentUsed, 100)}%` }}
                 />
               </div>
@@ -175,20 +166,23 @@ function DashboardPage() {
         {/* API Keys */}
         <Link
           to="/dashboard/keys"
-          className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+          className="border border-border p-4 transition-colors hover:border-foreground"
         >
           <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-              <Key className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="flex items-center gap-2">
+              <Key className="h-4 w-4 text-muted-foreground" />
+              <span className="font-mono text-[10px] font-bold uppercase text-muted-foreground">
+                API Keys
+              </span>
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-foreground">
+          <div className="mt-3">
+            <p className="font-mono text-2xl font-bold text-foreground">
               {stats?.apiKeys.count}
             </p>
-            <p className="text-sm text-muted-foreground">
-              of {stats?.apiKeys.limit} API keys
+            <p className="font-mono text-[10px] uppercase text-muted-foreground">
+              of {stats?.apiKeys.limit}
             </p>
           </div>
         </Link>
@@ -196,20 +190,23 @@ function DashboardPage() {
         {/* Installed Skills */}
         <Link
           to="/dashboard/skills"
-          className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+          className="border border-border p-4 transition-colors hover:border-foreground"
         >
           <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
-              <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-accent" />
+              <span className="font-mono text-[10px] font-bold uppercase text-muted-foreground">
+                Skills
+              </span>
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-foreground">
+          <div className="mt-3">
+            <p className="font-mono text-2xl font-bold text-foreground">
               {stats?.skills.installed}
             </p>
-            <p className="text-sm text-muted-foreground">
-              Installed skills
+            <p className="font-mono text-[10px] uppercase text-muted-foreground">
+              installed
             </p>
           </div>
         </Link>
@@ -217,89 +214,124 @@ function DashboardPage() {
         {/* Billing */}
         <Link
           to="/dashboard/billing"
-          className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+          className="border border-border p-4 transition-colors hover:border-foreground"
         >
           <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
-              <CreditCard className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <span className="font-mono text-[10px] font-bold uppercase text-muted-foreground">
+                Billing
+              </span>
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-foreground">
+          <div className="mt-3">
+            <p className="font-mono text-2xl font-bold text-foreground">
               {stats?.plan === "free" ? "$0" : stats?.plan === "pro" ? "$5" : "$5+"}
             </p>
-            <p className="text-sm text-muted-foreground">
-              {stats?.plan === "free" ? "Free forever" : "per month"}
+            <p className="font-mono text-[10px] uppercase text-muted-foreground">
+              {stats?.plan === "free" ? "free" : "/month"}
             </p>
           </div>
         </Link>
       </div>
 
-      {/* Quick Actions */}
+      {/* Pro Features - Coming Soon */}
       <div className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Quick Actions</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="mb-4 font-mono text-sm font-bold uppercase text-foreground">
+          Pro Features
+          <span className="ml-2 border border-accent bg-accent/10 px-2 py-0.5 font-mono text-[10px] text-accent">
+            Coming Soon
+          </span>
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {/* Private Repos */}
+          <div className="border border-dashed border-border p-4 opacity-60">
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              <span className="font-mono text-xs font-bold uppercase text-foreground">
+                Private Repos
+              </span>
+            </div>
+            <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+              Index and query your private GitHub repositories
+            </p>
+          </div>
+
+          {/* Private Skills */}
+          <div className="border border-dashed border-border p-4 opacity-60">
+            <div className="flex items-center gap-2">
+              <Folder className="h-4 w-4 text-muted-foreground" />
+              <span className="font-mono text-xs font-bold uppercase text-foreground">
+                Private Skills
+              </span>
+            </div>
+            <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+              Create and manage private AI agent skills
+            </p>
+          </div>
+
+          {/* Expanded Memories */}
+          <div className="border border-dashed border-border p-4 opacity-60">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-muted-foreground" />
+              <span className="font-mono text-xs font-bold uppercase text-foreground">
+                Expanded Memories
+              </span>
+            </div>
+            <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+              10x more memory storage for your AI context
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Links */}
+      <div className="mb-8">
+        <h2 className="mb-4 font-mono text-sm font-bold uppercase text-foreground">
+          Quick Links
+        </h2>
+        <div className="flex flex-wrap gap-2">
           <Link
             to="/dashboard/keys"
-            className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50"
+            className="inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase text-foreground transition-colors hover:border-foreground"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Key className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-medium text-foreground">Create API Key</h3>
-              <p className="text-sm text-muted-foreground">Generate a new API key for MCP access</p>
-            </div>
+            <Key className="h-3.5 w-3.5" />
+            API Keys
           </Link>
-
           <Link
-            to="/explore"
-            search={{ tab: "skills" }}
-            className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50"
+            to="/"
+            className="inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase text-foreground transition-colors hover:border-foreground"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
-              <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <h3 className="font-medium text-foreground">Browse Skills</h3>
-              <p className="text-sm text-muted-foreground">Discover AI agent skills</p>
-            </div>
+            <Zap className="h-3.5 w-3.5 text-accent" />
+            Browse Content
           </Link>
-
           <Link
-            to="/settings/secrets"
-            className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50"
+            to="/dashboard/billing"
+            className="inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase text-foreground transition-colors hover:border-foreground"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <h3 className="font-medium text-foreground">Manage Secrets</h3>
-              <p className="text-sm text-muted-foreground">Store API keys securely</p>
-            </div>
+            <CreditCard className="h-3.5 w-3.5" />
+            Billing
           </Link>
-
-          <Link
-            to="/code"
-            className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50"
+          <a
+            href="https://docs.nexus.yogan.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase text-foreground transition-colors hover:border-foreground"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
-              <Code className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
-            </div>
-            <div>
-              <h3 className="font-medium text-foreground">Code Editor</h3>
-              <p className="text-sm text-muted-foreground">Connect to OpenCode remotely</p>
-            </div>
-          </Link>
+            <Database className="h-3.5 w-3.5" />
+            Docs
+          </a>
         </div>
       </div>
 
       {/* Recent Activity */}
       <div>
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Recent Activity</h2>
+        <h2 className="mb-4 font-mono text-sm font-bold uppercase text-foreground">
+          Recent Activity
+        </h2>
         {stats?.recentActivity && stats.recentActivity.length > 0 ? (
-          <div className="rounded-lg border border-border bg-card">
+          <div className="border border-border">
             {stats.recentActivity.map((activity, i) => (
               <div
                 key={i}
@@ -307,12 +339,10 @@ function DashboardPage() {
                   i !== stats.recentActivity.length - 1 ? "border-b border-border" : ""
                 }`}
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                </div>
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                 <div className="flex-1">
-                  <p className="text-sm text-foreground">{activity.description}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-mono text-xs text-foreground">{activity.description}</p>
+                  <p className="font-mono text-[10px] text-muted-foreground">
                     {new Date(activity.timestamp).toLocaleString()}
                   </p>
                 </div>
@@ -320,10 +350,10 @@ function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-border p-8 text-center">
-            <Clock className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              No recent activity. Start using Nexus to see your activity here.
+          <div className="border border-dashed border-border p-8 text-center">
+            <Clock className="mx-auto h-6 w-6 text-muted-foreground" />
+            <p className="mt-2 font-mono text-xs text-muted-foreground">
+              No recent activity
             </p>
           </div>
         )}

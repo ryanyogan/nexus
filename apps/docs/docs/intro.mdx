@@ -1,0 +1,181 @@
+# Introduction
+
+**Nexus is the missing brain in your AI workflow.**
+
+Every time you start a new AI session, you lose context. You re-explain your project structure, remind the AI about your conventions, and watch your token budget evaporate on information you've provided a dozen times before.
+
+Nexus fixes this. It gives your AI assistant persistent memory, instant access to up-to-date documentation, and a curated registry of MCP servers—all through a single MCP connection.
+
+<FeatureGrid>
+  <FeatureCard
+    icon={<SearchIcon />}
+    title="Documentation Search"
+    description="Semantic search across 50+ indexed libraries. Get accurate, up-to-date code examples without hallucinations."
+    link="/mcp-tools/query-docs"
+  />
+  <FeatureCard
+    icon={<BrainIcon />}
+    title="Persistent Memory"
+    description="Your AI remembers your projects across sessions. Store decisions, conventions, and learnings."
+    link="/mcp-tools/save-memory"
+  />
+  <FeatureCard
+    icon={<ServerIcon />}
+    title="MCP Server Registry"
+    description="Discover and configure MCP servers for databases, APIs, and cloud services with copy-paste configs."
+    link="/mcp-tools/discover-servers"
+  />
+  <FeatureCard
+    icon={<ZapIcon />}
+    title="Token Efficiency"
+    description="Semantic search returns only relevant chunks. Save 90%+ on context tokens compared to full docs."
+    link="/guides/token-savings"
+  />
+</FeatureGrid>
+
+---
+
+## Quick Start
+
+Add Nexus to your AI client in 30 seconds:
+
+<Terminal title="Add to Claude Code">
+<Line prompt>claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://mcp.nexus.yogan.dev/sse</Line>
+<Line />
+<Line><Check>Added MCP server nexus</Check></Line>
+</Terminal>
+
+Or add directly to your MCP config file:
+
+```json title="Claude Desktop / Cursor / VS Code"
+{
+  "mcpServers": {
+    "nexus": {
+      "url": "https://mcp.nexus.yogan.dev/sse"
+    }
+  }
+}
+```
+
+That's it. Your AI now has access to documentation search, persistent memory, and the MCP server registry.
+
+:::tip Ready to dive in?
+Head to the [Installation Guide](/getting-started/installation) for detailed setup instructions, or jump straight to the [CLI Quickstart](/getting-started/cli-quickstart) to set up your editors automatically.
+:::
+
+---
+
+## How It Works
+
+<Terminal title="Example: Querying Documentation">
+<Line><Text color="gray"># Your AI needs to know about React hooks</Text></Line>
+<Line />
+<Line><Text color="cyan" bold>AI:</Text> Let me search the React documentation...</Line>
+<Line />
+<Line><Text color="gray">→ Calling</Text> <Text color="green">query-docs</Text></Line>
+<Line><Text color="gray">  libraryId:</Text> react</Line>
+<Line><Text color="gray">  query:</Text> "useEffect cleanup function best practices"</Line>
+<Line />
+<Line><Text color="cyan" bold>Nexus:</Text> Found 5 relevant results</Line>
+<Line />
+<Line><Text color="yellow">1.</Text> <Text bold>Cleaning up Effects</Text></Line>
+<Line>   Return a cleanup function to avoid memory leaks...</Line>
+<Line>   <Text color="gray">Source: react.dev/reference/react/useEffect</Text></Line>
+<Line />
+<Line><Text color="yellow">2.</Text> <Text bold>Synchronizing with Effects</Text></Line>
+<Line>   Some components need to synchronize with external systems...</Line>
+</Terminal>
+
+```
+┌─────────────────┐     MCP      ┌─────────────────┐
+│   AI Client     │◄────────────►│     Nexus       │
+│ (Claude, etc.)  │              │   MCP Server    │
+└─────────────────┘              └────────┬────────┘
+                                          │
+                    ┌─────────────────────┼─────────────────────┐
+                    │                     │                     │
+               ┌────▼────┐          ┌─────▼─────┐        ┌──────▼──────┐
+               │  Docs   │          │  Memory   │        │  Registry   │
+               │ Search  │          │  Store    │        │  Database   │
+               └─────────┘          └───────────┘        └─────────────┘
+```
+
+---
+
+## Token Savings
+
+Context is expensive. Nexus uses semantic search to return only the relevant chunks instead of entire documentation pages.
+
+<StatsGrid>
+  <StatItem value="90%" label="Token savings per query" />
+  <StatItem value="~50ms" label="Average latency" />
+  <StatItem value="50+" label="Indexed libraries" />
+  <StatItem value="100k+" label="Code snippets" />
+</StatsGrid>
+
+| Without Nexus | With Nexus |
+|--------------|------------|
+| Re-explain project structure every session | Load context in one tool call |
+| Paste documentation into chat | AI queries docs directly |
+| Search for MCP server setup guides | Get instant installation configs |
+
+---
+
+## Features at a Glance
+
+### Documentation Tools
+
+| Tool | Description |
+|---------|-------------|
+| **resolve-library** | Find library IDs for documentation queries |
+| **query-docs** | Search indexed documentation with semantic search |
+| **get-library-info** | Get detailed library metadata and stats |
+| **list-libraries** | Browse all indexed documentation |
+
+### Memory Tools
+
+| Tool | Description |
+|---------|-------------|
+| **save-memory** | Store project context, decisions, and learnings |
+| **recall-memories** | Retrieve relevant memories using natural language |
+| **get-project-context** | Load all context for a specific project |
+| **list-memories** | Browse and manage stored memories |
+
+### Server Registry Tools
+
+| Tool | Description |
+|---------|-------------|
+| **discover-servers** | Find MCP servers by capability or category |
+| **get-server-info** | Get detailed server documentation |
+| **get-server-config** | Generate ready-to-use MCP configurations |
+
+---
+
+## Next Steps
+
+<FeatureGrid>
+  <FeatureCard
+    icon={<BookOpenIcon />}
+    title="Installation"
+    description="Set up Nexus with Claude Desktop, Cursor, VS Code, or any MCP-compatible client."
+    link="/getting-started/installation"
+  />
+  <FeatureCard
+    icon={<TerminalIcon />}
+    title="CLI Quickstart"
+    description="Use the CLI to automatically configure your editors and run Nexus locally."
+    link="/getting-started/cli-quickstart"
+  />
+  <FeatureCard
+    icon={<CodeIcon />}
+    title="MCP Tools"
+    description="Explore all available tools for documentation, memory, and server discovery."
+    link="/mcp-tools"
+  />
+  <FeatureCard
+    icon={<SparklesIcon />}
+    title="Guides"
+    description="Learn advanced workflows for token savings, project memory, and more."
+    link="/guides"
+  />
+</FeatureGrid>

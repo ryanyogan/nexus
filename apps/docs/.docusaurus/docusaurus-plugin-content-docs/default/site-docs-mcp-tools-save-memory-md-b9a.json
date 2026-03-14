@@ -1,0 +1,24 @@
+{
+  "id": "mcp-tools/save-memory",
+  "title": "save-memory",
+  "description": "Store a memory for later retrieval. Memories persist across sessions and can be searched semantically.",
+  "source": "@site/docs/mcp-tools/save-memory.md",
+  "sourceDirName": "mcp-tools",
+  "slug": "/mcp-tools/save-memory",
+  "permalink": "/mcp-tools/save-memory",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/mcp-tools/save-memory.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "list-libraries",
+    "permalink": "/mcp-tools/list-libraries"
+  },
+  "next": {
+    "title": "recall-memories",
+    "permalink": "/mcp-tools/recall-memories"
+  }
+}

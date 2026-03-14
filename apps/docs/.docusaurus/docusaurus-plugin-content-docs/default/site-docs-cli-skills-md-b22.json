@@ -1,0 +1,24 @@
+{
+  "id": "cli/skills",
+  "title": "nexus skills",
+  "description": "Manage AI skills - specialized capabilities that enhance your AI assistant.",
+  "source": "@site/docs/cli/skills.md",
+  "sourceDirName": "cli",
+  "slug": "/cli/skills",
+  "permalink": "/cli/skills",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/cli/skills.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "nexus docs",
+    "permalink": "/cli/docs"
+  },
+  "next": {
+    "title": "nexus servers",
+    "permalink": "/cli/servers"
+  }
+}

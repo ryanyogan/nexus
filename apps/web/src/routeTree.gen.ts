@@ -29,6 +29,7 @@ import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashb
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as ExploreSkillsSkillIdRouteImport } from './routes/explore/skills.$skillId'
 import { Route as ExploreServersServerIdRouteImport } from './routes/explore/servers.$serverId'
+import { Route as ExploreDocsLibraryIdRouteImport } from './routes/explore/docs.$libraryId'
 import { Route as CodeSessionSessionIdRouteImport } from './routes/code/session.$sessionId'
 import { Route as AuthedSettingsSecretsRouteImport } from './routes/_authed/settings/secrets'
 import { Route as AuthedDashboardSkillsRouteImport } from './routes/_authed/dashboard/skills'
@@ -137,6 +138,11 @@ const ExploreServersServerIdRoute = ExploreServersServerIdRouteImport.update({
   path: '/explore/servers/$serverId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExploreDocsLibraryIdRoute = ExploreDocsLibraryIdRouteImport.update({
+  id: '/$libraryId',
+  path: '/$libraryId',
+  getParentRoute: () => ExploreDocsRoute,
+} as any)
 const CodeSessionSessionIdRoute = CodeSessionSessionIdRouteImport.update({
   id: '/code/session/$sessionId',
   path: '/code/session/$sessionId',
@@ -190,7 +196,7 @@ export interface FileRoutesByFullPath {
   '/submit-server': typeof AuthedSubmitServerRoute
   '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
-  '/explore/docs': typeof ExploreDocsRoute
+  '/explore/docs': typeof ExploreDocsRouteWithChildren
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/code/': typeof CodeIndexRoute
   '/explore/': typeof ExploreIndexRoute
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
+  '/explore/docs/$libraryId': typeof ExploreDocsLibraryIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
   '/admin/': typeof AuthedAdminIndexRoute
@@ -218,7 +225,7 @@ export interface FileRoutesByTo {
   '/submit-server': typeof AuthedSubmitServerRoute
   '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
-  '/explore/docs': typeof ExploreDocsRoute
+  '/explore/docs': typeof ExploreDocsRouteWithChildren
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/code': typeof CodeIndexRoute
   '/explore': typeof ExploreIndexRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
+  '/explore/docs/$libraryId': typeof ExploreDocsLibraryIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
   '/admin': typeof AuthedAdminIndexRoute
@@ -249,7 +257,7 @@ export interface FileRoutesById {
   '/_authed/submit-server': typeof AuthedSubmitServerRoute
   '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
-  '/explore/docs': typeof ExploreDocsRoute
+  '/explore/docs': typeof ExploreDocsRouteWithChildren
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/code/': typeof CodeIndexRoute
   '/explore/': typeof ExploreIndexRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/_authed/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/_authed/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
+  '/explore/docs/$libraryId': typeof ExploreDocsLibraryIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/dashboard/skills'
     | '/settings/secrets'
     | '/code/session/$sessionId'
+    | '/explore/docs/$libraryId'
     | '/explore/servers/$serverId'
     | '/explore/skills/$skillId'
     | '/admin/'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/dashboard/skills'
     | '/settings/secrets'
     | '/code/session/$sessionId'
+    | '/explore/docs/$libraryId'
     | '/explore/servers/$serverId'
     | '/explore/skills/$skillId'
     | '/admin'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/_authed/dashboard/skills'
     | '/_authed/settings/secrets'
     | '/code/session/$sessionId'
+    | '/explore/docs/$libraryId'
     | '/explore/servers/$serverId'
     | '/explore/skills/$skillId'
     | '/_authed/admin/'
@@ -366,7 +378,7 @@ export interface RootRouteChildren {
   TerminalRoute: typeof TerminalRoute
   AuthCliRoute: typeof AuthCliRoute
   CodeSessionsRoute: typeof CodeSessionsRoute
-  ExploreDocsRoute: typeof ExploreDocsRoute
+  ExploreDocsRoute: typeof ExploreDocsRouteWithChildren
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
   CodeIndexRoute: typeof CodeIndexRoute
   ExploreIndexRoute: typeof ExploreIndexRoute
@@ -519,6 +531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreServersServerIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explore/docs/$libraryId': {
+      id: '/explore/docs/$libraryId'
+      path: '/$libraryId'
+      fullPath: '/explore/docs/$libraryId'
+      preLoaderRoute: typeof ExploreDocsLibraryIdRouteImport
+      parentRoute: typeof ExploreDocsRoute
+    }
     '/code/session/$sessionId': {
       id: '/code/session/$sessionId'
       path: '/code/session/$sessionId'
@@ -623,6 +642,18 @@ const AuthedRouteChildren: AuthedRouteChildren = {
 const AuthedRouteWithChildren =
   AuthedRoute._addFileChildren(AuthedRouteChildren)
 
+interface ExploreDocsRouteChildren {
+  ExploreDocsLibraryIdRoute: typeof ExploreDocsLibraryIdRoute
+}
+
+const ExploreDocsRouteChildren: ExploreDocsRouteChildren = {
+  ExploreDocsLibraryIdRoute: ExploreDocsLibraryIdRoute,
+}
+
+const ExploreDocsRouteWithChildren = ExploreDocsRoute._addFileChildren(
+  ExploreDocsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
@@ -630,7 +661,7 @@ const rootRouteChildren: RootRouteChildren = {
   TerminalRoute: TerminalRoute,
   AuthCliRoute: AuthCliRoute,
   CodeSessionsRoute: CodeSessionsRoute,
-  ExploreDocsRoute: ExploreDocsRoute,
+  ExploreDocsRoute: ExploreDocsRouteWithChildren,
   LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
   CodeIndexRoute: CodeIndexRoute,
   ExploreIndexRoute: ExploreIndexRoute,

@@ -1,0 +1,24 @@
+{
+  "id": "mcp-tools/update-memory",
+  "title": "update-memory",
+  "description": "Update an existing memory. Can modify content, title, tags, importance, or summary.",
+  "source": "@site/docs/mcp-tools/update-memory.md",
+  "sourceDirName": "mcp-tools",
+  "slug": "/mcp-tools/update-memory",
+  "permalink": "/mcp-tools/update-memory",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/mcp-tools/update-memory.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "list-memories",
+    "permalink": "/mcp-tools/list-memories"
+  },
+  "next": {
+    "title": "delete-memory",
+    "permalink": "/mcp-tools/delete-memory"
+  }
+}

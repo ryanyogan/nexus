@@ -1,0 +1,24 @@
+{
+  "id": "mcp-tools/recall-memories",
+  "title": "recall-memories",
+  "description": "Search for relevant memories using semantic search. Returns memories that match the query conceptually, not just by keywords.",
+  "source": "@site/docs/mcp-tools/recall-memories.md",
+  "sourceDirName": "mcp-tools",
+  "slug": "/mcp-tools/recall-memories",
+  "permalink": "/mcp-tools/recall-memories",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/mcp-tools/recall-memories.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "save-memory",
+    "permalink": "/mcp-tools/save-memory"
+  },
+  "next": {
+    "title": "get-project-context",
+    "permalink": "/mcp-tools/get-project-context"
+  }
+}

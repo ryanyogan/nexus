@@ -1,0 +1,24 @@
+{
+  "id": "common-tasks/find-servers",
+  "title": "Find MCP Servers",
+  "description": "Discover MCP servers for databases, APIs, cloud services, and more.",
+  "source": "@site/docs/common-tasks/find-servers.mdx",
+  "sourceDirName": "common-tasks",
+  "slug": "/common-tasks/find-servers",
+  "permalink": "/common-tasks/find-servers",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/ryanyogan/nexus/tree/main/apps/docs/docs/common-tasks/find-servers.mdx",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Save Project Context",
+    "permalink": "/common-tasks/save-context"
+  },
+  "next": {
+    "title": "Guides",
+    "permalink": "/category/guides"
+  }
+}
