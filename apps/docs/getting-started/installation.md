@@ -13,7 +13,7 @@ import Callout from '../.vitepress/theme/components/Callout.vue'
 ## Prerequisites
 
 - An MCP-compatible AI client (Claude Desktop, Cursor, VS Code, etc.)
-- Node.js 18+ (for npx)
+- Node.js 18+ (for npx, only needed for local mode)
 
 ## Step 1: Get Your API Key
 
@@ -51,17 +51,41 @@ API keys are only shown once. Store it securely - you'll need it for Step 2!
 
 ## Step 2: Configure Your AI Client
 
-Choose **Remote Mode** (recommended) for zero-dependency setup, or **Local Mode** if you prefer running the CLI locally.
-
-<Tabs :labels="['Claude Code', 'Claude Desktop', 'Cursor', 'VS Code', 'Other Clients']">
+<Tabs :labels="['OpenCode', 'Claude Code', 'Claude Desktop', 'Cursor', 'VS Code', 'Other Clients']">
   <Tab :index="0">
+
+### OpenCode (Native Remote)
+
+OpenCode supports native remote MCP - the simplest config:
+
+Edit `~/.config/opencode/config.json`:
+
+```json
+{
+  "mcp": {
+    "nexus": {
+      "type": "remote",
+      "url": "https://mcp.nexus.yogan.dev/sse",
+      "enabled": true,
+      "headers": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+That's it! No dependencies, no bridge packages.
+
+  </Tab>
+  <Tab :index="1">
 
 ### Claude Code
 
 **Remote Mode (Recommended):**
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">claude mcp add nexus -e NEXUS_API_KEY=nxs_your_key_here -- npx -y mcp-remote https://mcp.nexus.yogan.dev/sse --header "Authorization:Bearer \${NEXUS_API_KEY}"</span>
+<span class="terminal-line prompt">claude mcp add nexus -e NEXUS_API_KEY=nxs_your_key_here -- npx -y mcp-remote https://mcp.nexus.yogan.dev/sse --header "NEXUS_API_KEY:\${NEXUS_API_KEY}"</span>
 <span class="terminal-line output"><span class="text-green">Added MCP server nexus</span></span>
 </Terminal>
 
@@ -82,7 +106,7 @@ To verify:
 </Terminal>
 
   </Tab>
-  <Tab :index="1">
+  <Tab :index="2">
 
 ### Claude Desktop
 
@@ -106,7 +130,7 @@ Edit your Claude Desktop configuration file:
         "mcp-remote",
         "https://mcp.nexus.yogan.dev/sse",
         "--header",
-        "Authorization:Bearer ${NEXUS_API_KEY}"
+        "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
       "env": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -139,7 +163,7 @@ If you authenticated with `npx @nexus/cli auth login`, the CLI automatically use
 Restart Claude Desktop after saving the file.
 
   </Tab>
-  <Tab :index="2">
+  <Tab :index="3">
 
 ### Cursor
 
@@ -161,7 +185,7 @@ Edit your Cursor MCP configuration:
         "mcp-remote",
         "https://mcp.nexus.yogan.dev/sse",
         "--header",
-        "Authorization:Bearer ${NEXUS_API_KEY}"
+        "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
       "env": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -190,7 +214,7 @@ Edit your Cursor MCP configuration:
 Restart Cursor after saving the file.
 
   </Tab>
-  <Tab :index="3">
+  <Tab :index="4">
 
 ### VS Code (Copilot)
 
@@ -212,7 +236,7 @@ Edit your VS Code settings:
         "mcp-remote",
         "https://mcp.nexus.yogan.dev/sse",
         "--header",
-        "Authorization:Bearer ${NEXUS_API_KEY}"
+        "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
       "env": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -241,18 +265,24 @@ Edit your VS Code settings:
 Restart VS Code after saving.
 
   </Tab>
-  <Tab :index="4">
+  <Tab :index="5">
 
 ### Other MCP Clients
 
-Most MCP clients (Cline, Continue, Codex, goose, etc.) follow a similar pattern.
+**If your client supports native remote mode** (like OpenCode), use:
 
-**Remote Mode (Recommended):**
+| Setting | Value |
+|---------|-------|
+| Type | `remote` |
+| URL | `https://mcp.nexus.yogan.dev/sse` |
+| Headers | `{ "NEXUS_API_KEY": "nxs_your_key" }` |
+
+**Otherwise, use mcp-remote:**
 
 | Setting | Value |
 |---------|-------|
 | Command | `npx` |
-| Args | `["-y", "mcp-remote", "https://mcp.nexus.yogan.dev/sse", "--header", "Authorization:Bearer ${NEXUS_API_KEY}"]` |
+| Args | `["-y", "mcp-remote", "https://mcp.nexus.yogan.dev/sse", "--header", "NEXUS_API_KEY:${NEXUS_API_KEY}"]` |
 | Environment | `NEXUS_API_KEY=nxs_your_key` |
 
 Example for Cline (`~/.cline/mcp.json`):
@@ -267,7 +297,7 @@ Example for Cline (`~/.cline/mcp.json`):
         "mcp-remote",
         "https://mcp.nexus.yogan.dev/sse",
         "--header",
-        "Authorization:Bearer ${NEXUS_API_KEY}"
+        "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
       "env": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -290,12 +320,13 @@ Example for Cline (`~/.cline/mcp.json`):
 
 ## Remote vs Local Mode
 
-| Feature | Remote Mode | Local Mode |
-|---------|-------------|------------|
-| **Setup** | Just config file | Requires CLI login or env var |
-| **Dependencies** | `mcp-remote` only | `@nexus/cli` |
-| **Offline** | No | Yes (cached docs) |
-| **Best for** | Most users | Offline access, development |
+| Feature | Native Remote | mcp-remote | Local Mode |
+|---------|---------------|------------|------------|
+| **Setup** | Just config | Config + bridge | CLI install |
+| **Dependencies** | None | `mcp-remote` | `@nexus/cli` |
+| **Client Support** | OpenCode | Most clients | All clients |
+| **Offline** | No | No | Yes (cached) |
+| **Best for** | OpenCode users | Most users | Offline access |
 
 ## Using the CLI Auto-Config
 
@@ -327,8 +358,8 @@ The AI should use the `query-docs` tool to search the React documentation.
 <Callout type="warning" title="Authentication Error?">
 If you see "API key required" or "Authentication required":
 1. Make sure you have your API key from Step 1
-2. Verify the `NEXUS_API_KEY` env var is set in your config
-3. For remote mode, check the `--header` argument includes your key
+2. Verify your API key is set in `headers` (native remote) or `env` (mcp-remote/local)
+3. Check the header name is `NEXUS_API_KEY`
 </Callout>
 
 <Callout type="tip" title="Troubleshooting">

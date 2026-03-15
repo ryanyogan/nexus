@@ -15,10 +15,18 @@ import type { ApiTokenScope } from "@nexus/db";
 export const authMiddleware = createMiddleware<AppContext>(async (c, next) => {
   const db = c.get("db");
   const authHeader = c.req.header("Authorization");
+  const nexusApiKey = c.req.header("NEXUS_API_KEY");
 
-  // Try API token first (Bearer nxs_xxx)
-  if (authHeader?.startsWith("Bearer nxs_")) {
-    const result = await validateToken(authHeader, db);
+  // Try NEXUS_API_KEY header first (for native remote MCP clients like OpenCode)
+  // Then fall back to Authorization: Bearer nxs_xxx
+  const apiKey = nexusApiKey?.startsWith("nxs_")
+    ? nexusApiKey
+    : authHeader?.startsWith("Bearer nxs_")
+      ? authHeader.replace("Bearer ", "")
+      : null;
+
+  if (apiKey) {
+    const result = await validateToken(`Bearer ${apiKey}`, db);
 
     if (result.valid && result.userId) {
       // Look up the user from the database

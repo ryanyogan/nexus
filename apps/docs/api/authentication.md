@@ -27,9 +27,30 @@ API keys are only shown once. Store them securely!
 
 ## Configuring Your AI Client
 
-### Remote Mode (Recommended)
+### Native Remote Mode (Simplest)
 
-Use `mcp-remote` to connect to the hosted Nexus service. Pass your API key via the `--header` flag:
+For clients that support native remote MCP connections (like OpenCode):
+
+```json
+{
+  "mcp": {
+    "nexus": {
+      "type": "remote",
+      "url": "https://mcp.nexus.yogan.dev/sse",
+      "enabled": true,
+      "headers": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+No dependencies needed - just paste your API key and go.
+
+### Using mcp-remote (Most Clients)
+
+For clients that don't support native remote (Claude Desktop, Cursor, VS Code, etc.), use `mcp-remote` as a bridge:
 
 ```json
 {
@@ -41,7 +62,7 @@ Use `mcp-remote` to connect to the hosted Nexus service. Pass your API key via t
         "mcp-remote",
         "https://mcp.nexus.yogan.dev/sse",
         "--header",
-        "Authorization:Bearer ${NEXUS_API_KEY}"
+        "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
       "env": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -52,7 +73,7 @@ Use `mcp-remote` to connect to the hosted Nexus service. Pass your API key via t
 ```
 
 ::: tip How it works
-The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key as a Bearer token. The `${NEXUS_API_KEY}` syntax references the environment variable.
+The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key. The `${NEXUS_API_KEY}` syntax references the environment variable.
 :::
 
 ### Local Mode
@@ -82,7 +103,18 @@ If you authenticated with `npx @nexus/cli auth login`, the CLI automatically use
 - [Claude Desktop](/configuration/claude-desktop)
 - [Cursor](/configuration/cursor)
 - [VS Code](/configuration/vscode)
-- [OpenCode](/configuration/opencode)
+- [OpenCode](/configuration/opencode) - Native remote support
+
+## Accepted Headers
+
+Nexus accepts API keys via either header format:
+
+| Header | Format | Example |
+|--------|--------|---------|
+| `NEXUS_API_KEY` | Raw key | `nxs_abc123...` |
+| `Authorization` | Bearer token | `Bearer nxs_abc123...` |
+
+Native remote clients typically use `NEXUS_API_KEY`. The `Authorization: Bearer` format is also supported for standard HTTP clients.
 
 ### Direct HTTP Connection
 
@@ -91,10 +123,10 @@ For clients supporting HTTP transport (SSE/Streamable HTTP) directly:
 ```
 URL: https://mcp.nexus.yogan.dev/sse
 Headers:
-  Authorization: Bearer nxs_your_api_key_here
+  NEXUS_API_KEY: nxs_your_api_key_here
 ```
 
-Or for the HTTP endpoint:
+Or using Authorization header:
 
 ```
 URL: https://api.nexus.yogan.dev/mcp
@@ -133,11 +165,11 @@ If you try to use Nexus without an API key:
 {
   "error": {
     "code": -32001,
-    "message": "Authentication required. Get your API key at https://nexus.yogan.dev/dashboard/settings or run: npx @nexus/cli auth login",
+    "message": "API key required. Get your free API key at https://nexus.yogan.dev/dashboard/keys or run 'npx @nexus/cli login' to authenticate.",
     "data": {
-      "docsUrl": "https://nexus.yogan.dev/docs/api/authentication",
-      "dashboardUrl": "https://nexus.yogan.dev/dashboard/settings",
-      "cliCommand": "npx @nexus/cli auth login"
+      "docsUrl": "https://docs.nexus.yogan.dev/getting-started",
+      "dashboardUrl": "https://nexus.yogan.dev/dashboard/keys",
+      "cliCommand": "npx @nexus/cli login"
     }
   }
 }

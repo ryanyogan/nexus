@@ -1,6 +1,6 @@
 # OpenCode Configuration
 
-Configure Nexus with OpenCode.
+Configure Nexus with OpenCode using native remote mode - the simplest setup.
 
 <script setup>
 import Callout from '../.vitepress/theme/components/Callout.vue'
@@ -21,23 +21,18 @@ Or create one at [nexus.yogan.dev/dashboard/keys](https://nexus.yogan.dev/dashbo
 
 OpenCode uses `~/.config/opencode/config.json` on Linux/macOS.
 
-## Remote Mode (Recommended)
+## Native Remote Mode (Recommended)
 
-Connect directly to the hosted Nexus service:
+OpenCode supports native remote MCP connections - no bridge packages needed:
 
 ```json
 {
-  "mcpServers": {
+  "mcp": {
     "nexus": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
-        "--header",
-        "Authorization:Bearer ${NEXUS_API_KEY}"
-      ],
-      "env": {
+      "type": "remote",
+      "url": "https://mcp.nexus.yogan.dev/sse",
+      "enabled": true,
+      "headers": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
       }
     }
@@ -45,20 +40,24 @@ Connect directly to the hosted Nexus service:
 }
 ```
 
-<Callout type="info" title="How it works">
-The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key as a Bearer token for authentication.
+That's it! Just paste your API key and you're ready to go.
+
+<Callout type="tip" title="Why Native Remote?">
+Native remote mode is simpler, faster, and uses less memory than running a local bridge process. OpenCode connects directly to Nexus over HTTP/SSE.
 </Callout>
 
-## Local Mode
+## Local Mode (Alternative)
 
-Run the Nexus CLI locally (useful for offline access):
+Run the Nexus CLI locally (useful for offline access or development):
 
 ```json
 {
-  "mcpServers": {
+  "mcp": {
     "nexus": {
+      "type": "local",
       "command": "npx",
       "args": ["-y", "@nexus/cli", "serve"],
+      "enabled": true,
       "env": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
       }
@@ -67,7 +66,7 @@ Run the Nexus CLI locally (useful for offline access):
 }
 ```
 
-<Callout type="tip" title="Using CLI Login?">
+<Callout type="info" title="Using CLI Login?">
 If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can omit the `env` section in local mode.
 </Callout>
 
@@ -81,13 +80,12 @@ If you authenticated with `npx @nexus/cli auth login`, the CLI automatically use
 
 ### "API key required" Error
 
-Make sure your API key is configured:
-- **Remote mode**: Check the `--header` argument and `NEXUS_API_KEY` env var
-- **Local mode**: Set `NEXUS_API_KEY` env var, or use CLI login
+Make sure your API key is configured correctly in the `headers` section (native remote) or `env` section (local mode).
 
-### Testing Your Setup
+### Testing Your Connection
+
+You can test the remote endpoint directly:
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">npx @nexus/cli serve</span>
-<span class="terminal-line output">Nexus MCP server running...</span>
+<span class="terminal-line prompt">curl -H "NEXUS_API_KEY: nxs_your_key" https://mcp.nexus.yogan.dev/sse</span>
 </Terminal>

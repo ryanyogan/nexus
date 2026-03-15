@@ -39,7 +39,7 @@ Connect directly to the hosted Nexus service:
         "mcp-remote",
         "https://mcp.nexus.yogan.dev/sse",
         "--header",
-        "Authorization:Bearer ${NEXUS_API_KEY}"
+        "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
       "env": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -50,7 +50,7 @@ Connect directly to the hosted Nexus service:
 ```
 
 <Callout type="info" title="How it works">
-The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key as a Bearer token for authentication.
+The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key for authentication.
 </Callout>
 
 ## Local Mode
@@ -115,7 +115,7 @@ Make sure your API key is configured:
 Test that `mcp-remote` can connect:
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">NEXUS_API_KEY=nxs_your_key npx mcp-remote https://mcp.nexus.yogan.dev/sse --header "Authorization:Bearer \${NEXUS_API_KEY}"</span>
+<span class="terminal-line prompt">NEXUS_API_KEY=nxs_your_key npx mcp-remote https://mcp.nexus.yogan.dev/sse --header "NEXUS_API_KEY:\${NEXUS_API_KEY}"</span>
 </Terminal>
 
 ### Testing Local Mode
