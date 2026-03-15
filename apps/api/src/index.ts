@@ -95,6 +95,55 @@ app.use("/mcp/*", authMiddleware);
 app.use("/mcp/*", mcpRateLimitMiddleware);
 app.route("/mcp", mcpRouter);
 
+// SSE endpoint for MCP - redirects to /mcp for actual requests
+// This supports clients that expect an /sse endpoint (like OpenCode native remote)
+app.use("/sse", authMiddleware);
+app.use("/sse", mcpRateLimitMiddleware);
+app.get("/sse", async (c) => {
+  // Generate a unique session ID for this SSE connection
+  const sessionId = crypto.randomUUID();
+  
+  // Create SSE response with MCP endpoint event
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      // Send the endpoint event - tells client where to POST requests
+      const endpointEvent = `event: endpoint\ndata: /mcp?sessionId=${sessionId}\n\n`;
+      controller.enqueue(encoder.encode(endpointEvent));
+      
+      // Send initial message event
+      const messageEvent = `event: message\ndata: ${JSON.stringify({
+        jsonrpc: "2.0",
+        method: "notifications/initialized",
+        params: {}
+      })}\n\n`;
+      controller.enqueue(encoder.encode(messageEvent));
+      
+      // Keep connection alive with periodic pings
+      const pingInterval = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(`: ping\n\n`));
+        } catch {
+          clearInterval(pingInterval);
+        }
+      }, 30000);
+      
+      // Clean up on close - but we can't easily detect close in Cloudflare Workers
+      // The client will reconnect if needed
+    }
+  });
+  
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, NEXUS_API_KEY",
+    },
+  });
+});
+
 // Better Auth routes
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
   const auth = createAuth({
