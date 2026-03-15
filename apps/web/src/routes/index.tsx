@@ -687,32 +687,40 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
-        {/* Hero */}
-        <div className="pt-6 md:pt-12 lg:pt-16">
-          <h1 className="font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl lg:text-3xl">
-            Ship faster with pre-indexed docs,
-            <br />
-            MCP servers, and AI skills
+        {/* Hero - Progressive line lengths, pyramid structure */}
+        <div className="pt-8 md:pt-14 lg:pt-20">
+          {/* Line 1 - Shortest, punchy opener */}
+          <h1 className="font-mono text-3xl font-black uppercase tracking-tight text-accent sm:text-4xl lg:text-5xl">
+            Ship.
           </h1>
-          <p className="mt-3 font-mono text-xs text-muted-foreground sm:text-sm md:mt-4">
-            <span className="font-bold text-foreground">~5K TOKENS</span> instead of ~500K{" "}
-            <span className="text-border">|</span>{" "}
-            Vector embeddings with semantic search{" "}
-            <span className="text-border">|</span>{" "}
-            Always up-to-date
+          
+          {/* Line 2 - Medium length, core value */}
+          <p className="mt-2 font-mono text-lg font-bold uppercase tracking-tight text-foreground sm:text-xl lg:text-2xl md:mt-3">
+            Docs compressed. Stacks ready.
           </p>
-          <p className="mt-1.5 md:mt-2">
+          
+          {/* Line 3 - Longer, feature list */}
+          <p className="mt-1.5 font-mono text-sm uppercase tracking-wide text-foreground/80 sm:text-base lg:text-lg md:mt-2">
+            MCP servers, starter stacks, persistent{" "}
+            <span className="text-accent">memory</span>
+            {" "}— pre-indexed.
+          </p>
+          
+          {/* Line 4 - Longest, stats + PRO integrated */}
+          <p className="mt-4 font-mono text-xs text-muted-foreground sm:text-sm md:mt-5">
+            <span className="font-bold text-foreground">~5K tokens</span>
+            <span className="mx-1.5 sm:mx-2"> instead of ~500K</span>
+            <span className="text-border">|</span>
+            <span className="mx-1.5 sm:mx-2">Semantic search</span>
+            <span className="text-border">|</span>
+            <span className="mx-1.5 sm:mx-2">Always current</span>
+            <span className="text-border">|</span>
             <Link
               to="/plans"
-              className="group inline-flex items-center gap-2 font-mono text-xs transition-colors sm:text-sm"
+              className="group ml-1.5 sm:ml-2 inline-flex items-center gap-1 transition-colors"
             >
               <span className="font-bold text-accent">PRO</span>
-              <span className="text-muted-foreground">—</span>
-              <span className="text-muted-foreground group-hover:text-foreground">
-                <span className="sm:hidden">Unlimited access</span>
-                <span className="hidden sm:inline">Unlimited queries, memory, private repos</span>
-              </span>
-              <ArrowUpRight className="h-3 w-3 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
+              <ArrowUpRight className="h-3 w-3 text-accent transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
           </p>
         </div>

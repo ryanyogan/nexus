@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { eq, like, and, or, desc, sql } from "drizzle-orm";
-import { libraries, libraryStats, mcpServers, mcpServerStats, type Database } from "@nexus/db";
+import { eq, like, and, or, desc, sql, isNull } from "drizzle-orm";
+import { libraries, libraryStats, mcpServers, mcpServerStats, stacks, userStacks, STACK_CATEGORIES, type Database, type TokenBudget, type StackCategory } from "@nexus/db";
 import { generateQueryEmbedding } from "../lib/embeddings";
 import {
   saveMemory,
@@ -538,6 +538,67 @@ const TOOLS: MCPToolDefinition[] = [
       properties: {},
     },
   },
+
+  // ============================================================================
+  // Stack Tools
+  // ============================================================================
+
+  {
+    name: "get-stack",
+    description:
+      "Get compiled prompt for a specific stack. Returns token-efficient context " +
+      "including stack instructions, CLI preferences, repo patterns, and package documentation. " +
+      "Use this to bootstrap AI with project scaffolding knowledge.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        stackId: {
+          type: "string",
+          description: "The stack ID or slug (e.g., 'tanstack-start', 'hono-api')",
+        },
+        tokenBudget: {
+          type: "string",
+          enum: ["minimal", "standard", "comprehensive"],
+          description:
+            "Token budget for the response. 'minimal' (~2K tokens), " +
+            "'standard' (~5K tokens, default), 'comprehensive' (~10K tokens)",
+        },
+      },
+      required: ["stackId"],
+    },
+  },
+  {
+    name: "list-stacks",
+    description:
+      "List available stacks. Returns featured stacks, user's installed stacks, " +
+      "or search results. Use this to discover project scaffolding templates.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        filter: {
+          type: "string",
+          enum: ["featured", "installed", "mine", "all"],
+          description:
+            "Filter stacks: 'featured' (popular public), 'installed' (user's installed), " +
+            "'mine' (user's created), 'all' (search all public). Default: 'featured'",
+        },
+        category: {
+          type: "string",
+          description:
+            "Filter by category: infrastructure, database, backend, fullstack, frontend, " +
+            "desktop, styling, tui, tooling",
+        },
+        query: {
+          type: "string",
+          description: "Search query for finding stacks by name or description",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum results (1-20, default 10)",
+        },
+      },
+    },
+  },
 ];
 
 // ============================================================================
@@ -592,12 +653,37 @@ async function deleteSession(kv: KVNamespace, sessionId: string): Promise<boolea
   }
 }
 
+// Friendly error message for missing API key
+const API_KEY_REQUIRED_ERROR = {
+  code: -32001,
+  message: "API key required. Get your free API key at https://nexus.yogan.dev/dashboard/keys or run 'npx @nexus/cli login' to authenticate.",
+  data: {
+    docsUrl: "https://docs.nexus.yogan.dev/getting-started",
+    dashboardUrl: "https://nexus.yogan.dev/dashboard/keys",
+    cliCommand: "npx @nexus/cli login",
+  },
+};
+
 // POST /mcp - Main MCP endpoint (supports both stateful and stateless)
 mcpRouter.post("/", async (c) => {
   const request = await c.req.json<MCPRequest>();
   const db = c.get("db");
   const kv = c.env.KV;
   const user = c.get("user");
+  const authType = c.get("authType");
+
+  // Require authentication for tool calls
+  // Allow initialize, tools/list, resources/list, prompts/list without auth (discovery)
+  const publicMethods = ["initialize", "tools/list", "resources/list", "prompts/list"];
+  const requiresAuth = !publicMethods.includes(request.method);
+
+  if (requiresAuth && authType === "anonymous") {
+    return c.json({
+      jsonrpc: "2.0",
+      id: request.id,
+      error: API_KEY_REQUIRED_ERROR,
+    } satisfies MCPResponse, 401);
+  }
 
   // Session management using KV
   let sessionId = c.req.header("Mcp-Session-Id");
@@ -856,6 +942,15 @@ async function handleToolsCall(
 
       case "list-server-categories":
         result = await toolListServerCategories(db);
+        break;
+
+      // Stack tools
+      case "get-stack":
+        result = await toolGetStack(args, db, env);
+        break;
+
+      case "list-stacks":
+        result = await toolListStacks(args, db, env);
         break;
 
       default:
@@ -2171,6 +2266,217 @@ async function updateServerDiscoveryStats(db: Database, serverId: string): Promi
   } catch (error) {
     console.warn(`Failed to update discovery stats for ${serverId}:`, error);
   }
+}
+
+// ============================================================================
+// Stack Tool Implementations
+// ============================================================================
+
+async function toolGetStack(
+  args: Record<string, unknown>,
+  db: Database,
+  env: Env
+): Promise<object> {
+  const stackId = args.stackId as string;
+  const tokenBudget = (args.tokenBudget as TokenBudget) || "standard";
+
+  if (!stackId) {
+    return {
+      success: false,
+      error: "stackId is required",
+    };
+  }
+
+  // Find stack by ID or slug
+  const [stack] = await db
+    .select()
+    .from(stacks)
+    .where(
+      and(
+        or(eq(stacks.id, stackId), eq(stacks.slug, stackId)),
+        eq(stacks.isActive, true),
+        or(eq(stacks.isPublic, true), eq(stacks.isStarter, true))
+      )
+    )
+    .limit(1);
+
+  if (!stack) {
+    return {
+      success: false,
+      error: `Stack not found: ${stackId}`,
+      hint: "Use list-stacks to discover available stacks.",
+    };
+  }
+
+  // Check if compiled prompt exists
+  if (!stack.compiledPrompt && stack.learningStatus !== "complete") {
+    return {
+      success: false,
+      error: "Stack has not been compiled yet",
+      stackId: stack.id,
+      stackName: stack.name,
+      learningStatus: stack.learningStatus,
+      hint: "The stack owner needs to compile this stack first.",
+    };
+  }
+
+  // Get compiled prompt - may be in R2 for large prompts
+  let compiledPrompt = stack.compiledPrompt;
+  
+  if (stack.r2Key && env.DOCS_BUCKET) {
+    try {
+      const object = await env.DOCS_BUCKET.get(stack.r2Key);
+      if (object) {
+        compiledPrompt = await object.text();
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch stack prompt from R2: ${stack.r2Key}`, error);
+    }
+  }
+
+  // Apply token budget truncation if needed
+  const budgetLimits: Record<TokenBudget, number> = {
+    minimal: 2000,
+    standard: 5000,
+    comprehensive: 10000,
+  };
+  const maxTokens = budgetLimits[tokenBudget];
+  
+  // Rough token estimation (4 chars per token)
+  const estimatedTokens = Math.ceil((compiledPrompt?.length || 0) / 4);
+  let truncatedPrompt = compiledPrompt;
+  
+  if (estimatedTokens > maxTokens && compiledPrompt) {
+    // Truncate to fit budget
+    const maxChars = maxTokens * 4;
+    truncatedPrompt = compiledPrompt.slice(0, maxChars) + "\n\n[... truncated to fit token budget ...]";
+  }
+
+  // Update use count
+  await db
+    .update(stacks)
+    .set({
+      useCount: sql`${stacks.useCount} + 1`,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(stacks.id, stack.id));
+
+  return {
+    success: true,
+    stack: {
+      id: stack.id,
+      name: stack.name,
+      slug: stack.slug,
+      description: stack.description,
+      category: stack.category,
+      layer: stack.layer,
+      tokenBudget: tokenBudget,
+      estimatedTokens: Math.ceil((truncatedPrompt?.length || 0) / 4),
+    },
+    prompt: truncatedPrompt,
+    preferences: stack.cliPreferences,
+    hint: estimatedTokens > maxTokens
+      ? `Prompt truncated from ~${estimatedTokens} to ~${maxTokens} tokens. Use 'comprehensive' budget for full content.`
+      : undefined,
+  };
+}
+
+async function toolListStacks(
+  args: Record<string, unknown>,
+  db: Database,
+  env: Env
+): Promise<object> {
+  const filter = (args.filter as string) || "featured";
+  const category = args.category as string | undefined;
+  const query = args.query as string | undefined;
+  const limit = Math.min(Math.max(Number(args.limit) || 10, 1), 20);
+
+  // Build conditions based on filter
+  const conditions: ReturnType<typeof eq>[] = [eq(stacks.isActive, true)];
+
+  switch (filter) {
+    case "featured":
+      conditions.push(or(eq(stacks.isFeatured, true), eq(stacks.isStarter, true))!);
+      break;
+    case "all":
+      conditions.push(eq(stacks.isPublic, true));
+      break;
+    // 'installed' and 'mine' require auth - will return empty for now
+    case "installed":
+    case "mine":
+      return {
+        success: true,
+        stacks: [],
+        count: 0,
+        hint: "Authentication required to view installed or owned stacks. Use the web dashboard instead.",
+      };
+  }
+
+  // Add category filter
+  if (category && STACK_CATEGORIES.includes(category as StackCategory)) {
+    conditions.push(eq(stacks.category, category as StackCategory));
+  }
+
+  // Add search query
+  if (query) {
+    conditions.push(
+      or(
+        like(stacks.name, `%${query}%`),
+        like(stacks.description, `%${query}%`)
+      )!
+    );
+  }
+
+  const results = await db
+    .select({
+      id: stacks.id,
+      name: stacks.name,
+      slug: stacks.slug,
+      description: stacks.description,
+      category: stacks.category,
+      layer: stacks.layer,
+      icon: stacks.icon,
+      color: stacks.color,
+      isStarter: stacks.isStarter,
+      isFeatured: stacks.isFeatured,
+      useCount: stacks.useCount,
+      forkCount: stacks.forkCount,
+      tokenCount: stacks.tokenCount,
+      learningStatus: stacks.learningStatus,
+    })
+    .from(stacks)
+    .where(and(...conditions))
+    .orderBy(desc(stacks.isFeatured), desc(stacks.isStarter), desc(stacks.useCount))
+    .limit(limit);
+
+  return {
+    success: true,
+    filter,
+    category: category || "all",
+    query: query || undefined,
+    stacks: results.map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      description: s.description,
+      category: s.category,
+      layer: s.layer,
+      icon: s.icon,
+      isStarter: s.isStarter,
+      isFeatured: s.isFeatured,
+      stats: {
+        uses: s.useCount,
+        forks: s.forkCount,
+        tokens: s.tokenCount,
+      },
+      ready: s.learningStatus === "complete",
+    })),
+    count: results.length,
+    hint:
+      results.length === 0
+        ? "No stacks found. Try different filters or search terms."
+        : "Use get-stack with a stack ID or slug to retrieve the compiled prompt.",
+  };
 }
 
 export { mcpRouter };

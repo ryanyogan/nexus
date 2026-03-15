@@ -155,11 +155,18 @@ export default function Header({ session }: HeaderProps) {
                   <Zap className="h-4 w-4" />
                 </Link>
                 <Link
+                  to="/dashboard/stacks"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
+                >
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">STACKS</span>
+                  <Layers className="h-4 w-4" />
+                </Link>
+                <Link
                   to="/dashboard/flows"
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
                   <span className="font-mono text-xs font-bold uppercase tracking-wider">FLOWS</span>
-                  <Layers className="h-4 w-4" />
+                  <Zap className="h-4 w-4" />
                 </Link>
                 <div className="flex items-center justify-between px-4 py-3 text-muted-foreground cursor-not-allowed border-b border-border">
                   <span className="font-mono text-xs font-bold uppercase tracking-wider">MEMORY</span>
@@ -322,7 +329,7 @@ export default function Header({ session }: HeaderProps) {
                 SUBMIT
               </Link>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               <Link
                 to="/"
                 search={{ filter: "servers" }}
@@ -338,6 +345,13 @@ export default function Header({ session }: HeaderProps) {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 SKILLS
+              </Link>
+              <Link
+                to="/dashboard/stacks"
+                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                STACKS
               </Link>
               <Link
                 to="/dashboard/flows"

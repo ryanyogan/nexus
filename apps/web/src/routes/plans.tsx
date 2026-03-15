@@ -8,6 +8,7 @@ import {
   Server,
   Zap,
   Sparkles,
+  Layers,
 } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
@@ -30,10 +31,11 @@ const plans = [
       { text: "1 API key", included: true },
       { text: "Documentation search", included: true },
       { text: "MCP server discovery", included: true },
+      { text: "3 Stacks", included: true },
       { text: "Community support", included: true },
       { text: "Persistent memory", included: false },
       { text: "Private repositories", included: false },
-      { text: "Priority indexing", included: false },
+      { text: "Stack marketplace publishing", included: false },
     ],
     cta: "Get Started",
     ctaLink: "/sign-in",
@@ -50,10 +52,11 @@ const plans = [
       { text: "10 API keys", included: true },
       { text: "Documentation search", included: true },
       { text: "MCP server discovery", included: true },
+      { text: "Unlimited Stacks", included: true },
       { text: "Priority support", included: true },
       { text: "Unlimited persistent memory", included: true },
       { text: "Private repositories", included: true },
-      { text: "Priority indexing", included: true },
+      { text: "Stack marketplace publishing", included: true },
     ],
     cta: "Upgrade to Pro",
     ctaLink: "/dashboard/billing",
@@ -88,6 +91,14 @@ const features = [
   },
   {
     id: "04",
+    title: "Stacks",
+    description:
+      "AI-powered project scaffolding. Compose stack instructions, CLI preferences, and repo knowledge into token-efficient prompts.",
+    icon: Layers,
+    pro: false,
+  },
+  {
+    id: "05",
     title: "Token Efficiency",
     description:
       "Semantic search returns only relevant chunks. Save 90%+ on context tokens compared to full docs.",
