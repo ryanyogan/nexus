@@ -79,7 +79,7 @@ export default function Header({ session }: HeaderProps) {
   };
 
   return (
-    <header className="left-0 right-0 top-0 z-40 bg-background">
+    <header className="left-0 right-0 top-0 z-40 bg-background pt-4 md:pt-6">
       <div className="mx-auto flex w-full max-w-[960px] items-center justify-between px-4 h-14">
         {/* Logo */}
         <Link

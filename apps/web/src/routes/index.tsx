@@ -70,6 +70,7 @@ interface SkillItem {
 
 type ContentItem = LibraryItem | ServerItem | SkillItem;
 type SortMode = "popular" | "trending" | "recent";
+type ContentFilter = "all" | "docs" | "servers" | "skills";
 
 interface HomePageData {
   stats: {
@@ -368,6 +369,7 @@ function getSkillScore(skill: SkillItem, sort: SortMode): number {
 
 const searchSchema = z.object({
   sort: z.enum(["popular", "trending", "recent"]).optional().catch("popular"),
+  filter: z.enum(["all", "docs", "servers", "skills"]).optional().catch("all"),
   q: z.string().optional().catch(undefined),
 });
 
@@ -407,11 +409,12 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const loaderData = Route.useLoaderData();
-  const { sort, q } = Route.useSearch();
+  const { sort, filter, q } = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const inputRef = useRef<HTMLInputElement>(null);
 
   const activeSort = (sort || "popular") as SortMode;
+  const activeFilter = (filter || "all") as ContentFilter;
   const searchQuery = q || "";
 
   // Local state
@@ -465,11 +468,24 @@ function HomePage() {
     setCursor(PAGE_SIZE);
   }, [loaderData]);
 
-  // Client-side sort when sort mode changes (no refetch needed)
+  // Client-side sort and filter
   const sortedItems = useMemo(() => {
-    if (isSearching) return items; // Search results come pre-sorted
-    return normalizeAndSort([...items], activeSort);
-  }, [items, activeSort, isSearching]);
+    let filtered = items;
+    
+    // Apply content type filter
+    if (activeFilter !== "all") {
+      const typeMap: Record<ContentFilter, string> = {
+        all: "all",
+        docs: "doc",
+        servers: "server",
+        skills: "skill",
+      };
+      filtered = items.filter(item => item.type === typeMap[activeFilter]);
+    }
+    
+    if (isSearching) return filtered; // Search results come pre-sorted
+    return normalizeAndSort([...filtered], activeSort);
+  }, [items, activeSort, activeFilter, isSearching]);
 
   // Load more function
   const loadMore = useCallback(async () => {
@@ -532,51 +548,61 @@ function HomePage() {
     }
   };
 
-  // Tabs configuration
-  const tabs: { id: SortMode | "search"; label: string }[] = [
-    { id: "popular", label: "POPULAR" },
-    { id: "trending", label: "TRENDING" },
-    { id: "recent", label: "RECENT" },
+  // Tabs configuration - content type filters with icons
+  const tabs: { id: ContentFilter; label: string; icon: "docs" | "servers" | "skills" | null; disabled?: boolean }[] = [
+    { id: "all", label: "ALL", icon: null },
+    { id: "docs", label: "DOCS", icon: "docs" },
+    { id: "servers", label: "SERVERS", icon: "servers" },
+    { id: "skills", label: "SKILLS", icon: "skills" },
+    { id: "all", label: "FLOWS", icon: null, disabled: true }, // Coming soon
   ];
+  
+  const getTabIcon = (iconType: "docs" | "servers" | "skills" | null) => {
+    if (!iconType) return null;
+    const iconClass = "h-2.5 w-2.5 sm:h-3 sm:w-3";
+    switch (iconType) {
+      case "docs": return <BookOpen className={iconClass} />;
+      case "servers": return <Server className={iconClass} />;
+      case "skills": return <Zap className={iconClass} />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[880px] px-4 lg:px-0">
+      <div className="mx-auto max-w-[880px] px-4 sm:px-6 lg:px-0">
         {/* Hero */}
-        <div className="pt-32">
-          <h1 className="font-mono text-2xl font-bold uppercase tracking-tight text-foreground sm:text-3xl">
+        <div className="pt-6 md:pt-12 lg:pt-16">
+          <h1 className="font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl lg:text-3xl">
             Ship faster with pre-indexed docs,
             <br />
             MCP servers, and AI skills
           </h1>
-          <p className="mt-6 font-mono text-sm text-muted-foreground">
+          <p className="mt-3 font-mono text-xs text-muted-foreground sm:text-sm md:mt-4">
             <span className="font-bold text-foreground">~5K TOKENS</span> instead of ~500K{" "}
             <span className="text-border">|</span>{" "}
             Vector embeddings with semantic search{" "}
             <span className="text-border">|</span>{" "}
             Always up-to-date
           </p>
-        </div>
-
-        {/* Pro section */}
-        <div className="mt-8 flex justify-center">
-          <Link
-            to="/plans"
-            className="group inline-flex items-center gap-2 font-mono text-xs transition-colors"
-          >
-            <span className="font-bold text-accent">PRO</span>
-            <span className="text-muted-foreground">—</span>
-            <span className="text-muted-foreground group-hover:text-foreground">Unlimited queries, memory, private repos</span>
-            <ArrowUpRight className="h-3 w-3 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
-          </Link>
+          <p className="mt-1.5 md:mt-2">
+            <Link
+              to="/plans"
+              className="group inline-flex items-center gap-2 font-mono text-xs transition-colors sm:text-sm"
+            >
+              <span className="font-bold text-accent">PRO</span>
+              <span className="text-muted-foreground">—</span>
+              <span className="text-muted-foreground group-hover:text-foreground">
+                <span className="sm:hidden">Unlimited access</span>
+                <span className="hidden sm:inline">Unlimited queries, memory, private repos</span>
+              </span>
+              <ArrowUpRight className="h-3 w-3 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
+            </Link>
+          </p>
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="mt-16 mb-6">
-          <label className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Search
-          </label>
-          <div className="flex h-10 max-w-sm items-center gap-2 border border-foreground/20 bg-background px-3 font-mono transition-colors focus-within:border-foreground">
+        <form onSubmit={handleSearch} className="mt-6 mb-4 md:mt-10 md:mb-6 lg:mt-12">
+          <div className="flex h-9 max-w-sm items-center gap-2 border border-border bg-background px-3 font-mono transition-colors focus-within:border-foreground md:h-10 md:max-w-md">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               ref={inputRef}
@@ -607,26 +633,42 @@ function HomePage() {
         </form>
 
         {/* Tabs */}
-        <div className="mb-6 flex items-center gap-0 border-b border-border">
-          {tabs.map((t) => {
-            const isActive = !isSearching && activeSort === t.id;
+        <div className="mb-4 flex items-center gap-0 border-b border-border md:mb-6">
+          {tabs.map((t, idx) => {
+            const isActive = !isSearching && activeFilter === t.id && !t.disabled;
+            
+            // Disabled tab (Flows - coming soon)
+            if (t.disabled) {
+              return (
+                <span
+                  key={`${t.id}-${idx}`}
+                  className="flex items-center gap-1 border-b border-transparent px-2 py-2 font-mono text-[10px] font-bold tracking-wide text-muted-foreground/50 cursor-not-allowed -mb-px sm:gap-1.5 sm:px-4 sm:text-xs md:py-2.5"
+                >
+                  {getTabIcon(t.icon)}
+                  <span className={t.icon ? "hidden sm:inline" : ""}>{t.label}</span>
+                </span>
+              );
+            }
+            
             return (
               <Link
                 key={t.id}
                 to="."
-                search={{ sort: t.id === "popular" ? undefined : t.id }}
+                search={{ filter: t.id === "all" ? undefined : t.id }}
+                resetScroll={false}
                 onClick={() => {
                   setSearchFocused(false);
                   setInputValue("");
                   inputRef.current?.blur();
                 }}
-                className={`border-b px-4 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px ${
+                className={`flex items-center gap-1 border-b px-2 py-2 font-mono text-[10px] font-bold tracking-wide transition-colors -mb-px sm:gap-1.5 sm:px-4 sm:text-xs md:py-2.5 ${
                   isActive
                     ? "border-accent text-accent"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {t.label}
+                {getTabIcon(t.icon)}
+                <span className={t.icon ? "hidden sm:inline" : ""}>{t.label}</span>
               </Link>
             );
           })}
@@ -634,86 +676,74 @@ function HomePage() {
           {isSearching && (
             <button
               onClick={handleSearchTabClick}
-              className="flex items-center gap-2 border-b border-accent px-4 py-2.5 font-mono text-xs font-bold tracking-wide text-accent -mb-px"
+              className="flex items-center gap-1 border-b border-accent px-2 py-2 font-mono text-[10px] font-bold tracking-wide text-accent -mb-px sm:gap-1.5 sm:px-4 sm:text-xs md:py-2.5"
             >
-              <Search className="h-3.5 w-3.5" />
-              SEARCH
+              <Search className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <span className="hidden sm:inline">SEARCH</span>
             </button>
           )}
         </div>
 
-        {/* Results count */}
-        {searchQuery && (
-          <div className="mb-4 font-mono text-xs uppercase tracking-wide text-muted-foreground">
-            {sortedItems.length} result{sortedItems.length !== 1 ? "s" : ""} for "{searchQuery}"
-          </div>
-        )}
-
-        {/* Content Table */}
+        {/* Results */}
         <div>
-          {/* Table Header */}
-          {sortedItems.length > 0 && (
-            <div className="flex items-center gap-3 border-b border-border py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              <div className="w-4 shrink-0" />
-              <span className="w-12 shrink-0">Type</span>
-              <div className="flex-1">Name</div>
-              <div className="hidden items-center justify-end gap-6 sm:flex">
-                <span className="w-12 text-right">Stat 1</span>
-                <span className="w-12 text-right">Stat 2</span>
-                <span className="w-12 text-right">Stat 3</span>
-                <span className="w-14 text-right">Updated</span>
-              </div>
+          {/* Results count */}
+          {searchQuery && (
+            <div className="mb-3 font-mono text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs md:mb-4">
+              {sortedItems.length} result{sortedItems.length !== 1 ? "s" : ""} for "{searchQuery}"
             </div>
           )}
-          {/* Rows */}
-          {sortedItems.map((item, idx) => (
-            <ContentRow key={`${item.type}-${item.id}`} item={item} isLast={idx === sortedItems.length - 1} />
-          ))}
-        </div>
 
-        {/* Empty state */}
-        {sortedItems.length === 0 && !isLoadingMore && (
-          <div className="py-16 text-center">
-            <Search className="mx-auto h-12 w-12 text-border" />
-            <p className="mt-4 font-mono text-sm text-muted-foreground">
-              {searchQuery ? `No results for "${searchQuery}"` : "Nothing here yet"}
-            </p>
-            {searchQuery && (
+          {/* Content List */}
+          <div>
+            {sortedItems.map((item, idx) => (
+              <ContentRow key={`${item.type}-${item.id}`} item={item} isLast={idx === sortedItems.length - 1} />
+            ))}
+          </div>
+
+          {/* Empty state */}
+          {sortedItems.length === 0 && !isLoadingMore && (
+            <div className="py-8 text-center md:py-12">
+              <Search className="mx-auto h-8 w-8 text-border md:h-10 md:w-10" />
+              <p className="mt-3 font-mono text-xs text-muted-foreground sm:text-sm md:mt-4">
+                {searchQuery ? `No results for "${searchQuery}"` : "Nothing here yet"}
+              </p>
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="mt-3 font-mono text-[10px] font-bold uppercase text-accent hover:underline sm:text-xs md:mt-4"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* View More button */}
+          <div className="mt-4 flex items-center justify-center md:mt-6">
+            {isLoadingMore && (
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase text-muted-foreground sm:text-xs">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-accent sm:h-4 sm:w-4" />
+                Loading...
+              </div>
+            )}
+            {!isLoadingMore && hasMore && sortedItems.length > 0 && (
               <button
-                onClick={clearSearch}
-                className="mt-4 font-mono text-xs font-bold uppercase text-accent hover:underline"
+                onClick={loadMore}
+                className="border border-border bg-background px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-muted sm:px-6 sm:py-2 sm:text-xs"
               >
-                Clear search
+                View More
               </button>
             )}
+            {!hasMore && sortedItems.length > 0 && (
+              <p className="font-mono text-[10px] uppercase text-muted-foreground sm:text-xs">End of list</p>
+            )}
           </div>
-        )}
-
-        {/* View More button */}
-        <div className="mt-8 flex items-center justify-center py-4">
-          {isLoadingMore && (
-            <div className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin text-accent" />
-              Loading...
-            </div>
-          )}
-          {!isLoadingMore && hasMore && sortedItems.length > 0 && (
-            <button
-              onClick={loadMore}
-              className="border border-border bg-background px-6 py-2 font-mono text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-muted"
-            >
-              View More
-            </button>
-          )}
-          {!hasMore && sortedItems.length > 0 && (
-            <p className="font-mono text-xs uppercase text-muted-foreground">End of list</p>
-          )}
         </div>
 
         {/* Bottom section */}
-        <div className="mt-12 border-t border-border pb-12 pt-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase">
+        <div className="mt-8 border-t border-border pb-8 pt-6 md:mt-12 md:pb-12 md:pt-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase sm:gap-2 sm:text-xs">
               <a
                 href="https://docs.nexus.yogan.dev"
                 target="_blank"
@@ -721,7 +751,7 @@ function HomePage() {
                 className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-accent"
               >
                 Docs
-                <ArrowUpRight className="h-3 w-3" />
+                <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </a>
               <span className="text-border">|</span>
               <Link to="/submit" className="text-muted-foreground transition-colors hover:text-accent">
@@ -734,11 +764,11 @@ function HomePage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-accent"
               >
-                <Github className="h-3 w-3" />
+                <Github className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 GitHub
               </a>
             </div>
-            <div className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground">
+            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase text-muted-foreground sm:gap-2 sm:text-xs">
               <span>{loaderData.stats.libraries} libraries</span>
               <span className="text-border">|</span>
               <span>{loaderData.stats.servers} servers</span>
@@ -747,7 +777,7 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="mt-6 font-mono text-xs text-muted-foreground">
+          <div className="mt-4 font-mono text-[10px] text-muted-foreground sm:text-xs md:mt-6">
             <p>
               Pre-indexed docs with vector embeddings <span className="text-border">|</span> ~5K tokens instead of
               ~500K <span className="text-border">|</span> Free tier: 2,000 calls/month{" "}
@@ -782,11 +812,11 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
   const getIcon = () => {
     switch (item.type) {
       case "doc":
-        return <BookOpen className="h-3.5 w-3.5" />;
+        return <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />;
       case "server":
-        return <Server className="h-3.5 w-3.5" />;
+        return <Server className="h-3 w-3 sm:h-3.5 sm:w-3.5" />;
       case "skill":
-        return <Zap className="h-3.5 w-3.5" />;
+        return <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5" />;
     }
   };
 
@@ -797,85 +827,62 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
     return item.name;
   };
 
-  // Returns [stat1, stat2, stat3] matching header columns (Tokens, Chunks, Queries)
-  const getStats = (): [string, string, string] => {
+  // Get stats with labels based on item type
+  const getStats = (): { value: string; label: string }[] => {
     if (item.type === "doc") {
       return [
-        formatNumber(item.totalTokens),
-        formatNumber(item.totalChunks),
-        formatNumber(item.totalQueries),
+        { value: formatNumber(item.totalTokens), label: "tokens" },
+        { value: formatNumber(item.totalChunks), label: "chunks" },
       ];
     }
     if (item.type === "server") {
-      // stars, downloads, discoveries
       return [
-        formatNumber(item.githubStars),
-        formatNumber(item.weeklyDownloads),
-        formatNumber(item.totalDiscoveries),
+        { value: formatNumber(item.githubStars), label: "stars" },
+        { value: formatNumber(item.weeklyDownloads), label: "downloads" },
       ];
     }
-    // skills: installs, usage, -
+    // skills
     return [
-      formatNumber(item.installCount),
-      formatNumber(item.usageCount),
-      "-",
+      { value: formatNumber(item.installCount), label: "installs" },
+      { value: formatNumber(item.usageCount), label: "uses" },
     ];
   };
 
-  const getDate = () => {
-    let dateStr: string | null = null;
-    if (item.type === "doc") {
-      dateStr = item.lastIndexedAt;
-    } else {
-      dateStr = item.updatedAt;
-    }
-    if (!dateStr) return "-";
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    } catch {
-      return "-";
-    }
-  };
-
-  const [stat1, stat2, stat3] = getStats();
-
-  const getTypeLabel = () => {
-    switch (item.type) {
-      case "doc": return "DOC";
-      case "server": return "SERVER";
-      case "skill": return "SKILL";
-    }
-  };
+  const stats = getStats();
 
   return (
     <Link
       to={getDetailUrl()}
-      className={`group flex items-center gap-3 py-2.5 transition-colors hover:bg-muted/30 ${!isLast ? "border-b border-border/50" : ""}`}
+      className={`group flex items-center gap-2 py-2 transition-colors hover:bg-muted/30 md:gap-3 md:py-2.5 lg:py-3 ${!isLast ? "border-b border-border/50" : ""}`}
     >
       {/* Icon */}
-      <div className="w-4 shrink-0 text-muted-foreground group-hover:text-foreground">
+      <div className="w-3.5 shrink-0 text-muted-foreground group-hover:text-foreground sm:w-4">
         {getIcon()}
       </div>
 
-      {/* Type badge */}
-      <span className="w-12 shrink-0 font-mono text-[10px] font-medium uppercase text-muted-foreground">
-        {getTypeLabel()}
-      </span>
-
       {/* Name */}
       <div className="min-w-0 flex-1">
-        <span className="truncate font-mono text-sm text-foreground transition-colors group-hover:text-accent">
+        <span className="truncate font-mono text-xs text-foreground transition-colors group-hover:text-accent sm:text-sm">
           {getName()}
         </span>
       </div>
 
-      {/* Stats - aligned with header columns */}
-      <div className="hidden items-center justify-end gap-6 font-mono text-[11px] tabular-nums text-muted-foreground sm:flex">
-        <span className="w-12 text-right">{stat1}</span>
-        <span className="w-12 text-right">{stat2}</span>
-        <span className="w-12 text-right">{stat3}</span>
-        <span className="w-14 text-right text-[10px] text-muted-foreground/60">{getDate()}</span>
+      {/* Mobile: show first stat only */}
+      <div className="flex items-center font-mono text-[10px] text-muted-foreground sm:hidden">
+        <span className="tabular-nums">
+          <span className="text-foreground/70">{stats[0].value}</span>
+          <span className="ml-1 text-[9px] text-muted-foreground/60">{stats[0].label}</span>
+        </span>
+      </div>
+
+      {/* Desktop: show all stats */}
+      <div className="hidden items-center gap-3 font-mono text-[10px] text-muted-foreground sm:flex md:gap-4 md:text-[11px]">
+        {stats.map((stat, idx) => (
+          <span key={idx} className="tabular-nums">
+            <span className="text-foreground/70">{stat.value}</span>
+            <span className="ml-1 text-[9px] text-muted-foreground/60 md:text-[10px]">{stat.label}</span>
+          </span>
+        ))}
       </div>
     </Link>
   );
