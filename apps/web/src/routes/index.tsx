@@ -688,36 +688,36 @@ function HomePage() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
         {/* Hero - Progressive line lengths, pyramid structure */}
-        <div className="pt-8 md:pt-14 lg:pt-20">
+        <div className="pt-10 md:pt-14 lg:pt-20">
           {/* Line 1 - Shortest, punchy opener */}
-          <h1 className="font-mono text-3xl font-black uppercase tracking-tight text-accent sm:text-4xl lg:text-5xl">
+          <h1 className="font-mono text-4xl font-black uppercase tracking-tight text-accent sm:text-5xl lg:text-6xl">
             Ship.
           </h1>
           
           {/* Line 2 - Medium length, core value */}
-          <p className="mt-2 font-mono text-lg font-bold uppercase tracking-tight text-foreground sm:text-xl lg:text-2xl md:mt-3">
+          <p className="mt-3 font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl lg:text-3xl md:mt-4">
             Docs compressed. Stacks ready.
           </p>
           
           {/* Line 3 - Longer, feature list */}
-          <p className="mt-1.5 font-mono text-sm uppercase tracking-wide text-foreground/80 sm:text-base lg:text-lg md:mt-2">
+          <p className="mt-2 font-mono text-base uppercase tracking-wide text-foreground/80 sm:text-lg lg:text-xl md:mt-3">
             MCP servers, starter stacks, persistent{" "}
             <span className="text-accent">memory</span>
             {" "}— pre-indexed.
           </p>
           
           {/* Line 4 - Longest, stats + PRO integrated */}
-          <p className="mt-4 font-mono text-xs text-muted-foreground sm:text-sm md:mt-5">
+          <p className="mt-5 font-mono text-sm text-muted-foreground sm:text-sm md:mt-6">
             <span className="font-bold text-foreground">~5K tokens</span>
-            <span className="mx-1.5 sm:mx-2"> instead of ~500K</span>
+            <span className="mx-2 sm:mx-2"> instead of ~500K</span>
             <span className="text-border">|</span>
-            <span className="mx-1.5 sm:mx-2">Semantic search</span>
+            <span className="mx-2 sm:mx-2">Semantic search</span>
             <span className="text-border">|</span>
-            <span className="mx-1.5 sm:mx-2">Always current</span>
+            <span className="mx-2 sm:mx-2">Always current</span>
             <span className="text-border">|</span>
             <Link
               to="/plans"
-              className="group ml-1.5 sm:ml-2 inline-flex items-center gap-1 transition-colors"
+              className="group ml-2 sm:ml-2 inline-flex items-center gap-1 transition-colors"
             >
               <span className="font-bold text-accent">PRO</span>
               <ArrowUpRight className="h-3 w-3 text-accent transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -726,10 +726,10 @@ function HomePage() {
         </div>
 
         {/* Search + Tabs */}
-        <div className="mt-8 md:mt-12 lg:mt-16">
+        <div className="mt-10 md:mt-12 lg:mt-16">
           <form onSubmit={handleSearch}>
-            <div className="flex h-10 max-w-md items-center gap-3 border border-foreground bg-background px-3 font-mono md:h-11 shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.3)]">
-              <Search className="h-4 w-4 shrink-0 text-foreground" />
+            <div className="flex h-12 max-w-lg items-center gap-4 border border-foreground bg-background px-4 font-mono md:h-12 shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.3)]">
+              <Search className="h-5 w-5 shrink-0 text-foreground" />
               <input
                 ref={inputRef}
                 type="text"
@@ -744,22 +744,22 @@ function HomePage() {
                   }
                 }}
                 placeholder="Search docs, servers, skills..."
-                className="h-full flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+                className="h-full flex-1 bg-transparent text-base text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
               />
               {inputValue && (
                 <button
                   type="button"
                   onClick={clearSearch}
-                  className="shrink-0 p-1 text-muted-foreground transition-colors hover:text-foreground"
+                  className="shrink-0 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               )}
             </div>
           </form>
 
           {/* Tabs */}
-          <div className="mt-6 mb-4 flex items-center gap-0 border-b border-border md:mt-8 md:mb-6">
+          <div className="mt-8 mb-5 flex items-center gap-0 border-b border-border md:mt-8 md:mb-6 overflow-x-auto">
           {tabs.map((t, idx) => {
             const isActive = !isSearching && activeFilter === t.id && !t.href;
             
@@ -769,10 +769,10 @@ function HomePage() {
                 <Link
                   key={`${t.id}-${idx}`}
                   to={t.href as "/dashboard/flows"}
-                  className="flex items-center gap-1 border-b border-transparent px-2 py-2 font-mono text-xs font-bold tracking-wide text-muted-foreground hover:text-foreground transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-2.5"
+                  className="flex items-center gap-1.5 border-b border-transparent px-3 py-2.5 font-mono text-xs font-bold tracking-wide text-muted-foreground hover:text-foreground transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-3"
                 >
                   {getTabIcon(t.icon)}
-                  <span className={t.icon ? "hidden sm:inline" : ""}>{t.label}</span>
+                  <span>{t.label}</span>
                 </Link>
               );
             }
@@ -788,14 +788,14 @@ function HomePage() {
                   setInputValue("");
                   inputRef.current?.blur();
                 }}
-                className={`flex items-center gap-1 border-b px-2 py-2 font-mono text-xs font-bold tracking-wide transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-2.5 ${
+                className={`flex items-center gap-1.5 border-b px-3 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-3 ${
                   isActive
                     ? "border-accent text-accent"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {getTabIcon(t.icon)}
-                <span className={t.icon ? "hidden sm:inline" : ""}>{t.label}</span>
+                <span>{t.label}</span>
               </Link>
             );
           })}
@@ -803,10 +803,10 @@ function HomePage() {
           {isSearching && (
             <button
               onClick={handleSearchTabClick}
-              className="flex items-center gap-1 border-b border-accent px-2 py-2 font-mono text-xs font-bold tracking-wide text-accent -mb-px sm:gap-1.5 sm:px-4 md:py-2.5"
+              className="flex items-center gap-1.5 border-b border-accent px-3 py-2.5 font-mono text-xs font-bold tracking-wide text-accent -mb-px sm:gap-1.5 sm:px-4 md:py-3"
             >
               <Search className="h-3 w-3" />
-              <span className="hidden sm:inline">SEARCH</span>
+              <span>SEARCH</span>
             </button>
           )}
         </div>
@@ -1015,16 +1015,16 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
   return (
     <Link
       to={getDetailUrl()}
-      className={`group flex items-center gap-2 py-2 transition-colors hover:bg-muted/30 md:gap-3 md:py-2.5 lg:py-3 ${!isLast ? "border-b border-border/50" : ""}`}
+      className={`group flex items-center gap-3 py-3 transition-colors hover:bg-muted/30 md:gap-3 md:py-3 lg:py-3.5 ${!isLast ? "border-b border-border/50" : ""}`}
     >
       {/* Icon */}
-      <div className="w-3.5 shrink-0 text-muted-foreground group-hover:text-foreground sm:w-4">
+      <div className="w-4 shrink-0 text-muted-foreground group-hover:text-foreground sm:w-4">
         {getIcon()}
       </div>
 
       {/* Name */}
       <div className="min-w-0 flex-1">
-        <span className="truncate font-mono text-xs text-foreground transition-colors group-hover:text-accent sm:text-sm">
+        <span className="truncate font-mono text-sm text-foreground transition-colors group-hover:text-accent sm:text-sm">
           {getName()}
         </span>
       </div>
@@ -1033,7 +1033,7 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
       <div className="flex items-center font-mono text-xs text-muted-foreground sm:hidden">
         <span className="tabular-nums">
           <span className="text-foreground/70">{stats[0].value}</span>
-          <span className="ml-1 text-[10px] text-muted-foreground/60">{stats[0].label}</span>
+          <span className="ml-1 text-[11px] text-muted-foreground/60">{stats[0].label}</span>
         </span>
       </div>
 
