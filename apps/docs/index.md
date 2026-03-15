@@ -48,7 +48,7 @@ import StatItem from './.vitepress/theme/components/StatItem.vue'
 Add Nexus to your AI client in 30 seconds:
 
 <Terminal title="Add to Claude Code">
-<span class="terminal-line prompt">claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://mcp.nexus.yogan.dev/sse</span>
+<span class="terminal-line prompt">claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://api.nexus.yogan.dev/sse</span>
 <span class="terminal-line"></span>
 <span class="terminal-line output"><span class="text-cyan">Added MCP server nexus</span></span>
 </Terminal>
@@ -59,7 +59,7 @@ Or add directly to your MCP config file:
 {
   "mcpServers": {
     "nexus": {
-      "url": "https://mcp.nexus.yogan.dev/sse"
+      "url": "https://api.nexus.yogan.dev/sse"
     }
   }
 }

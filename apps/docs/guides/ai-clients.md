@@ -34,7 +34,7 @@ VS Code supports MCP through GitHub Copilot. See [VS Code Configuration](/config
 The fastest setup option:
 
 ```bash
-claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://mcp.nexus.yogan.dev/sse
+claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://api.nexus.yogan.dev/sse
 ```
 
 ## General Tips

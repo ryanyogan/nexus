@@ -9,7 +9,7 @@ Common issues and solutions.
 **Check your configuration:**
 
 1. Verify the config file syntax (valid JSON)
-2. Ensure the URL is correct: `https://mcp.nexus.yogan.dev/sse`
+2. Ensure the URL is correct: `https://api.nexus.yogan.dev/sse`
 3. Check your internet connection
 
 **For local mode:**

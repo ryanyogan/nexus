@@ -36,7 +36,7 @@ For clients that support native remote MCP connections (like OpenCode):
   "mcp": {
     "nexus": {
       "type": "remote",
-      "url": "https://mcp.nexus.yogan.dev/sse",
+      "url": "https://api.nexus.yogan.dev/sse",
       "enabled": true,
       "headers": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -60,7 +60,7 @@ For clients that don't support native remote (Claude Desktop, Cursor, VS Code, e
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
+        "https://api.nexus.yogan.dev/sse",
         "--header",
         "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
@@ -121,7 +121,7 @@ Native remote clients typically use `NEXUS_API_KEY`. The `Authorization: Bearer`
 For clients supporting HTTP transport (SSE/Streamable HTTP) directly:
 
 ```
-URL: https://mcp.nexus.yogan.dev/sse
+URL: https://api.nexus.yogan.dev/sse
 Headers:
   NEXUS_API_KEY: nxs_your_api_key_here
 ```

@@ -37,7 +37,7 @@ Connect directly to the hosted Nexus service:
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
+        "https://api.nexus.yogan.dev/sse",
         "--header",
         "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
@@ -115,7 +115,7 @@ Make sure your API key is configured:
 Test that `mcp-remote` can connect:
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">NEXUS_API_KEY=nxs_your_key npx mcp-remote https://mcp.nexus.yogan.dev/sse --header "NEXUS_API_KEY:\${NEXUS_API_KEY}"</span>
+<span class="terminal-line prompt">NEXUS_API_KEY=nxs_your_key npx mcp-remote https://api.nexus.yogan.dev/sse --header "NEXUS_API_KEY:\${NEXUS_API_KEY}"</span>
 </Terminal>
 
 ### Testing Local Mode

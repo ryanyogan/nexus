@@ -55,7 +55,7 @@ Choose your deployment mode:
 Connect directly to the hosted Nexus service. Zero setup required.
 
 <Terminal title="Claude Code">
-<span class="terminal-line prompt">claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://mcp.nexus.yogan.dev/sse</span>
+<span class="terminal-line prompt">claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://api.nexus.yogan.dev/sse</span>
 <span class="terminal-line"></span>
 <span class="terminal-line output"><span class="text-green">Added MCP server nexus</span></span>
 </Terminal>
@@ -66,7 +66,7 @@ Or add to your MCP configuration file:
 {
   "mcpServers": {
     "nexus": {
-      "url": "https://mcp.nexus.yogan.dev/sse"
+      "url": "https://api.nexus.yogan.dev/sse"
     }
   }
 }

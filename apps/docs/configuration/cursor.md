@@ -36,7 +36,7 @@ Connect directly to the hosted Nexus service:
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
+        "https://api.nexus.yogan.dev/sse",
         "--header",
         "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],

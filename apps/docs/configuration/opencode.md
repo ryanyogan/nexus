@@ -30,7 +30,7 @@ OpenCode supports native remote MCP connections - no bridge packages needed:
   "mcp": {
     "nexus": {
       "type": "remote",
-      "url": "https://mcp.nexus.yogan.dev/sse",
+      "url": "https://api.nexus.yogan.dev/sse",
       "enabled": true,
       "headers": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -87,5 +87,5 @@ Make sure your API key is configured correctly in the `headers` section (native 
 You can test the remote endpoint directly:
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">curl -H "NEXUS_API_KEY: nxs_your_key" https://mcp.nexus.yogan.dev/sse</span>
+<span class="terminal-line prompt">curl -H "NEXUS_API_KEY: nxs_your_key" https://api.nexus.yogan.dev/sse</span>
 </Terminal>

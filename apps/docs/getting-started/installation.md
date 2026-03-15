@@ -65,7 +65,7 @@ Edit `~/.config/opencode/config.json`:
   "mcp": {
     "nexus": {
       "type": "remote",
-      "url": "https://mcp.nexus.yogan.dev/sse",
+      "url": "https://api.nexus.yogan.dev/sse",
       "enabled": true,
       "headers": {
         "NEXUS_API_KEY": "nxs_your_api_key_here"
@@ -85,7 +85,7 @@ That's it! No dependencies, no bridge packages.
 **Remote Mode (Recommended):**
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">claude mcp add nexus -e NEXUS_API_KEY=nxs_your_key_here -- npx -y mcp-remote https://mcp.nexus.yogan.dev/sse --header "NEXUS_API_KEY:\${NEXUS_API_KEY}"</span>
+<span class="terminal-line prompt">claude mcp add nexus -e NEXUS_API_KEY=nxs_your_key_here -- npx -y mcp-remote https://api.nexus.yogan.dev/sse --header "NEXUS_API_KEY:\${NEXUS_API_KEY}"</span>
 <span class="terminal-line output"><span class="text-green">Added MCP server nexus</span></span>
 </Terminal>
 
@@ -102,7 +102,7 @@ To verify:
 
 <Terminal title="Terminal">
 <span class="terminal-line prompt">claude mcp list</span>
-<span class="terminal-line output">nexus    npx -y mcp-remote https://mcp.nexus.yogan.dev/sse ...</span>
+<span class="terminal-line output">nexus    npx -y mcp-remote https://api.nexus.yogan.dev/sse ...</span>
 </Terminal>
 
   </Tab>
@@ -128,7 +128,7 @@ Edit your Claude Desktop configuration file:
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
+        "https://api.nexus.yogan.dev/sse",
         "--header",
         "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
@@ -183,7 +183,7 @@ Edit your Cursor MCP configuration:
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
+        "https://api.nexus.yogan.dev/sse",
         "--header",
         "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
@@ -234,7 +234,7 @@ Edit your VS Code settings:
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
+        "https://api.nexus.yogan.dev/sse",
         "--header",
         "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
@@ -274,7 +274,7 @@ Restart VS Code after saving.
 | Setting | Value |
 |---------|-------|
 | Type | `remote` |
-| URL | `https://mcp.nexus.yogan.dev/sse` |
+| URL | `https://api.nexus.yogan.dev/sse` |
 | Headers | `{ "NEXUS_API_KEY": "nxs_your_key" }` |
 
 **Otherwise, use mcp-remote:**
@@ -282,7 +282,7 @@ Restart VS Code after saving.
 | Setting | Value |
 |---------|-------|
 | Command | `npx` |
-| Args | `["-y", "mcp-remote", "https://mcp.nexus.yogan.dev/sse", "--header", "NEXUS_API_KEY:${NEXUS_API_KEY}"]` |
+| Args | `["-y", "mcp-remote", "https://api.nexus.yogan.dev/sse", "--header", "NEXUS_API_KEY:${NEXUS_API_KEY}"]` |
 | Environment | `NEXUS_API_KEY=nxs_your_key` |
 
 Example for Cline (`~/.cline/mcp.json`):
@@ -295,7 +295,7 @@ Example for Cline (`~/.cline/mcp.json`):
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.nexus.yogan.dev/sse",
+        "https://api.nexus.yogan.dev/sse",
         "--header",
         "NEXUS_API_KEY:${NEXUS_API_KEY}"
       ],
