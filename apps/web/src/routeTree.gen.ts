@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExploreIndexRouteImport } from './routes/explore/index'
 import { Route as CodeIndexRouteImport } from './routes/code/index'
 import { Route as LibrariesLibraryIdRouteImport } from './routes/libraries/$libraryId'
+import { Route as ExploreStatsRouteImport } from './routes/explore/stats'
 import { Route as ExploreDocsRouteImport } from './routes/explore/docs'
 import { Route as CodeSessionsRouteImport } from './routes/code/sessions'
 import { Route as AuthCliRouteImport } from './routes/auth/cli'
@@ -28,18 +29,24 @@ import { Route as ExploreServersIndexRouteImport } from './routes/explore/server
 import { Route as AuthedSettingsIndexRouteImport } from './routes/_authed/settings/index'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
+import { Route as ExploreStacksStackSlugRouteImport } from './routes/explore/stacks.$stackSlug'
 import { Route as ExploreSkillsSkillIdRouteImport } from './routes/explore/skills.$skillId'
 import { Route as ExploreServersServerIdRouteImport } from './routes/explore/servers.$serverId'
 import { Route as ExploreDocsLibraryIdRouteImport } from './routes/explore/docs.$libraryId'
 import { Route as CodeSessionSessionIdRouteImport } from './routes/code/session.$sessionId'
 import { Route as AuthedSettingsSecretsRouteImport } from './routes/_authed/settings/secrets'
 import { Route as AuthedDashboardSkillsRouteImport } from './routes/_authed/dashboard/skills'
+import { Route as AuthedDashboardReposRouteImport } from './routes/_authed/dashboard/repos'
 import { Route as AuthedDashboardKeysRouteImport } from './routes/_authed/dashboard/keys'
-import { Route as AuthedDashboardFlowsRouteImport } from './routes/_authed/dashboard/flows'
+import { Route as AuthedDashboardBrainRouteImport } from './routes/_authed/dashboard/brain'
 import { Route as AuthedDashboardBillingRouteImport } from './routes/_authed/dashboard/billing'
 import { Route as AuthedAdminSubmissionsRouteImport } from './routes/_authed/admin/submissions'
 import { Route as AuthedAdminServerSubmissionsRouteImport } from './routes/_authed/admin/server-submissions'
 import { Route as AuthedAdminLibrariesRouteImport } from './routes/_authed/admin/libraries'
+import { Route as AuthedDashboardStacksIndexRouteImport } from './routes/_authed/dashboard/stacks.index'
+import { Route as AuthedDashboardFlowsIndexRouteImport } from './routes/_authed/dashboard/flows.index'
+import { Route as AuthedDashboardStacksNewRouteImport } from './routes/_authed/dashboard/stacks.new'
+import { Route as AuthedDashboardStacksStackIdRouteImport } from './routes/_authed/dashboard/stacks.$stackId'
 import { Route as AuthedDashboardFlowsNewRouteImport } from './routes/_authed/dashboard/flows.new'
 import { Route as AuthedDashboardFlowsFlowIdRouteImport } from './routes/_authed/dashboard/flows.$flowId'
 
@@ -80,6 +87,11 @@ const CodeIndexRoute = CodeIndexRouteImport.update({
 const LibrariesLibraryIdRoute = LibrariesLibraryIdRouteImport.update({
   id: '/libraries/$libraryId',
   path: '/libraries/$libraryId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreStatsRoute = ExploreStatsRouteImport.update({
+  id: '/explore/stats',
+  path: '/explore/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreDocsRoute = ExploreDocsRouteImport.update({
@@ -137,6 +149,11 @@ const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
+const ExploreStacksStackSlugRoute = ExploreStacksStackSlugRouteImport.update({
+  id: '/explore/stacks/$stackSlug',
+  path: '/explore/stacks/$stackSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExploreSkillsSkillIdRoute = ExploreSkillsSkillIdRouteImport.update({
   id: '/explore/skills/$skillId',
   path: '/explore/skills/$skillId',
@@ -169,14 +186,19 @@ const AuthedDashboardSkillsRoute = AuthedDashboardSkillsRouteImport.update({
   path: '/dashboard/skills',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedDashboardReposRoute = AuthedDashboardReposRouteImport.update({
+  id: '/dashboard/repos',
+  path: '/dashboard/repos',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedDashboardKeysRoute = AuthedDashboardKeysRouteImport.update({
   id: '/dashboard/keys',
   path: '/dashboard/keys',
   getParentRoute: () => AuthedRoute,
 } as any)
-const AuthedDashboardFlowsRoute = AuthedDashboardFlowsRouteImport.update({
-  id: '/dashboard/flows',
-  path: '/dashboard/flows',
+const AuthedDashboardBrainRoute = AuthedDashboardBrainRouteImport.update({
+  id: '/dashboard/brain',
+  path: '/dashboard/brain',
   getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedDashboardBillingRoute = AuthedDashboardBillingRouteImport.update({
@@ -200,16 +222,40 @@ const AuthedAdminLibrariesRoute = AuthedAdminLibrariesRouteImport.update({
   path: '/libraries',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
+const AuthedDashboardStacksIndexRoute =
+  AuthedDashboardStacksIndexRouteImport.update({
+    id: '/dashboard/stacks/',
+    path: '/dashboard/stacks/',
+    getParentRoute: () => AuthedRoute,
+  } as any)
+const AuthedDashboardFlowsIndexRoute =
+  AuthedDashboardFlowsIndexRouteImport.update({
+    id: '/dashboard/flows/',
+    path: '/dashboard/flows/',
+    getParentRoute: () => AuthedRoute,
+  } as any)
+const AuthedDashboardStacksNewRoute =
+  AuthedDashboardStacksNewRouteImport.update({
+    id: '/dashboard/stacks/new',
+    path: '/dashboard/stacks/new',
+    getParentRoute: () => AuthedRoute,
+  } as any)
+const AuthedDashboardStacksStackIdRoute =
+  AuthedDashboardStacksStackIdRouteImport.update({
+    id: '/dashboard/stacks/$stackId',
+    path: '/dashboard/stacks/$stackId',
+    getParentRoute: () => AuthedRoute,
+  } as any)
 const AuthedDashboardFlowsNewRoute = AuthedDashboardFlowsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AuthedDashboardFlowsRoute,
+  id: '/dashboard/flows/new',
+  path: '/dashboard/flows/new',
+  getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedDashboardFlowsFlowIdRoute =
   AuthedDashboardFlowsFlowIdRouteImport.update({
-    id: '/$flowId',
-    path: '/$flowId',
-    getParentRoute: () => AuthedDashboardFlowsRoute,
+    id: '/dashboard/flows/$flowId',
+    path: '/dashboard/flows/$flowId',
+    getParentRoute: () => AuthedRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -223,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
   '/explore/docs': typeof ExploreDocsRouteWithChildren
+  '/explore/stats': typeof ExploreStatsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/code/': typeof CodeIndexRoute
   '/explore/': typeof ExploreIndexRoute
@@ -230,14 +277,16 @@ export interface FileRoutesByFullPath {
   '/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
   '/admin/submissions': typeof AuthedAdminSubmissionsRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
-  '/dashboard/flows': typeof AuthedDashboardFlowsRouteWithChildren
+  '/dashboard/brain': typeof AuthedDashboardBrainRoute
   '/dashboard/keys': typeof AuthedDashboardKeysRoute
+  '/dashboard/repos': typeof AuthedDashboardReposRoute
   '/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/explore/docs/$libraryId': typeof ExploreDocsLibraryIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
+  '/explore/stacks/$stackSlug': typeof ExploreStacksStackSlugRoute
   '/admin/': typeof AuthedAdminIndexRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
   '/settings/': typeof AuthedSettingsIndexRoute
@@ -245,6 +294,10 @@ export interface FileRoutesByFullPath {
   '/explore/skills/': typeof ExploreSkillsIndexRoute
   '/dashboard/flows/$flowId': typeof AuthedDashboardFlowsFlowIdRoute
   '/dashboard/flows/new': typeof AuthedDashboardFlowsNewRoute
+  '/dashboard/stacks/$stackId': typeof AuthedDashboardStacksStackIdRoute
+  '/dashboard/stacks/new': typeof AuthedDashboardStacksNewRoute
+  '/dashboard/flows/': typeof AuthedDashboardFlowsIndexRoute
+  '/dashboard/stacks/': typeof AuthedDashboardStacksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -256,6 +309,7 @@ export interface FileRoutesByTo {
   '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
   '/explore/docs': typeof ExploreDocsRouteWithChildren
+  '/explore/stats': typeof ExploreStatsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/code': typeof CodeIndexRoute
   '/explore': typeof ExploreIndexRoute
@@ -263,14 +317,16 @@ export interface FileRoutesByTo {
   '/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
   '/admin/submissions': typeof AuthedAdminSubmissionsRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
-  '/dashboard/flows': typeof AuthedDashboardFlowsRouteWithChildren
+  '/dashboard/brain': typeof AuthedDashboardBrainRoute
   '/dashboard/keys': typeof AuthedDashboardKeysRoute
+  '/dashboard/repos': typeof AuthedDashboardReposRoute
   '/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/explore/docs/$libraryId': typeof ExploreDocsLibraryIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
+  '/explore/stacks/$stackSlug': typeof ExploreStacksStackSlugRoute
   '/admin': typeof AuthedAdminIndexRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
@@ -278,6 +334,10 @@ export interface FileRoutesByTo {
   '/explore/skills': typeof ExploreSkillsIndexRoute
   '/dashboard/flows/$flowId': typeof AuthedDashboardFlowsFlowIdRoute
   '/dashboard/flows/new': typeof AuthedDashboardFlowsNewRoute
+  '/dashboard/stacks/$stackId': typeof AuthedDashboardStacksStackIdRoute
+  '/dashboard/stacks/new': typeof AuthedDashboardStacksNewRoute
+  '/dashboard/flows': typeof AuthedDashboardFlowsIndexRoute
+  '/dashboard/stacks': typeof AuthedDashboardStacksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -292,6 +352,7 @@ export interface FileRoutesById {
   '/auth/cli': typeof AuthCliRoute
   '/code/sessions': typeof CodeSessionsRoute
   '/explore/docs': typeof ExploreDocsRouteWithChildren
+  '/explore/stats': typeof ExploreStatsRoute
   '/libraries/$libraryId': typeof LibrariesLibraryIdRoute
   '/code/': typeof CodeIndexRoute
   '/explore/': typeof ExploreIndexRoute
@@ -299,14 +360,16 @@ export interface FileRoutesById {
   '/_authed/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
   '/_authed/admin/submissions': typeof AuthedAdminSubmissionsRoute
   '/_authed/dashboard/billing': typeof AuthedDashboardBillingRoute
-  '/_authed/dashboard/flows': typeof AuthedDashboardFlowsRouteWithChildren
+  '/_authed/dashboard/brain': typeof AuthedDashboardBrainRoute
   '/_authed/dashboard/keys': typeof AuthedDashboardKeysRoute
+  '/_authed/dashboard/repos': typeof AuthedDashboardReposRoute
   '/_authed/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/_authed/settings/secrets': typeof AuthedSettingsSecretsRoute
   '/code/session/$sessionId': typeof CodeSessionSessionIdRoute
   '/explore/docs/$libraryId': typeof ExploreDocsLibraryIdRoute
   '/explore/servers/$serverId': typeof ExploreServersServerIdRoute
   '/explore/skills/$skillId': typeof ExploreSkillsSkillIdRoute
+  '/explore/stacks/$stackSlug': typeof ExploreStacksStackSlugRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
   '/_authed/settings/': typeof AuthedSettingsIndexRoute
@@ -314,6 +377,10 @@ export interface FileRoutesById {
   '/explore/skills/': typeof ExploreSkillsIndexRoute
   '/_authed/dashboard/flows/$flowId': typeof AuthedDashboardFlowsFlowIdRoute
   '/_authed/dashboard/flows/new': typeof AuthedDashboardFlowsNewRoute
+  '/_authed/dashboard/stacks/$stackId': typeof AuthedDashboardStacksStackIdRoute
+  '/_authed/dashboard/stacks/new': typeof AuthedDashboardStacksNewRoute
+  '/_authed/dashboard/flows/': typeof AuthedDashboardFlowsIndexRoute
+  '/_authed/dashboard/stacks/': typeof AuthedDashboardStacksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -328,6 +395,7 @@ export interface FileRouteTypes {
     | '/auth/cli'
     | '/code/sessions'
     | '/explore/docs'
+    | '/explore/stats'
     | '/libraries/$libraryId'
     | '/code/'
     | '/explore/'
@@ -335,14 +403,16 @@ export interface FileRouteTypes {
     | '/admin/server-submissions'
     | '/admin/submissions'
     | '/dashboard/billing'
-    | '/dashboard/flows'
+    | '/dashboard/brain'
     | '/dashboard/keys'
+    | '/dashboard/repos'
     | '/dashboard/skills'
     | '/settings/secrets'
     | '/code/session/$sessionId'
     | '/explore/docs/$libraryId'
     | '/explore/servers/$serverId'
     | '/explore/skills/$skillId'
+    | '/explore/stacks/$stackSlug'
     | '/admin/'
     | '/dashboard/'
     | '/settings/'
@@ -350,6 +420,10 @@ export interface FileRouteTypes {
     | '/explore/skills/'
     | '/dashboard/flows/$flowId'
     | '/dashboard/flows/new'
+    | '/dashboard/stacks/$stackId'
+    | '/dashboard/stacks/new'
+    | '/dashboard/flows/'
+    | '/dashboard/stacks/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -361,6 +435,7 @@ export interface FileRouteTypes {
     | '/auth/cli'
     | '/code/sessions'
     | '/explore/docs'
+    | '/explore/stats'
     | '/libraries/$libraryId'
     | '/code'
     | '/explore'
@@ -368,14 +443,16 @@ export interface FileRouteTypes {
     | '/admin/server-submissions'
     | '/admin/submissions'
     | '/dashboard/billing'
-    | '/dashboard/flows'
+    | '/dashboard/brain'
     | '/dashboard/keys'
+    | '/dashboard/repos'
     | '/dashboard/skills'
     | '/settings/secrets'
     | '/code/session/$sessionId'
     | '/explore/docs/$libraryId'
     | '/explore/servers/$serverId'
     | '/explore/skills/$skillId'
+    | '/explore/stacks/$stackSlug'
     | '/admin'
     | '/dashboard'
     | '/settings'
@@ -383,6 +460,10 @@ export interface FileRouteTypes {
     | '/explore/skills'
     | '/dashboard/flows/$flowId'
     | '/dashboard/flows/new'
+    | '/dashboard/stacks/$stackId'
+    | '/dashboard/stacks/new'
+    | '/dashboard/flows'
+    | '/dashboard/stacks'
   id:
     | '__root__'
     | '/'
@@ -396,6 +477,7 @@ export interface FileRouteTypes {
     | '/auth/cli'
     | '/code/sessions'
     | '/explore/docs'
+    | '/explore/stats'
     | '/libraries/$libraryId'
     | '/code/'
     | '/explore/'
@@ -403,14 +485,16 @@ export interface FileRouteTypes {
     | '/_authed/admin/server-submissions'
     | '/_authed/admin/submissions'
     | '/_authed/dashboard/billing'
-    | '/_authed/dashboard/flows'
+    | '/_authed/dashboard/brain'
     | '/_authed/dashboard/keys'
+    | '/_authed/dashboard/repos'
     | '/_authed/dashboard/skills'
     | '/_authed/settings/secrets'
     | '/code/session/$sessionId'
     | '/explore/docs/$libraryId'
     | '/explore/servers/$serverId'
     | '/explore/skills/$skillId'
+    | '/explore/stacks/$stackSlug'
     | '/_authed/admin/'
     | '/_authed/dashboard/'
     | '/_authed/settings/'
@@ -418,6 +502,10 @@ export interface FileRouteTypes {
     | '/explore/skills/'
     | '/_authed/dashboard/flows/$flowId'
     | '/_authed/dashboard/flows/new'
+    | '/_authed/dashboard/stacks/$stackId'
+    | '/_authed/dashboard/stacks/new'
+    | '/_authed/dashboard/flows/'
+    | '/_authed/dashboard/stacks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -429,12 +517,14 @@ export interface RootRouteChildren {
   AuthCliRoute: typeof AuthCliRoute
   CodeSessionsRoute: typeof CodeSessionsRoute
   ExploreDocsRoute: typeof ExploreDocsRouteWithChildren
+  ExploreStatsRoute: typeof ExploreStatsRoute
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute
   CodeIndexRoute: typeof CodeIndexRoute
   ExploreIndexRoute: typeof ExploreIndexRoute
   CodeSessionSessionIdRoute: typeof CodeSessionSessionIdRoute
   ExploreServersServerIdRoute: typeof ExploreServersServerIdRoute
   ExploreSkillsSkillIdRoute: typeof ExploreSkillsSkillIdRoute
+  ExploreStacksStackSlugRoute: typeof ExploreStacksStackSlugRoute
   ExploreServersIndexRoute: typeof ExploreServersIndexRoute
   ExploreSkillsIndexRoute: typeof ExploreSkillsIndexRoute
 }
@@ -495,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/libraries/$libraryId'
       fullPath: '/libraries/$libraryId'
       preLoaderRoute: typeof LibrariesLibraryIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore/stats': {
+      id: '/explore/stats'
+      path: '/explore/stats'
+      fullPath: '/explore/stats'
+      preLoaderRoute: typeof ExploreStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore/docs': {
@@ -574,6 +671,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminIndexRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
+    '/explore/stacks/$stackSlug': {
+      id: '/explore/stacks/$stackSlug'
+      path: '/explore/stacks/$stackSlug'
+      fullPath: '/explore/stacks/$stackSlug'
+      preLoaderRoute: typeof ExploreStacksStackSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/explore/skills/$skillId': {
       id: '/explore/skills/$skillId'
       path: '/explore/skills/$skillId'
@@ -616,6 +720,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardSkillsRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/dashboard/repos': {
+      id: '/_authed/dashboard/repos'
+      path: '/dashboard/repos'
+      fullPath: '/dashboard/repos'
+      preLoaderRoute: typeof AuthedDashboardReposRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/dashboard/keys': {
       id: '/_authed/dashboard/keys'
       path: '/dashboard/keys'
@@ -623,11 +734,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardKeysRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/_authed/dashboard/flows': {
-      id: '/_authed/dashboard/flows'
-      path: '/dashboard/flows'
-      fullPath: '/dashboard/flows'
-      preLoaderRoute: typeof AuthedDashboardFlowsRouteImport
+    '/_authed/dashboard/brain': {
+      id: '/_authed/dashboard/brain'
+      path: '/dashboard/brain'
+      fullPath: '/dashboard/brain'
+      preLoaderRoute: typeof AuthedDashboardBrainRouteImport
       parentRoute: typeof AuthedRoute
     }
     '/_authed/dashboard/billing': {
@@ -658,19 +769,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminLibrariesRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
+    '/_authed/dashboard/stacks/': {
+      id: '/_authed/dashboard/stacks/'
+      path: '/dashboard/stacks'
+      fullPath: '/dashboard/stacks/'
+      preLoaderRoute: typeof AuthedDashboardStacksIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/flows/': {
+      id: '/_authed/dashboard/flows/'
+      path: '/dashboard/flows'
+      fullPath: '/dashboard/flows/'
+      preLoaderRoute: typeof AuthedDashboardFlowsIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/stacks/new': {
+      id: '/_authed/dashboard/stacks/new'
+      path: '/dashboard/stacks/new'
+      fullPath: '/dashboard/stacks/new'
+      preLoaderRoute: typeof AuthedDashboardStacksNewRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/stacks/$stackId': {
+      id: '/_authed/dashboard/stacks/$stackId'
+      path: '/dashboard/stacks/$stackId'
+      fullPath: '/dashboard/stacks/$stackId'
+      preLoaderRoute: typeof AuthedDashboardStacksStackIdRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/dashboard/flows/new': {
       id: '/_authed/dashboard/flows/new'
-      path: '/new'
+      path: '/dashboard/flows/new'
       fullPath: '/dashboard/flows/new'
       preLoaderRoute: typeof AuthedDashboardFlowsNewRouteImport
-      parentRoute: typeof AuthedDashboardFlowsRoute
+      parentRoute: typeof AuthedRoute
     }
     '/_authed/dashboard/flows/$flowId': {
       id: '/_authed/dashboard/flows/$flowId'
-      path: '/$flowId'
+      path: '/dashboard/flows/$flowId'
       fullPath: '/dashboard/flows/$flowId'
       preLoaderRoute: typeof AuthedDashboardFlowsFlowIdRouteImport
-      parentRoute: typeof AuthedDashboardFlowsRoute
+      parentRoute: typeof AuthedRoute
     }
   }
 }
@@ -693,30 +832,24 @@ const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(
   AuthedAdminRouteChildren,
 )
 
-interface AuthedDashboardFlowsRouteChildren {
-  AuthedDashboardFlowsFlowIdRoute: typeof AuthedDashboardFlowsFlowIdRoute
-  AuthedDashboardFlowsNewRoute: typeof AuthedDashboardFlowsNewRoute
-}
-
-const AuthedDashboardFlowsRouteChildren: AuthedDashboardFlowsRouteChildren = {
-  AuthedDashboardFlowsFlowIdRoute: AuthedDashboardFlowsFlowIdRoute,
-  AuthedDashboardFlowsNewRoute: AuthedDashboardFlowsNewRoute,
-}
-
-const AuthedDashboardFlowsRouteWithChildren =
-  AuthedDashboardFlowsRoute._addFileChildren(AuthedDashboardFlowsRouteChildren)
-
 interface AuthedRouteChildren {
   AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
   AuthedSubmitRoute: typeof AuthedSubmitRoute
   AuthedSubmitServerRoute: typeof AuthedSubmitServerRoute
   AuthedDashboardBillingRoute: typeof AuthedDashboardBillingRoute
-  AuthedDashboardFlowsRoute: typeof AuthedDashboardFlowsRouteWithChildren
+  AuthedDashboardBrainRoute: typeof AuthedDashboardBrainRoute
   AuthedDashboardKeysRoute: typeof AuthedDashboardKeysRoute
+  AuthedDashboardReposRoute: typeof AuthedDashboardReposRoute
   AuthedDashboardSkillsRoute: typeof AuthedDashboardSkillsRoute
   AuthedSettingsSecretsRoute: typeof AuthedSettingsSecretsRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
   AuthedSettingsIndexRoute: typeof AuthedSettingsIndexRoute
+  AuthedDashboardFlowsFlowIdRoute: typeof AuthedDashboardFlowsFlowIdRoute
+  AuthedDashboardFlowsNewRoute: typeof AuthedDashboardFlowsNewRoute
+  AuthedDashboardStacksStackIdRoute: typeof AuthedDashboardStacksStackIdRoute
+  AuthedDashboardStacksNewRoute: typeof AuthedDashboardStacksNewRoute
+  AuthedDashboardFlowsIndexRoute: typeof AuthedDashboardFlowsIndexRoute
+  AuthedDashboardStacksIndexRoute: typeof AuthedDashboardStacksIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
@@ -724,12 +857,19 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedSubmitRoute: AuthedSubmitRoute,
   AuthedSubmitServerRoute: AuthedSubmitServerRoute,
   AuthedDashboardBillingRoute: AuthedDashboardBillingRoute,
-  AuthedDashboardFlowsRoute: AuthedDashboardFlowsRouteWithChildren,
+  AuthedDashboardBrainRoute: AuthedDashboardBrainRoute,
   AuthedDashboardKeysRoute: AuthedDashboardKeysRoute,
+  AuthedDashboardReposRoute: AuthedDashboardReposRoute,
   AuthedDashboardSkillsRoute: AuthedDashboardSkillsRoute,
   AuthedSettingsSecretsRoute: AuthedSettingsSecretsRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
   AuthedSettingsIndexRoute: AuthedSettingsIndexRoute,
+  AuthedDashboardFlowsFlowIdRoute: AuthedDashboardFlowsFlowIdRoute,
+  AuthedDashboardFlowsNewRoute: AuthedDashboardFlowsNewRoute,
+  AuthedDashboardStacksStackIdRoute: AuthedDashboardStacksStackIdRoute,
+  AuthedDashboardStacksNewRoute: AuthedDashboardStacksNewRoute,
+  AuthedDashboardFlowsIndexRoute: AuthedDashboardFlowsIndexRoute,
+  AuthedDashboardStacksIndexRoute: AuthedDashboardStacksIndexRoute,
 }
 
 const AuthedRouteWithChildren =
@@ -756,12 +896,14 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCliRoute: AuthCliRoute,
   CodeSessionsRoute: CodeSessionsRoute,
   ExploreDocsRoute: ExploreDocsRouteWithChildren,
+  ExploreStatsRoute: ExploreStatsRoute,
   LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
   CodeIndexRoute: CodeIndexRoute,
   ExploreIndexRoute: ExploreIndexRoute,
   CodeSessionSessionIdRoute: CodeSessionSessionIdRoute,
   ExploreServersServerIdRoute: ExploreServersServerIdRoute,
   ExploreSkillsSkillIdRoute: ExploreSkillsSkillIdRoute,
+  ExploreStacksStackSlugRoute: ExploreStacksStackSlugRoute,
   ExploreServersIndexRoute: ExploreServersIndexRoute,
   ExploreSkillsIndexRoute: ExploreSkillsIndexRoute,
 }

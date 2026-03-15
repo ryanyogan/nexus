@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { authFetch } from "../../../lib/api";
 import {
   StackCanvas,
@@ -109,8 +109,8 @@ function NewStackPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to create stack");
+        const errData = (await res.json()) as { error?: string };
+        throw new Error(errData.error || "Failed to create stack");
       }
 
       const data = (await res.json()) as { stack: { id: string } };

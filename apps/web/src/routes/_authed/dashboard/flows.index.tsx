@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { authFetch } from "../../../lib/api";
 
-export const Route = createFileRoute("/_authed/dashboard/flows")({
+export const Route = createFileRoute("/_authed/dashboard/flows/")({
   component: FlowsPage,
 });
 

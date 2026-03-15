@@ -10,12 +10,13 @@ import {
   Maximize,
   Layout,
   FileText,
+  Settings,
   Loader2,
   Check,
   AlertCircle,
 } from "lucide-react";
 
-export type EditorMode = "visual" | "text";
+export type EditorMode = "visual" | "text" | "options";
 
 export interface StackToolbarProps {
   mode: EditorMode;
@@ -82,6 +83,17 @@ export function StackToolbar({
           >
             <FileText className="h-3.5 w-3.5" />
             Text
+          </button>
+          <button
+            onClick={() => onModeChange("options")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs font-bold uppercase transition-colors ${
+              mode === "options"
+                ? "bg-foreground text-background"
+                : "bg-background text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Settings className="h-3.5 w-3.5" />
+            Options
           </button>
         </div>
 

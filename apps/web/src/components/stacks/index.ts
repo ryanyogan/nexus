@@ -5,6 +5,12 @@ export { StackToolbar, type EditorMode, type StackToolbarProps } from "./StackTo
 
 // Panels
 export { InstructionsEditor, type InstructionsEditorProps } from "./panels/InstructionsEditor";
+export {
+  StackOptionsPanel,
+  type StackPreferences,
+  type TokenBudget,
+  type StackOptionsPanelProps,
+} from "./panels/StackOptionsPanel";
 
 // Nodes
 export {

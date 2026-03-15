@@ -8,7 +8,9 @@ import {
   Copy,
   Check,
   ArrowUpRight,
+  Layers,
 } from "lucide-react";
+import { authFetch } from "../../../lib/api";
 
 export const Route = createFileRoute("/_authed/dashboard/")({
   component: DashboardPage,
@@ -34,6 +36,24 @@ interface DashboardStats {
   skills: {
     installed: number;
   };
+  stacks: {
+    count: number;
+    recent: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      icon: string | null;
+      color: string | null;
+    }>;
+  };
+  flows: {
+    count: number;
+    recent: Array<{
+      id: string;
+      name: string;
+      isActive: boolean;
+    }>;
+  };
 }
 
 function DashboardPage() {
@@ -52,25 +72,69 @@ function DashboardPage() {
   async function fetchStats() {
     setLoading(true);
     try {
-      // For now, return mock data - we'll add the API endpoint later
+      // Fetch user stats, tokens, stacks, and flows in parallel
+      const [statsRes, tokensRes, stacksRes, flowsRes] = await Promise.all([
+        authFetch("/api/user/stats"),
+        authFetch("/api/user/tokens"),
+        authFetch("/api/stacks?filter=my&limit=3"),
+        authFetch("/api/flows?filter=my&limit=3"),
+      ]);
+
+      const statsData = statsRes.ok ? await statsRes.json() : {};
+      const tokensData = tokensRes.ok ? await tokensRes.json() : { tokens: [] };
+      const stacksData = stacksRes.ok ? await stacksRes.json() : { stacks: [], total: 0 };
+      const flowsData = flowsRes.ok ? await flowsRes.json() : { flows: [], total: 0 };
+
       setStats({
-        plan: "free",
+        plan: statsData.plan || "free",
         apiCalls: {
-          used: 0,
-          limit: 2000,
-          percentUsed: 0,
+          used: statsData.apiCalls?.used || 0,
+          limit: statsData.apiCalls?.limit || 2000,
+          percentUsed: statsData.apiCalls?.percentUsed || 0,
         },
         apiKeys: {
-          count: 0,
-          limit: 1,
-          keys: [],
+          count: statsData.apiKeys?.count || 0,
+          limit: statsData.apiKeys?.limit || 1,
+          keys: (tokensData.tokens || []).slice(0, 3).map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            prefix: t.tokenPrefix,
+            lastUsed: t.lastUsedAt,
+          })),
         },
         skills: {
-          installed: 0,
+          installed: statsData.skills?.installed || 0,
+        },
+        stacks: {
+          count: stacksData.total || stacksData.stacks?.length || 0,
+          recent: (stacksData.stacks || []).slice(0, 3).map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            slug: s.slug,
+            icon: s.icon,
+            color: s.color,
+          })),
+        },
+        flows: {
+          count: flowsData.total || flowsData.flows?.length || 0,
+          recent: (flowsData.flows || []).slice(0, 3).map((f: any) => ({
+            id: f.id,
+            name: f.name,
+            isActive: f.isActive,
+          })),
         },
       });
     } catch (err) {
       console.error("Failed to fetch stats:", err);
+      // Fallback to defaults on error
+      setStats({
+        plan: "free",
+        apiCalls: { used: 0, limit: 2000, percentUsed: 0 },
+        apiKeys: { count: 0, limit: 1, keys: [] },
+        skills: { installed: 0 },
+        stacks: { count: 0, recent: [] },
+        flows: { count: 0, recent: [] },
+      });
     } finally {
       setLoading(false);
     }
@@ -239,8 +303,110 @@ function DashboardPage() {
           )}
         </div>
 
+        {/* My Stacks Section */}
+        <div className="mt-8 md:mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
+              My Stacks
+            </h2>
+            <Link
+              to="/dashboard/stacks"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-accent hover:underline"
+            >
+              View All
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {stats?.stacks.recent && stats.stacks.recent.length > 0 ? (
+            <div className="border border-border">
+              {stats.stacks.recent.map((stack, idx) => (
+                <Link
+                  key={stack.id}
+                  to="/dashboard/stacks/$stackId"
+                  params={{ stackId: stack.id }}
+                  className={`flex items-center gap-3 p-4 transition-colors hover:bg-muted/30 ${
+                    idx !== stats.stacks.recent.length - 1 ? "border-b border-border" : ""
+                  }`}
+                >
+                  <div
+                    className="flex h-8 w-8 shrink-0 items-center justify-center"
+                    style={{ backgroundColor: stack.color || "var(--color-accent)", color: "white" }}
+                  >
+                    <Layers className="h-4 w-4" />
+                  </div>
+                  <span className="font-mono text-sm font-bold uppercase truncate">{stack.name}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="border border-dashed border-border p-8 text-center">
+              <Layers className="mx-auto h-8 w-8 text-muted-foreground" />
+              <p className="mt-3 font-mono text-sm text-muted-foreground">
+                No stacks yet
+              </p>
+              <Link
+                to="/dashboard/stacks/new"
+                className="mt-4 inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90"
+              >
+                Create Your First Stack
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* My Flows Section */}
+        <div className="mt-8 md:mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
+              My Flows
+            </h2>
+            <Link
+              to="/dashboard/flows"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-accent hover:underline"
+            >
+              View All
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {stats?.flows.recent && stats.flows.recent.length > 0 ? (
+            <div className="border border-border">
+              {stats.flows.recent.map((flow, idx) => (
+                <Link
+                  key={flow.id}
+                  to="/dashboard/flows/$flowId"
+                  params={{ flowId: flow.id }}
+                  className={`flex items-center gap-3 p-4 transition-colors hover:bg-muted/30 ${
+                    idx !== stats.flows.recent.length - 1 ? "border-b border-border" : ""
+                  }`}
+                >
+                  {flow.isActive && <span className="h-2 w-2 shrink-0 rounded-full bg-accent animate-pulse" />}
+                  <Zap className="h-4 w-4 shrink-0 text-accent" />
+                  <span className="font-mono text-sm font-bold uppercase truncate">{flow.name}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="border border-dashed border-border p-8 text-center">
+              <Zap className="mx-auto h-8 w-8 text-muted-foreground" />
+              <p className="mt-3 font-mono text-sm text-muted-foreground">
+                No flows yet
+              </p>
+              <Link
+                to="/dashboard/flows/new"
+                className="mt-4 inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90"
+              >
+                Create Your First Flow
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          )}
+        </div>
+
         {/* Quick Actions */}
-        <div className="mt-8 md:mt-12 grid grid-cols-1 gap-px bg-border border border-border sm:grid-cols-3">
+        <div className="mt-8 md:mt-12 grid grid-cols-1 gap-px bg-border border border-border sm:grid-cols-2 lg:grid-cols-4">
           <Link
             to="/dashboard/keys"
             className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
@@ -252,22 +418,37 @@ function DashboardPage() {
               </span>
             </div>
             <p className="mt-2 font-mono text-xs text-muted-foreground">
-              Create and manage API keys for your integrations
+              Create and manage API keys
             </p>
           </Link>
 
           <Link
-            to="/"
+            to="/dashboard/stacks"
+            className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
+          >
+            <div className="flex items-center gap-3">
+              <Layers className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-foreground">
+                Stacks
+              </span>
+            </div>
+            <p className="mt-2 font-mono text-xs text-muted-foreground">
+              AI project scaffolding templates
+            </p>
+          </Link>
+
+          <Link
+            to="/dashboard/flows"
             className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
           >
             <div className="flex items-center gap-3">
               <Zap className="h-4 w-4 text-accent" />
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-foreground">
-                Browse Content
+                Flows
               </span>
             </div>
             <p className="mt-2 font-mono text-xs text-muted-foreground">
-              Explore docs, servers, and skills
+              AI coding preferences and context
             </p>
           </Link>
 
@@ -282,7 +463,7 @@ function DashboardPage() {
               </span>
             </div>
             <p className="mt-2 font-mono text-xs text-muted-foreground">
-              Manage your subscription and payment
+              Manage subscription and payment
             </p>
           </Link>
         </div>

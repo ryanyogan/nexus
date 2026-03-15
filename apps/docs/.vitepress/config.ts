@@ -53,6 +53,7 @@ export default defineConfig({
     // Navigation bar
     nav: [
       { text: 'Guide', link: '/getting-started/introduction' },
+      { text: 'Stacks', link: '/stacks/overview' },
       { text: 'Flows', link: '/flows/overview' },
       { text: 'MCP Tools', link: '/tools/overview' },
       { text: 'CLI', link: '/cli/overview' },
@@ -86,6 +87,19 @@ export default defineConfig({
             { text: 'VS Code', link: '/configuration/vscode' },
             { text: 'OpenCode', link: '/configuration/opencode' },
             { text: 'Environment Variables', link: '/configuration/environment' },
+          ],
+        },
+        {
+          text: 'Stacks',
+          collapsed: false,
+          items: [
+            { text: 'Overview', link: '/stacks/overview' },
+            { text: 'Quickstart', link: '/stacks/quickstart' },
+            { text: 'Visual Canvas', link: '/stacks/visual-canvas' },
+            { text: 'Composing Stacks', link: '/stacks/composing' },
+            { text: 'MCP Tools', link: '/stacks/mcp-tools' },
+            { text: 'Marketplace', link: '/stacks/marketplace' },
+            { text: 'Starter Stacks', link: '/stacks/starter-stacks' },
           ],
         },
         {

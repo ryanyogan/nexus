@@ -18,6 +18,19 @@ import {
   X,
   Loader2,
   Layers,
+  Cloud,
+  Triangle,
+  Database,
+  Flame,
+  Cog,
+  Box,
+  Gem,
+  Bird,
+  Monitor,
+  Palette,
+  Component,
+  Terminal,
+  TestTube,
 } from "lucide-react";
 
 // ============================================================================
@@ -69,15 +82,33 @@ interface SkillItem {
   lastQueriedAt: string | null;
 }
 
-type ContentItem = LibraryItem | ServerItem | SkillItem;
+interface StackItem {
+  type: "stack";
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  layer: number;
+  icon: string | null;
+  color: string | null;
+  useCount: number;
+  forkCount: number;
+  isStarter: boolean;
+  isFeatured: boolean;
+  updatedAt: string;
+}
+
+type ContentItem = LibraryItem | ServerItem | SkillItem | StackItem;
 type SortMode = "popular" | "trending" | "recent";
-type ContentFilter = "all" | "docs" | "servers" | "skills";
+type ContentFilter = "all" | "docs" | "servers" | "skills" | "stacks";
 
 interface HomePageData {
   stats: {
     libraries: number;
     servers: number;
     skills: number;
+    stacks: number;
   };
   items: ContentItem[];
   hasMore: boolean;
@@ -130,10 +161,19 @@ const getHomePageData = createServerFn({ method: "GET" })
         .from(schema.skills)
         .where(eq(schema.skills.isActive, true));
 
+      const [stackStats] = await db
+        .select({ total: sql<number>`count(*)` })
+        .from(schema.stacks)
+        .where(and(
+          eq(schema.stacks.isActive, true),
+          or(eq(schema.stacks.isPublic, true), eq(schema.stacks.isStarter, true))
+        ));
+
       const stats = {
         libraries: Number(libraryStats?.indexed ?? 0),
         servers: Number(serverStats?.total ?? 0),
         skills: Number(skillStats?.total ?? 0),
+        stacks: Number(stackStats?.total ?? 0),
       };
 
       // Build queries for all three content types
@@ -161,6 +201,14 @@ const getHomePageData = createServerFn({ method: "GET" })
           case "popular": return [desc(schema.skills.installCount), desc(schema.skills.usageCount)];
           case "trending": return [desc(schema.skills.lastQueriedAt), desc(schema.skills.usageCount)];
           case "recent": return [desc(schema.skills.updatedAt)];
+        }
+      };
+
+      const getStackOrder = () => {
+        switch (sort) {
+          case "popular": return [desc(schema.stacks.useCount), desc(schema.stacks.forkCount)];
+          case "trending": return [desc(schema.stacks.useCount), desc(schema.stacks.updatedAt)];
+          case "recent": return [desc(schema.stacks.updatedAt)];
         }
       };
 
@@ -295,11 +343,62 @@ const getHomePageData = createServerFn({ method: "GET" })
         });
       }
 
+      // Fetch stacks (public or starter only)
+      const stackConditions = [
+        eq(schema.stacks.isActive, true),
+        or(eq(schema.stacks.isPublic, true), eq(schema.stacks.isStarter, true))!,
+      ];
+      if (q) {
+        stackConditions.push(
+          sql`(${schema.stacks.name} LIKE ${"%" + q + "%"} OR ${schema.stacks.description} LIKE ${"%" + q + "%"})`
+        );
+      }
+
+      const stackResults = await db
+        .select({
+          id: schema.stacks.id,
+          name: schema.stacks.name,
+          slug: schema.stacks.slug,
+          description: schema.stacks.description,
+          category: schema.stacks.category,
+          layer: schema.stacks.layer,
+          icon: schema.stacks.icon,
+          color: schema.stacks.color,
+          useCount: schema.stacks.useCount,
+          forkCount: schema.stacks.forkCount,
+          isStarter: schema.stacks.isStarter,
+          isFeatured: schema.stacks.isFeatured,
+          updatedAt: schema.stacks.updatedAt,
+        })
+        .from(schema.stacks)
+        .where(and(...stackConditions))
+        .orderBy(...getStackOrder())
+        .limit(PAGE_SIZE);
+
+      for (const stack of stackResults) {
+        items.push({
+          type: "stack",
+          id: stack.id,
+          name: stack.name,
+          slug: stack.slug,
+          description: stack.description,
+          category: stack.category,
+          layer: stack.layer,
+          icon: stack.icon,
+          color: stack.color,
+          useCount: stack.useCount,
+          forkCount: stack.forkCount,
+          isStarter: stack.isStarter,
+          isFeatured: stack.isFeatured,
+          updatedAt: stack.updatedAt,
+        });
+      }
+
       // Sort combined results by normalized score
       const sortedItems = normalizeAndSort(items, sort);
       
       // Calculate total
-      const total = stats.libraries + stats.servers + stats.skills;
+      const total = stats.libraries + stats.servers + stats.skills + stats.stacks;
 
       return {
         stats,
@@ -316,10 +415,12 @@ function normalizeAndSort(items: ContentItem[], sort: SortMode): ContentItem[] {
   const docs = items.filter((i): i is LibraryItem => i.type === "doc");
   const servers = items.filter((i): i is ServerItem => i.type === "server");
   const skills = items.filter((i): i is SkillItem => i.type === "skill");
+  const stacks = items.filter((i): i is StackItem => i.type === "stack");
   
   const maxDocScore = Math.max(...docs.map(d => getDocScore(d, sort)), 1);
   const maxServerScore = Math.max(...servers.map(s => getServerScore(s, sort)), 1);
   const maxSkillScore = Math.max(...skills.map(s => getSkillScore(s, sort)), 1);
+  const maxStackScore = Math.max(...stacks.map(s => getStackScore(s, sort)), 1);
   
   // Assign normalized scores
   const scored = items.map(item => {
@@ -328,8 +429,10 @@ function normalizeAndSort(items: ContentItem[], sort: SortMode): ContentItem[] {
       normalizedScore = getDocScore(item, sort) / maxDocScore;
     } else if (item.type === "server") {
       normalizedScore = getServerScore(item, sort) / maxServerScore;
-    } else {
+    } else if (item.type === "skill") {
       normalizedScore = getSkillScore(item, sort) / maxSkillScore;
+    } else if (item.type === "stack") {
+      normalizedScore = getStackScore(item, sort) / maxStackScore;
     }
     return { item, score: normalizedScore };
   });
@@ -364,13 +467,28 @@ function getSkillScore(skill: SkillItem, sort: SortMode): number {
   }
 }
 
+function getStackScore(stack: StackItem, sort: SortMode): number {
+  // Boost starter/featured stacks so they appear in mixed results
+  const starterBoost = stack.isStarter ? 10000 : 0;
+  const featuredBoost = stack.isFeatured ? 5000 : 0;
+  
+  switch (sort) {
+    case "popular": 
+      return stack.useCount + stack.forkCount + starterBoost + featuredBoost;
+    case "trending": 
+      return stack.useCount + starterBoost + featuredBoost;
+    case "recent": 
+      return new Date(stack.updatedAt).getTime();
+  }
+}
+
 // ============================================================================
 // Search Params Schema
 // ============================================================================
 
 const searchSchema = z.object({
   sort: z.enum(["popular", "trending", "recent"]).optional().catch("popular"),
-  filter: z.enum(["all", "docs", "servers", "skills"]).optional().catch("all"),
+  filter: z.enum(["all", "docs", "servers", "skills", "stacks"]).optional().catch("all"),
   q: z.string().optional().catch(undefined),
 });
 
@@ -474,6 +592,7 @@ function HomePage() {
         docs: "doc",
         servers: "server",
         skills: "skill",
+        stacks: "stack",
       };
       filtered = items.filter(item => item.type === typeMap[activeFilter]);
     }
@@ -544,22 +663,24 @@ function HomePage() {
   };
 
   // Tabs configuration - content type filters with icons
-  const tabs: { id: ContentFilter; label: string; icon: "docs" | "servers" | "skills" | "flows" | null; href?: string }[] = [
+  const tabs: { id: ContentFilter; label: string; icon: "docs" | "servers" | "skills" | "stacks" | "flows" | null; href?: string }[] = [
     { id: "all", label: "ALL", icon: null },
     { id: "docs", label: "DOCS", icon: "docs" },
     { id: "servers", label: "SERVERS", icon: "servers" },
     { id: "skills", label: "SKILLS", icon: "skills" },
+    { id: "stacks", label: "STACKS", icon: "stacks" },
     { id: "all", label: "FLOWS", icon: "flows", href: "/dashboard/flows" },
   ];
   
-  const getTabIcon = (iconType: "docs" | "servers" | "skills" | "flows" | null) => {
+  const getTabIcon = (iconType: "docs" | "servers" | "skills" | "stacks" | "flows" | null) => {
     if (!iconType) return null;
     const iconClass = "h-3 w-3 sm:h-3.5 sm:w-3.5";
     switch (iconType) {
       case "docs": return <BookOpen className={iconClass} />;
       case "servers": return <Server className={iconClass} />;
       case "skills": return <Zap className={iconClass} />;
-      case "flows": return <Layers className={iconClass} />;
+      case "stacks": return <Layers className={iconClass} />;
+      case "flows": return <Zap className={iconClass} />;
     }
   };
 
@@ -773,6 +894,8 @@ function HomePage() {
               <span>{loaderData.stats.servers} servers</span>
               <span className="text-border">|</span>
               <span>{loaderData.stats.skills} skills</span>
+              <span className="text-border">|</span>
+              <span>{loaderData.stats.stacks} stacks</span>
             </div>
           </div>
 
@@ -805,17 +928,43 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
         return `/explore/servers/${item.id}`;
       case "skill":
         return `/explore/skills/${item.id}`;
+      case "stack":
+        return `/explore/stacks/${item.slug}`;
     }
   };
 
   const getIcon = () => {
+    const iconClass = "h-3 w-3 sm:h-3.5 sm:w-3.5";
     switch (item.type) {
       case "doc":
-        return <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />;
+        return <BookOpen className={iconClass} />;
       case "server":
-        return <Server className="h-3 w-3 sm:h-3.5 sm:w-3.5" />;
+        return <Server className={iconClass} />;
       case "skill":
-        return <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5" />;
+        return <Zap className={iconClass} />;
+      case "stack": {
+        // Use custom icon if available, with color
+        const color = item.color || undefined;
+        const style = color ? { color } : undefined;
+        switch (item.icon) {
+          case "cloud": return <Cloud className={iconClass} style={style} />;
+          case "triangle": return <Triangle className={iconClass} style={style} />;
+          case "database": return <Database className={iconClass} style={style} />;
+          case "flame": return <Flame className={iconClass} style={style} />;
+          case "zap": return <Zap className={iconClass} style={style} />;
+          case "cog": return <Cog className={iconClass} style={style} />;
+          case "layers": return <Layers className={iconClass} style={style} />;
+          case "box": return <Box className={iconClass} style={style} />;
+          case "gem": return <Gem className={iconClass} style={style} />;
+          case "bird": return <Bird className={iconClass} style={style} />;
+          case "monitor": return <Monitor className={iconClass} style={style} />;
+          case "palette": return <Palette className={iconClass} style={style} />;
+          case "component": return <Component className={iconClass} style={style} />;
+          case "terminal": return <Terminal className={iconClass} style={style} />;
+          case "test-tube": return <TestTube className={iconClass} style={style} />;
+          default: return <Layers className={iconClass} style={style} />;
+        }
+      }
     }
   };
 
@@ -840,10 +989,16 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
         { value: formatNumber(item.weeklyDownloads), label: "downloads" },
       ];
     }
-    // skills
+    if (item.type === "skill") {
+      return [
+        { value: formatNumber(item.installCount), label: "installs" },
+        { value: formatNumber(item.usageCount), label: "uses" },
+      ];
+    }
+    // stacks
     return [
-      { value: formatNumber(item.installCount), label: "installs" },
-      { value: formatNumber(item.usageCount), label: "uses" },
+      { value: formatNumber(item.useCount), label: "uses" },
+      { value: formatNumber(item.forkCount), label: "forks" },
     ];
   };
 
