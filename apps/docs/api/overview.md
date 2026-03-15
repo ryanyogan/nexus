@@ -2,6 +2,10 @@
 
 The Nexus API provides programmatic access to documentation search, memory, and server registry.
 
+<script setup>
+import Callout from '../.vitepress/theme/components/Callout.vue'
+</script>
+
 ## Base URL
 
 ```
@@ -10,13 +14,43 @@ https://api.nexus.yogan.dev
 
 ## Authentication
 
-Memory write operations require authentication. Include the token in the Authorization header:
+<Callout type="warning" title="API Key Required">
+All API and MCP tool calls require an API key. Get one by running `npx @nexus/cli auth login` or at [nexus.yogan.dev/dashboard/keys](https://nexus.yogan.dev/dashboard/keys).
+</Callout>
+
+Include your API key in the Authorization header:
 
 ```
-Authorization: Bearer <token>
+Authorization: Bearer nxs_your_api_key_here
 ```
 
-## Endpoints
+See the [Authentication Guide](/api/authentication) for detailed setup instructions.
+
+## MCP Endpoint
+
+For MCP clients (AI assistants), use:
+
+```
+https://api.nexus.yogan.dev/mcp
+```
+
+Configure your MCP client with the Nexus CLI:
+
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": ["-y", "@nexus/cli", "serve"],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+## REST Endpoints
 
 ### Documentation
 
@@ -68,3 +102,24 @@ All responses are JSON:
   }
 }
 ```
+
+### Authentication Errors
+
+```json
+{
+  "error": {
+    "code": -32001,
+    "message": "API key required. Get your API key at https://nexus.yogan.dev/dashboard/keys or run: npx @nexus/cli auth login"
+  }
+}
+```
+
+## Rate Limits
+
+| Plan | Requests/Month |
+|------|----------------|
+| Free | 2,000 |
+| Pro | Unlimited |
+| Team | Unlimited |
+
+See [Rate Limits](/api/rate-limits) for details.

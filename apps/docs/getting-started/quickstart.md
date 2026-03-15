@@ -9,6 +9,17 @@ import FeatureGrid from '../.vitepress/theme/components/FeatureGrid.vue'
 import FeatureCard from '../.vitepress/theme/components/FeatureCard.vue'
 </script>
 
+## Prerequisites
+
+Before starting, make sure you've completed the [Installation](/getting-started/installation) guide:
+
+1. **Get your API key** via CLI login or dashboard
+2. **Configure your AI client** with your API key
+
+<Callout type="tip" title="Quick Setup">
+Run `npx @nexus/cli auth login` to authenticate, then `npx @nexus/cli init` to configure your AI client automatically.
+</Callout>
+
 ## 1. Search Documentation
 
 Ask your AI to search library documentation:
@@ -166,6 +177,16 @@ Always include a project name when saving memories. This keeps memories organize
 
 <Callout type="tip" title="Save Often">
 Save important context, decisions, and learnings as you work. Your future self (and AI) will thank you.
+</Callout>
+
+## Troubleshooting
+
+<Callout type="warning" title="Authentication Error?">
+If you see "API key required" or "Authentication required", make sure you've:
+1. Run `npx @nexus/cli auth login` to get your API key
+2. Added `NEXUS_API_KEY` to your client config (or used CLI login)
+
+See the [Authentication Guide](/api/authentication) for detailed setup instructions.
 </Callout>
 
 ## Next Steps

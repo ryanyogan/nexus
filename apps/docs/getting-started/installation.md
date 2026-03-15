@@ -13,13 +13,40 @@ import Callout from '../.vitepress/theme/components/Callout.vue'
 ## Prerequisites
 
 - An MCP-compatible AI client (Claude Desktop, Cursor, VS Code, etc.)
-- Node.js 18+ (for local mode only)
+- Node.js 18+ (for CLI mode)
 
-## Remote Mode (Recommended)
+## Step 1: Get Your API Key
 
-Connect directly to the hosted Nexus service with zero setup.
+Nexus requires an API key for all tool calls. Choose one of these methods:
 
-<Tabs :labels="['Claude Code', 'Claude Desktop', 'Cursor', 'VS Code']">
+### Option A: CLI Login (Recommended)
+
+The easiest way - opens your browser for GitHub authentication:
+
+<Terminal title="Terminal">
+<span class="terminal-line prompt">npx @nexus/cli auth login</span>
+<span class="terminal-line output"></span>
+<span class="terminal-line output"><span class="text-muted">Opening browser for authentication...</span></span>
+<span class="terminal-line output"><span class="text-green">Authenticated successfully!</span></span>
+<span class="terminal-line output">API key saved to ~/.nexus/config.json</span>
+</Terminal>
+
+Your API key is automatically stored and used by the CLI.
+
+### Option B: Dashboard
+
+1. Sign in at [nexus.yogan.dev](https://nexus.yogan.dev)
+2. Go to [Dashboard → API Keys](https://nexus.yogan.dev/dashboard/keys)
+3. Click **Create API Key**
+4. Copy your key (starts with `nxs_`)
+
+<Callout type="warning" title="Save Your Key">
+API keys are only shown once. Store it securely - you'll need it for Step 2!
+</Callout>
+
+## Step 2: Configure Your AI Client
+
+<Tabs :labels="['Claude Code', 'Claude Desktop', 'Cursor', 'VS Code', 'Other Clients']">
   <Tab :index="0">
 
 ### Claude Code
@@ -27,15 +54,23 @@ Connect directly to the hosted Nexus service with zero setup.
 The fastest way to add Nexus:
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">claude mcp add nexus -- npx -y @anthropic-ai/mcp-remote https://mcp.nexus.yogan.dev/sse</span>
+<span class="terminal-line prompt">claude mcp add nexus -- npx -y @nexus/cli serve</span>
 <span class="terminal-line output"><span class="text-green">Added MCP server nexus</span></span>
+</Terminal>
+
+If you used CLI login, you're done! The CLI automatically uses your stored API key.
+
+**Manual API key setup:**
+
+<Terminal title="Terminal">
+<span class="terminal-line prompt">claude mcp add nexus -e NEXUS_API_KEY=nxs_your_key_here -- npx -y @nexus/cli serve</span>
 </Terminal>
 
 To verify the installation:
 
 <Terminal title="Terminal">
 <span class="terminal-line prompt">claude mcp list</span>
-<span class="terminal-line output">nexus    npx -y @anthropic-ai/mcp-remote https://mcp.nexus.yogan.dev/sse</span>
+<span class="terminal-line output">nexus    npx -y @nexus/cli serve</span>
 </Terminal>
 
   </Tab>
@@ -56,11 +91,18 @@ Edit your Claude Desktop configuration file:
   "mcpServers": {
     "nexus": {
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-remote", "https://mcp.nexus.yogan.dev/sse"]
+      "args": ["-y", "@nexus/cli", "serve"],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
     }
   }
 }
 ```
+
+<Callout type="tip" title="Skip the env if you used CLI login">
+If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can omit the `env` section.
+</Callout>
 
 Restart Claude Desktop after saving the file.
 
@@ -80,11 +122,18 @@ Edit your Cursor MCP configuration:
   "mcpServers": {
     "nexus": {
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-remote", "https://mcp.nexus.yogan.dev/sse"]
+      "args": ["-y", "@nexus/cli", "serve"],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
     }
   }
 }
 ```
+
+<Callout type="tip" title="Skip the env if you used CLI login">
+If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can omit the `env` section.
+</Callout>
 
 Restart Cursor after saving the file.
 
@@ -104,7 +153,10 @@ Edit your VS Code settings:
   "github.copilot.chat.mcpServers": {
     "nexus": {
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-remote", "https://mcp.nexus.yogan.dev/sse"]
+      "args": ["-y", "@nexus/cli", "serve"],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
     }
   }
 }
@@ -113,82 +165,42 @@ Edit your VS Code settings:
 Restart VS Code after saving.
 
   </Tab>
-</Tabs>
+  <Tab :index="4">
 
-## Local Mode
+### Other MCP Clients
 
-Run Nexus locally for offline access or development.
+Most MCP clients (Cline, Continue, Codex, goose, etc.) follow a similar pattern:
 
-### Install the CLI
+| Setting | Value |
+|---------|-------|
+| Command | `npx` |
+| Args | `["-y", "@nexus/cli", "serve"]` |
+| Environment | `NEXUS_API_KEY=nxs_your_key` |
 
-<Terminal title="Terminal">
-<span class="terminal-line prompt">npm install -g @nexus/cli</span>
-<span class="terminal-line output"><span class="text-green">+ @nexus/cli@1.0.0</span></span>
-<span class="terminal-line output">added 42 packages in 3s</span>
-</Terminal>
-
-Or use npx without installing:
-
-<CliCommand command="npx @nexus/cli serve" />
-
-### Configure Your Client
-
-<Tabs :labels="['Claude Code', 'Claude Desktop', 'Cursor', 'VS Code']">
-  <Tab :index="0">
-
-### Claude Code (Local)
-
-<Terminal title="Terminal">
-<span class="terminal-line prompt">claude mcp add nexus-local -- nexus serve</span>
-<span class="terminal-line output"><span class="text-green">Added MCP server nexus-local</span></span>
-</Terminal>
-
-  </Tab>
-  <Tab :index="1">
-
-### Claude Desktop (Local)
+Example for Cline (`~/.cline/mcp.json`):
 
 ```json
 {
   "mcpServers": {
     "nexus": {
-      "command": "nexus",
-      "args": ["serve"]
+      "command": "npx",
+      "args": ["-y", "@nexus/cli", "serve"],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
     }
   }
 }
 ```
 
-  </Tab>
-  <Tab :index="2">
+### HTTP Transport (Advanced)
 
-### Cursor (Local)
+For clients supporting HTTP/SSE transport:
 
-```json
-{
-  "mcpServers": {
-    "nexus": {
-      "command": "nexus",
-      "args": ["serve"]
-    }
-  }
-}
 ```
-
-  </Tab>
-  <Tab :index="3">
-
-### VS Code (Local)
-
-```json
-{
-  "github.copilot.chat.mcpServers": {
-    "nexus": {
-      "command": "nexus",
-      "args": ["serve"]
-    }
-  }
-}
+URL: https://api.nexus.yogan.dev/mcp
+Headers:
+  Authorization: Bearer nxs_your_api_key_here
 ```
 
   </Tab>
@@ -199,7 +211,7 @@ Or use npx without installing:
 The Nexus CLI can automatically configure your AI clients:
 
 <Terminal title="Terminal">
-<span class="terminal-line prompt">nexus init</span>
+<span class="terminal-line prompt">npx @nexus/cli init</span>
 <span class="terminal-line"></span>
 <span class="terminal-line output"><span class="text-bold">Nexus Setup</span></span>
 <span class="terminal-line output"></span>
@@ -221,6 +233,10 @@ After installation, verify Nexus is working by asking your AI assistant:
 
 The AI should use the `query-docs` tool to search the React documentation.
 
+<Callout type="warning" title="Authentication Error?">
+If you see an error like "API key required", make sure you've completed Step 1 and configured your API key in Step 2.
+</Callout>
+
 <Callout type="tip" title="Troubleshooting">
 If Nexus isn't working, check the [Troubleshooting Guide](/troubleshooting) for common issues and solutions.
 </Callout>
@@ -228,5 +244,6 @@ If Nexus isn't working, check the [Troubleshooting Guide](/troubleshooting) for 
 ## Next Steps
 
 - [Quick Start](/getting-started/quickstart) - Learn the basics of using Nexus
+- [Authentication Guide](/api/authentication) - Learn more about API keys and scopes
 - [MCP Tools](/tools/overview) - Explore all available tools
 - [Memory Guide](/guides/project-memory) - Set up persistent project memory
