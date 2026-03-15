@@ -17,6 +17,7 @@ import {
   ArrowUpRight,
   X,
   Loader2,
+  Layers,
 } from "lucide-react";
 
 // ============================================================================
@@ -543,21 +544,22 @@ function HomePage() {
   };
 
   // Tabs configuration - content type filters with icons
-  const tabs: { id: ContentFilter; label: string; icon: "docs" | "servers" | "skills" | null; disabled?: boolean }[] = [
+  const tabs: { id: ContentFilter; label: string; icon: "docs" | "servers" | "skills" | "flows" | null; href?: string }[] = [
     { id: "all", label: "ALL", icon: null },
     { id: "docs", label: "DOCS", icon: "docs" },
     { id: "servers", label: "SERVERS", icon: "servers" },
     { id: "skills", label: "SKILLS", icon: "skills" },
-    { id: "all", label: "FLOWS", icon: null, disabled: true }, // Coming soon
+    { id: "all", label: "FLOWS", icon: "flows", href: "/dashboard/flows" },
   ];
   
-  const getTabIcon = (iconType: "docs" | "servers" | "skills" | null) => {
+  const getTabIcon = (iconType: "docs" | "servers" | "skills" | "flows" | null) => {
     if (!iconType) return null;
     const iconClass = "h-3 w-3 sm:h-3.5 sm:w-3.5";
     switch (iconType) {
       case "docs": return <BookOpen className={iconClass} />;
       case "servers": return <Server className={iconClass} />;
       case "skills": return <Zap className={iconClass} />;
+      case "flows": return <Layers className={iconClass} />;
     }
   };
 
@@ -594,53 +596,55 @@ function HomePage() {
           </p>
         </div>
 
-        {/* Search */}
-        <form onSubmit={handleSearch} className="mt-6 mb-4 md:mt-10 md:mb-6 lg:mt-12">
-          <div className="flex h-9 max-w-sm items-center gap-2 border border-border bg-background px-3 font-mono transition-colors focus-within:border-foreground md:h-10 md:max-w-md">
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  clearSearch();
-                  inputRef.current?.blur();
-                }
-              }}
-              placeholder="Search docs, servers, skills..."
-              className="h-full flex-1 bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
-            />
-            {inputValue && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="shrink-0 p-1 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </form>
+        {/* Search + Tabs */}
+        <div className="mt-8 md:mt-12 lg:mt-16">
+          <form onSubmit={handleSearch}>
+            <div className="flex h-10 max-w-md items-center gap-3 border border-foreground bg-background px-3 font-mono md:h-11 shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.3)]">
+              <Search className="h-4 w-4 shrink-0 text-foreground" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    clearSearch();
+                    inputRef.current?.blur();
+                  }
+                }}
+                placeholder="Search docs, servers, skills..."
+                className="h-full flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+              />
+              {inputValue && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="shrink-0 p-1 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </form>
 
-        {/* Tabs */}
-        <div className="mb-4 flex items-center gap-0 border-b border-border md:mb-6">
+          {/* Tabs */}
+          <div className="mt-6 mb-4 flex items-center gap-0 border-b border-border md:mt-8 md:mb-6">
           {tabs.map((t, idx) => {
-            const isActive = !isSearching && activeFilter === t.id && !t.disabled;
+            const isActive = !isSearching && activeFilter === t.id && !t.href;
             
-            // Disabled tab (Flows - coming soon)
-            if (t.disabled) {
+            // External link tab (e.g., Flows links to dashboard)
+            if (t.href) {
               return (
-                <span
+                <Link
                   key={`${t.id}-${idx}`}
-                  className="flex items-center gap-1 border-b border-transparent px-2 py-2 font-mono text-xs font-bold tracking-wide text-muted-foreground/50 cursor-not-allowed -mb-px sm:gap-1.5 sm:px-4 md:py-2.5"
+                  to={t.href as "/dashboard/flows"}
+                  className="flex items-center gap-1 border-b border-transparent px-2 py-2 font-mono text-xs font-bold tracking-wide text-muted-foreground hover:text-foreground transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-2.5"
                 >
                   {getTabIcon(t.icon)}
                   <span className={t.icon ? "hidden sm:inline" : ""}>{t.label}</span>
-                </span>
+                </Link>
               );
             }
             
@@ -676,6 +680,7 @@ function HomePage() {
               <span className="hidden sm:inline">SEARCH</span>
             </button>
           )}
+        </div>
         </div>
 
         {/* Results */}

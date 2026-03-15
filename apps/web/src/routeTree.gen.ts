@@ -35,10 +35,13 @@ import { Route as CodeSessionSessionIdRouteImport } from './routes/code/session.
 import { Route as AuthedSettingsSecretsRouteImport } from './routes/_authed/settings/secrets'
 import { Route as AuthedDashboardSkillsRouteImport } from './routes/_authed/dashboard/skills'
 import { Route as AuthedDashboardKeysRouteImport } from './routes/_authed/dashboard/keys'
+import { Route as AuthedDashboardFlowsRouteImport } from './routes/_authed/dashboard/flows'
 import { Route as AuthedDashboardBillingRouteImport } from './routes/_authed/dashboard/billing'
 import { Route as AuthedAdminSubmissionsRouteImport } from './routes/_authed/admin/submissions'
 import { Route as AuthedAdminServerSubmissionsRouteImport } from './routes/_authed/admin/server-submissions'
 import { Route as AuthedAdminLibrariesRouteImport } from './routes/_authed/admin/libraries'
+import { Route as AuthedDashboardFlowsNewRouteImport } from './routes/_authed/dashboard/flows.new'
+import { Route as AuthedDashboardFlowsFlowIdRouteImport } from './routes/_authed/dashboard/flows.$flowId'
 
 const TerminalRoute = TerminalRouteImport.update({
   id: '/terminal',
@@ -171,6 +174,11 @@ const AuthedDashboardKeysRoute = AuthedDashboardKeysRouteImport.update({
   path: '/dashboard/keys',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedDashboardFlowsRoute = AuthedDashboardFlowsRouteImport.update({
+  id: '/dashboard/flows',
+  path: '/dashboard/flows',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedDashboardBillingRoute = AuthedDashboardBillingRouteImport.update({
   id: '/dashboard/billing',
   path: '/dashboard/billing',
@@ -192,6 +200,17 @@ const AuthedAdminLibrariesRoute = AuthedAdminLibrariesRouteImport.update({
   path: '/libraries',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
+const AuthedDashboardFlowsNewRoute = AuthedDashboardFlowsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthedDashboardFlowsRoute,
+} as any)
+const AuthedDashboardFlowsFlowIdRoute =
+  AuthedDashboardFlowsFlowIdRouteImport.update({
+    id: '/$flowId',
+    path: '/$flowId',
+    getParentRoute: () => AuthedDashboardFlowsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -211,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
   '/admin/submissions': typeof AuthedAdminSubmissionsRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
+  '/dashboard/flows': typeof AuthedDashboardFlowsRouteWithChildren
   '/dashboard/keys': typeof AuthedDashboardKeysRoute
   '/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/settings/secrets': typeof AuthedSettingsSecretsRoute
@@ -223,6 +243,8 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthedSettingsIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
   '/explore/skills/': typeof ExploreSkillsIndexRoute
+  '/dashboard/flows/$flowId': typeof AuthedDashboardFlowsFlowIdRoute
+  '/dashboard/flows/new': typeof AuthedDashboardFlowsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -241,6 +263,7 @@ export interface FileRoutesByTo {
   '/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
   '/admin/submissions': typeof AuthedAdminSubmissionsRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
+  '/dashboard/flows': typeof AuthedDashboardFlowsRouteWithChildren
   '/dashboard/keys': typeof AuthedDashboardKeysRoute
   '/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/settings/secrets': typeof AuthedSettingsSecretsRoute
@@ -253,6 +276,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthedSettingsIndexRoute
   '/explore/servers': typeof ExploreServersIndexRoute
   '/explore/skills': typeof ExploreSkillsIndexRoute
+  '/dashboard/flows/$flowId': typeof AuthedDashboardFlowsFlowIdRoute
+  '/dashboard/flows/new': typeof AuthedDashboardFlowsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -274,6 +299,7 @@ export interface FileRoutesById {
   '/_authed/admin/server-submissions': typeof AuthedAdminServerSubmissionsRoute
   '/_authed/admin/submissions': typeof AuthedAdminSubmissionsRoute
   '/_authed/dashboard/billing': typeof AuthedDashboardBillingRoute
+  '/_authed/dashboard/flows': typeof AuthedDashboardFlowsRouteWithChildren
   '/_authed/dashboard/keys': typeof AuthedDashboardKeysRoute
   '/_authed/dashboard/skills': typeof AuthedDashboardSkillsRoute
   '/_authed/settings/secrets': typeof AuthedSettingsSecretsRoute
@@ -286,6 +312,8 @@ export interface FileRoutesById {
   '/_authed/settings/': typeof AuthedSettingsIndexRoute
   '/explore/servers/': typeof ExploreServersIndexRoute
   '/explore/skills/': typeof ExploreSkillsIndexRoute
+  '/_authed/dashboard/flows/$flowId': typeof AuthedDashboardFlowsFlowIdRoute
+  '/_authed/dashboard/flows/new': typeof AuthedDashboardFlowsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -307,6 +335,7 @@ export interface FileRouteTypes {
     | '/admin/server-submissions'
     | '/admin/submissions'
     | '/dashboard/billing'
+    | '/dashboard/flows'
     | '/dashboard/keys'
     | '/dashboard/skills'
     | '/settings/secrets'
@@ -319,6 +348,8 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/explore/servers/'
     | '/explore/skills/'
+    | '/dashboard/flows/$flowId'
+    | '/dashboard/flows/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -337,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/server-submissions'
     | '/admin/submissions'
     | '/dashboard/billing'
+    | '/dashboard/flows'
     | '/dashboard/keys'
     | '/dashboard/skills'
     | '/settings/secrets'
@@ -349,6 +381,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/explore/servers'
     | '/explore/skills'
+    | '/dashboard/flows/$flowId'
+    | '/dashboard/flows/new'
   id:
     | '__root__'
     | '/'
@@ -369,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authed/admin/server-submissions'
     | '/_authed/admin/submissions'
     | '/_authed/dashboard/billing'
+    | '/_authed/dashboard/flows'
     | '/_authed/dashboard/keys'
     | '/_authed/dashboard/skills'
     | '/_authed/settings/secrets'
@@ -381,6 +416,8 @@ export interface FileRouteTypes {
     | '/_authed/settings/'
     | '/explore/servers/'
     | '/explore/skills/'
+    | '/_authed/dashboard/flows/$flowId'
+    | '/_authed/dashboard/flows/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -586,6 +623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardKeysRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/dashboard/flows': {
+      id: '/_authed/dashboard/flows'
+      path: '/dashboard/flows'
+      fullPath: '/dashboard/flows'
+      preLoaderRoute: typeof AuthedDashboardFlowsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/dashboard/billing': {
       id: '/_authed/dashboard/billing'
       path: '/dashboard/billing'
@@ -614,6 +658,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminLibrariesRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
+    '/_authed/dashboard/flows/new': {
+      id: '/_authed/dashboard/flows/new'
+      path: '/new'
+      fullPath: '/dashboard/flows/new'
+      preLoaderRoute: typeof AuthedDashboardFlowsNewRouteImport
+      parentRoute: typeof AuthedDashboardFlowsRoute
+    }
+    '/_authed/dashboard/flows/$flowId': {
+      id: '/_authed/dashboard/flows/$flowId'
+      path: '/$flowId'
+      fullPath: '/dashboard/flows/$flowId'
+      preLoaderRoute: typeof AuthedDashboardFlowsFlowIdRouteImport
+      parentRoute: typeof AuthedDashboardFlowsRoute
+    }
   }
 }
 
@@ -635,11 +693,25 @@ const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(
   AuthedAdminRouteChildren,
 )
 
+interface AuthedDashboardFlowsRouteChildren {
+  AuthedDashboardFlowsFlowIdRoute: typeof AuthedDashboardFlowsFlowIdRoute
+  AuthedDashboardFlowsNewRoute: typeof AuthedDashboardFlowsNewRoute
+}
+
+const AuthedDashboardFlowsRouteChildren: AuthedDashboardFlowsRouteChildren = {
+  AuthedDashboardFlowsFlowIdRoute: AuthedDashboardFlowsFlowIdRoute,
+  AuthedDashboardFlowsNewRoute: AuthedDashboardFlowsNewRoute,
+}
+
+const AuthedDashboardFlowsRouteWithChildren =
+  AuthedDashboardFlowsRoute._addFileChildren(AuthedDashboardFlowsRouteChildren)
+
 interface AuthedRouteChildren {
   AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
   AuthedSubmitRoute: typeof AuthedSubmitRoute
   AuthedSubmitServerRoute: typeof AuthedSubmitServerRoute
   AuthedDashboardBillingRoute: typeof AuthedDashboardBillingRoute
+  AuthedDashboardFlowsRoute: typeof AuthedDashboardFlowsRouteWithChildren
   AuthedDashboardKeysRoute: typeof AuthedDashboardKeysRoute
   AuthedDashboardSkillsRoute: typeof AuthedDashboardSkillsRoute
   AuthedSettingsSecretsRoute: typeof AuthedSettingsSecretsRoute
@@ -652,6 +724,7 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedSubmitRoute: AuthedSubmitRoute,
   AuthedSubmitServerRoute: AuthedSubmitServerRoute,
   AuthedDashboardBillingRoute: AuthedDashboardBillingRoute,
+  AuthedDashboardFlowsRoute: AuthedDashboardFlowsRouteWithChildren,
   AuthedDashboardKeysRoute: AuthedDashboardKeysRoute,
   AuthedDashboardSkillsRoute: AuthedDashboardSkillsRoute,
   AuthedSettingsSecretsRoute: AuthedSettingsSecretsRoute,

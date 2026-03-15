@@ -530,6 +530,10 @@ export const memories = sqliteTable(
     // Context
     project: text("project"), // Optional project name (e.g., "nexus")
     importance: integer("importance").notNull().default(5), // 1-10
+    
+    // Flow association - which flow was active when memory was saved
+    flowId: text("flow_id"), // References flows.id
+    flowSessionId: text("flow_session_id"), // References flowSessions.id
 
     // Timestamps
     createdAt: text("created_at").notNull(),
@@ -541,6 +545,7 @@ export const memories = sqliteTable(
     index("memories_scope_idx").on(table.scope),
     index("memories_type_idx").on(table.type),
     index("memories_project_idx").on(table.project),
+    index("memories_flow_idx").on(table.flowId),
     index("memories_created_at_idx").on(table.createdAt),
   ]
 );
@@ -1093,6 +1098,691 @@ export const userSkillsRelations = relations(userSkills, ({ one }) => ({
 }));
 
 // ============================================================================
+// Flows - Pre-configured AI working environments
+// ============================================================================
+
+export const FLOW_CATEGORIES = [
+  "frontend",
+  "backend",
+  "fullstack",
+  "testing",
+  "devops",
+  "design",
+  "api",
+  "mobile",
+  "ai",
+  "general",
+] as const;
+export type FlowCategory = (typeof FLOW_CATEGORIES)[number];
+
+export const FLOW_VERBOSITY = ["concise", "balanced", "detailed"] as const;
+export type FlowVerbosity = (typeof FLOW_VERBOSITY)[number];
+
+export const FLOW_CODE_STYLE = ["minimal", "documented", "verbose"] as const;
+export type FlowCodeStyle = (typeof FLOW_CODE_STYLE)[number];
+
+export interface FlowPreferences {
+  verbosity?: FlowVerbosity;
+  codeStyle?: FlowCodeStyle;
+  responseFormat?: ResponseFormat;
+  useEmojis?: boolean;
+  preferredLanguage?: string;
+  customRules?: string[];
+}
+
+export const flows = sqliteTable(
+  "flows",
+  {
+    id: text("id").primaryKey(),
+    
+    // Ownership
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // NULL = system/starter pack
+    
+    // Identity
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description"),
+    
+    // The core system prompt
+    systemPrompt: text("system_prompt").notNull(),
+    
+    // Full content stored in R2 (for large prompts/additional context)
+    r2Key: text("r2_key"),
+    
+    // Inheritance - allows flows to extend other flows (max 3 levels)
+    // Self-reference handled via relation, not FK constraint for SQLite compatibility
+    parentFlowId: text("parent_flow_id"),
+    
+    // Link to project (for project-specific flows)
+    projectId: text("project_id"),
+    
+    // Bundled resources (JSON arrays of IDs)
+    skills: text("skills", { mode: "json" }).$type<string[]>().notNull().default([]),
+    libraries: text("libraries", { mode: "json" }).$type<string[]>().notNull().default([]),
+    mcpServers: text("mcp_servers", { mode: "json" }).$type<string[]>().notNull().default([]),
+    
+    // Preferences
+    preferences: text("preferences", { mode: "json" }).$type<FlowPreferences>().default({}),
+    
+    // Classification
+    category: text("category", { enum: FLOW_CATEGORIES }).notNull().default("general"),
+    tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
+    
+    // Visibility & status
+    isPublic: integer("is_public", { mode: "boolean" }).notNull().default(false),
+    isStarterPack: integer("is_starter_pack", { mode: "boolean" }).notNull().default(false),
+    isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    
+    // Stats
+    installCount: integer("install_count").notNull().default(0),
+    usageCount: integer("usage_count").notNull().default(0),
+    
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("flows_user_id_idx").on(table.userId),
+    index("flows_slug_idx").on(table.slug),
+    index("flows_parent_idx").on(table.parentFlowId),
+    index("flows_project_idx").on(table.projectId),
+    index("flows_category_idx").on(table.category),
+    index("flows_public_idx").on(table.isPublic),
+    index("flows_starter_idx").on(table.isStarterPack),
+    index("flows_featured_idx").on(table.isFeatured),
+    index("flows_active_idx").on(table.isActive),
+  ]
+);
+
+// User's installed/active flows
+export const userFlows = sqliteTable(
+  "user_flows",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    flowId: text("flow_id")
+      .notNull()
+      .references(() => flows.id, { onDelete: "cascade" }),
+    
+    // Customization - user's additions/overrides
+    customPrompt: text("custom_prompt"), // Additional instructions
+    customPreferences: text("custom_preferences", { mode: "json" }).$type<FlowPreferences>(),
+    
+    // State
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(false),
+    displayOrder: integer("display_order").notNull().default(0), // For multiple active flows
+    
+    // Timestamps
+    installedAt: text("installed_at").notNull(),
+    lastUsedAt: text("last_used_at"),
+  },
+  (table) => [
+    index("user_flows_user_idx").on(table.userId),
+    index("user_flows_flow_idx").on(table.flowId),
+    index("user_flows_active_idx").on(table.isActive),
+    index("user_flows_order_idx").on(table.displayOrder),
+  ]
+);
+
+// Track flow sessions (when flows are used)
+export const flowSessions = sqliteTable(
+  "flow_sessions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    flowId: text("flow_id")
+      .notNull()
+      .references(() => flows.id, { onDelete: "cascade" }),
+    
+    // Context
+    project: text("project"), // Project name if provided
+    
+    // Timestamps
+    startedAt: text("started_at").notNull(),
+    endedAt: text("ended_at"),
+  },
+  (table) => [
+    index("flow_sessions_user_idx").on(table.userId),
+    index("flow_sessions_flow_idx").on(table.flowId),
+    index("flow_sessions_project_idx").on(table.project),
+    index("flow_sessions_started_idx").on(table.startedAt),
+  ]
+);
+
+// Relations
+export const flowsRelations = relations(flows, ({ one, many }) => ({
+  user: one(users, {
+    fields: [flows.userId],
+    references: [users.id],
+  }),
+  parentFlow: one(flows, {
+    fields: [flows.parentFlowId],
+    references: [flows.id],
+    relationName: "flowInheritance",
+  }),
+  childFlows: many(flows, { relationName: "flowInheritance" }),
+  userFlows: many(userFlows),
+  sessions: many(flowSessions),
+}));
+
+export const userFlowsRelations = relations(userFlows, ({ one }) => ({
+  user: one(users, {
+    fields: [userFlows.userId],
+    references: [users.id],
+  }),
+  flow: one(flows, {
+    fields: [userFlows.flowId],
+    references: [flows.id],
+  }),
+}));
+
+export const flowSessionsRelations = relations(flowSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [flowSessions.userId],
+    references: [users.id],
+  }),
+  flow: one(flows, {
+    fields: [flowSessions.flowId],
+    references: [flows.id],
+  }),
+}));
+
+// ============================================================================
+// Learnings - System corrections, patterns, preferences
+// ============================================================================
+
+export const LEARNING_TYPES = ["correction", "pattern", "preference", "skill"] as const;
+export type LearningType = (typeof LEARNING_TYPES)[number];
+
+export const LEARNING_SOURCES = ["explicit", "implicit", "community"] as const;
+export type LearningSource = (typeof LEARNING_SOURCES)[number];
+
+export const LEARNING_SCOPES = ["global", "project", "library", "flow"] as const;
+export type LearningScope = (typeof LEARNING_SCOPES)[number];
+
+export const learnings = sqliteTable(
+  "learnings",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Learning classification
+    type: text("type", { enum: LEARNING_TYPES }).notNull().default("correction"),
+    category: text("category"), // e.g., 'code_style', 'architecture', 'testing'
+
+    // Content
+    trigger: text("trigger").notNull(), // What triggered this learning
+    response: text("response").notNull(), // What the AI should do/remember
+    context: text("context"), // Additional context
+
+    // Source tracking
+    source: text("source", { enum: LEARNING_SOURCES }).notNull().default("explicit"),
+    sourceMemoryId: text("source_memory_id"),
+    sourceConversationId: text("source_conversation_id"),
+
+    // Application scope
+    scope: text("scope", { enum: LEARNING_SCOPES }).notNull().default("global"),
+    project: text("project"),
+    libraryId: text("library_id"),
+    flowId: text("flow_id"),
+
+    // Quality & usage
+    confidence: integer("confidence").notNull().default(80),
+    usageCount: integer("usage_count").notNull().default(0),
+    successRate: integer("success_rate").default(100),
+    lastUsedAt: text("last_used_at"),
+
+    // Status
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("learnings_user_idx").on(table.userId),
+    index("learnings_type_idx").on(table.type),
+    index("learnings_scope_idx").on(table.scope),
+    index("learnings_project_idx").on(table.project),
+    index("learnings_active_idx").on(table.isActive),
+    index("learnings_source_idx").on(table.source),
+  ]
+);
+
+export const learningsRelations = relations(learnings, ({ one }) => ({
+  user: one(users, {
+    fields: [learnings.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// Intelligence Scores - XP and leveling system
+// ============================================================================
+
+export const intelligenceScores = sqliteTable(
+  "intelligence_scores",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .unique()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Current score
+    totalXp: integer("total_xp").notNull().default(0),
+    level: integer("level").notNull().default(1),
+    currentLevelXp: integer("current_level_xp").notNull().default(0),
+
+    // Category breakdown
+    categoryXp: text("category_xp", { mode: "json" })
+      .$type<Record<string, number>>()
+      .default({}),
+
+    // Streak tracking
+    currentStreak: integer("current_streak").notNull().default(0),
+    longestStreak: integer("longest_streak").notNull().default(0),
+    lastActivityDate: text("last_activity_date"),
+
+    // Achievements
+    achievements: text("achievements", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+
+    // Stats
+    totalQueries: integer("total_queries").notNull().default(0),
+    totalMemories: integer("total_memories").notNull().default(0),
+    totalLearnings: integer("total_learnings").notNull().default(0),
+    totalFlowsCreated: integer("total_flows_created").notNull().default(0),
+    totalReposIndexed: integer("total_repos_indexed").notNull().default(0),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("intelligence_scores_user_idx").on(table.userId),
+    index("intelligence_scores_level_idx").on(table.level),
+    index("intelligence_scores_xp_idx").on(table.totalXp),
+  ]
+);
+
+export const intelligenceScoresRelations = relations(intelligenceScores, ({ one }) => ({
+  user: one(users, {
+    fields: [intelligenceScores.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// XP Events - Log of all XP-earning activities
+// ============================================================================
+
+export const XP_EVENT_TYPES = [
+  "query_docs",
+  "save_memory",
+  "create_learning",
+  "create_flow",
+  "index_repo",
+  "streak_bonus",
+  "achievement",
+  "first_action",
+] as const;
+export type XpEventType = (typeof XP_EVENT_TYPES)[number];
+
+export const XP_CATEGORIES = [
+  "docs",
+  "memory",
+  "learning",
+  "flows",
+  "repos",
+  "achievement",
+] as const;
+export type XpCategory = (typeof XP_CATEGORIES)[number];
+
+export const xpEvents = sqliteTable(
+  "xp_events",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Event details
+    eventType: text("event_type", { enum: XP_EVENT_TYPES }).notNull(),
+    xpAmount: integer("xp_amount").notNull(),
+    category: text("category", { enum: XP_CATEGORIES }).notNull(),
+
+    // Context
+    description: text("description"),
+    referenceId: text("reference_id"),
+    referenceType: text("reference_type"),
+
+    // Multipliers
+    baseXp: integer("base_xp").notNull(),
+    multiplier: text("multiplier").default("1.0"),
+
+    // Timestamp
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    index("xp_events_user_idx").on(table.userId),
+    index("xp_events_type_idx").on(table.eventType),
+    index("xp_events_category_idx").on(table.category),
+    index("xp_events_created_idx").on(table.createdAt),
+  ]
+);
+
+export const xpEventsRelations = relations(xpEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [xpEvents.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// Connected Repos - GitHub repository connections
+// ============================================================================
+
+export const REPO_INDEX_STATUS = ["pending", "indexing", "indexed", "failed"] as const;
+export type RepoIndexStatus = (typeof REPO_INDEX_STATUS)[number];
+
+export const connectedRepos = sqliteTable(
+  "connected_repos",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // GitHub info
+    githubId: integer("github_id").notNull(),
+    owner: text("owner").notNull(),
+    name: text("name").notNull(),
+    fullName: text("full_name").notNull(),
+    description: text("description"),
+    htmlUrl: text("html_url").notNull(),
+    defaultBranch: text("default_branch").notNull().default("main"),
+
+    // Visibility
+    isPrivate: integer("is_private", { mode: "boolean" }).notNull().default(false),
+
+    // Indexing status
+    indexStatus: text("index_status", { enum: REPO_INDEX_STATUS })
+      .notNull()
+      .default("pending"),
+    lastIndexedAt: text("last_indexed_at"),
+    indexError: text("index_error"),
+
+    // Storage
+    r2Prefix: text("r2_prefix"),
+    totalFiles: integer("total_files").notNull().default(0),
+    totalBytes: integer("total_bytes").notNull().default(0),
+    indexedFiles: integer("indexed_files").notNull().default(0),
+
+    // Last known state
+    lastCommitSha: text("last_commit_sha"),
+    lastCommitAt: text("last_commit_at"),
+
+    // Settings
+    autoSync: integer("auto_sync", { mode: "boolean" }).notNull().default(false),
+    includePatterns: text("include_patterns", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+    excludePatterns: text("exclude_patterns", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("connected_repos_user_idx").on(table.userId),
+    index("connected_repos_github_id_idx").on(table.githubId),
+    index("connected_repos_full_name_idx").on(table.fullName),
+    index("connected_repos_status_idx").on(table.indexStatus),
+  ]
+);
+
+export const connectedReposRelations = relations(connectedRepos, ({ one, many }) => ({
+  user: one(users, {
+    fields: [connectedRepos.userId],
+    references: [users.id],
+  }),
+  files: many(repoFiles),
+}));
+
+// ============================================================================
+// Repo Files - Indexed files from connected repositories
+// ============================================================================
+
+export const REPO_FILE_TYPES = [
+  "readme",
+  "docs",
+  "config",
+  "types",
+  "source",
+  "test",
+  "other",
+] as const;
+export type RepoFileType = (typeof REPO_FILE_TYPES)[number];
+
+export const repoFiles = sqliteTable(
+  "repo_files",
+  {
+    id: text("id").primaryKey(),
+    repoId: text("repo_id")
+      .notNull()
+      .references(() => connectedRepos.id, { onDelete: "cascade" }),
+
+    // File info
+    path: text("path").notNull(),
+    fileType: text("file_type", { enum: REPO_FILE_TYPES }).notNull(),
+    language: text("language"),
+
+    // Content
+    r2Key: text("r2_key").notNull(),
+    contentHash: text("content_hash"),
+    sizeBytes: integer("size_bytes").notNull().default(0),
+    lineCount: integer("line_count"),
+
+    // Metadata
+    title: text("title"),
+    summary: text("summary"),
+
+    // Git info
+    lastCommitSha: text("last_commit_sha"),
+    lastModifiedAt: text("last_modified_at"),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("repo_files_repo_idx").on(table.repoId),
+    index("repo_files_path_idx").on(table.path),
+    index("repo_files_type_idx").on(table.fileType),
+  ]
+);
+
+export const repoFilesRelations = relations(repoFiles, ({ one }) => ({
+  repo: one(connectedRepos, {
+    fields: [repoFiles.repoId],
+    references: [connectedRepos.id],
+  }),
+}));
+
+// ============================================================================
+// Projects - Auto-detected project fingerprints
+// ============================================================================
+
+export const projects = sqliteTable(
+  "projects",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Identity
+    name: text("name").notNull(),
+    path: text("path"),
+    description: text("description"),
+
+    // Tech stack fingerprint
+    stack: text("stack", { mode: "json" })
+      .$type<Record<string, string>>()
+      .default({}),
+    dependencies: text("dependencies", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+    devDependencies: text("dev_dependencies", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+
+    // Detected patterns
+    patterns: text("patterns", { mode: "json" })
+      .$type<Record<string, unknown>>()
+      .default({}),
+
+    // Linked resources
+    repoId: text("repo_id"),
+    flowId: text("flow_id"),
+
+    // Suggested flows
+    suggestedFlows: text("suggested_flows", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+
+    // Stats
+    sessionCount: integer("session_count").notNull().default(0),
+    lastSessionAt: text("last_session_at"),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("projects_user_idx").on(table.userId),
+    index("projects_name_idx").on(table.name),
+    index("projects_repo_idx").on(table.repoId),
+    index("projects_flow_idx").on(table.flowId),
+  ]
+);
+
+export const projectsRelations = relations(projects, ({ one }) => ({
+  user: one(users, {
+    fields: [projects.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// Community Learnings - Shared learning patterns
+// ============================================================================
+
+export const communityLearnings = sqliteTable(
+  "community_learnings",
+  {
+    id: text("id").primaryKey(),
+
+    // Source
+    sourceLearningId: text("source_learning_id"),
+    sourceUserId: text("source_user_id").references(() => users.id, { onDelete: "set null" }),
+
+    // Content
+    type: text("type", { enum: LEARNING_TYPES }).notNull(),
+    category: text("category"),
+    trigger: text("trigger").notNull(),
+    response: text("response").notNull(),
+    context: text("context"),
+
+    // Scope
+    scope: text("scope", { enum: LEARNING_SCOPES }).notNull().default("library"),
+    libraryId: text("library_id"),
+    framework: text("framework"),
+
+    // Quality metrics
+    upvotes: integer("upvotes").notNull().default(0),
+    downvotes: integer("downvotes").notNull().default(0),
+    adoptionCount: integer("adoption_count").notNull().default(0),
+    confidence: integer("confidence").notNull().default(70),
+
+    // Status
+    isVerified: integer("is_verified", { mode: "boolean" }).notNull().default(false),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("community_learnings_type_idx").on(table.type),
+    index("community_learnings_library_idx").on(table.libraryId),
+    index("community_learnings_scope_idx").on(table.scope),
+    index("community_learnings_active_idx").on(table.isActive),
+    index("community_learnings_upvotes_idx").on(table.upvotes),
+  ]
+);
+
+export const communityLearningsRelations = relations(communityLearnings, ({ one, many }) => ({
+  sourceUser: one(users, {
+    fields: [communityLearnings.sourceUserId],
+    references: [users.id],
+  }),
+  adoptions: many(learningAdoptions),
+}));
+
+// ============================================================================
+// Learning Adoptions - Track which community learnings users adopted
+// ============================================================================
+
+export const learningAdoptions = sqliteTable(
+  "learning_adoptions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    communityLearningId: text("community_learning_id")
+      .notNull()
+      .references(() => communityLearnings.id, { onDelete: "cascade" }),
+
+    // User's local learning
+    learningId: text("learning_id"),
+
+    // Feedback
+    vote: integer("vote"), // 1 = upvote, -1 = downvote
+
+    // Timestamps
+    adoptedAt: text("adopted_at").notNull(),
+  },
+  (table) => [
+    index("learning_adoptions_user_idx").on(table.userId),
+    index("learning_adoptions_community_idx").on(table.communityLearningId),
+  ]
+);
+
+export const learningAdoptionsRelations = relations(learningAdoptions, ({ one }) => ({
+  user: one(users, {
+    fields: [learningAdoptions.userId],
+    references: [users.id],
+  }),
+  communityLearning: one(communityLearnings, {
+    fields: [learningAdoptions.communityLearningId],
+    references: [communityLearnings.id],
+  }),
+}));
+
+// ============================================================================
 // User Preferences - Settings for MCP response format, etc.
 // ============================================================================
 
@@ -1190,6 +1880,346 @@ export const syncJobs = sqliteTable(
 );
 
 // ============================================================================
+// Stacks - AI-powered project scaffolding templates
+// ============================================================================
+
+export const STACK_CATEGORIES = [
+  "infrastructure",
+  "database",
+  "backend",
+  "fullstack",
+  "frontend",
+  "desktop",
+  "styling",
+  "tui",
+  "tooling",
+  "general",
+] as const;
+export type StackCategory = (typeof STACK_CATEGORIES)[number];
+
+export const STACK_LAYERS = [0, 1, 2, 3] as const;
+export type StackLayer = (typeof STACK_LAYERS)[number];
+
+export const STACK_LEARNING_STATUSES = [
+  "pending",
+  "researching",
+  "compiling",
+  "complete",
+  "failed",
+] as const;
+export type StackLearningStatus = (typeof STACK_LEARNING_STATUSES)[number];
+
+export const TOKEN_BUDGETS = ["minimal", "standard", "comprehensive"] as const;
+export type TokenBudget = (typeof TOKEN_BUDGETS)[number];
+
+export const PACKAGE_MANAGERS = ["npm", "pnpm", "bun", "yarn", "cargo", "mix", "bundler", "go"] as const;
+export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
+
+export interface StackPreferences {
+  // Generation
+  useOfficialCLIs?: boolean;
+  preferredPackageManager?: PackageManager;
+  
+  // Code Style
+  useTypeScript?: boolean;
+  strictMode?: boolean;
+  preferFunctionalComponents?: boolean;
+  
+  // Formatting
+  usePrettier?: boolean;
+  useESLint?: boolean;
+  useBiome?: boolean;
+  
+  // Testing
+  includeTests?: boolean;
+  testingFramework?: "vitest" | "jest" | "playwright" | "rspec" | "exunit";
+  
+  // Documentation
+  generateReadme?: boolean;
+  inlineComments?: "minimal" | "standard" | "verbose";
+  
+  // AI Behavior
+  verbosity?: "concise" | "balanced" | "detailed";
+  codeBlockStyle?: "full-file" | "diff-only" | "snippet";
+  explainDecisions?: boolean;
+  
+  // Project Structure
+  monorepoReady?: boolean;
+  preferTurborepo?: boolean;
+  
+  // Custom Rules
+  customRules?: string[];
+}
+
+export const stacks = sqliteTable(
+  "stacks",
+  {
+    id: text("id").primaryKey(),
+    
+    // Ownership
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // NULL = system starter
+    
+    // Identity
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description"),
+    icon: text("icon"), // emoji or lucide icon name
+    color: text("color"), // hex color for visual canvas
+    
+    // Classification
+    category: text("category", { enum: STACK_CATEGORIES }).notNull().default("general"),
+    layer: integer("layer").notNull().default(0), // 0=infra, 1=backend, 2=frontend, 3=tooling
+    tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
+    
+    // Instructions & Config
+    instructions: text("instructions"), // User's stack instructions (markdown)
+    cliPreferences: text("cli_preferences", { mode: "json" }).$type<StackPreferences>().default({}),
+    
+    // Package Manifest (optional)
+    manifestType: text("manifest_type"), // package.json, Cargo.toml, mix.exs, Gemfile
+    manifestContent: text("manifest_content"), // Raw manifest content
+    
+    // Visual Canvas Data (React Flow)
+    canvasData: text("canvas_data", { mode: "json" }).$type<{
+      nodes: Array<{ id: string; type: string; position: { x: number; y: number }; data: Record<string, unknown> }>;
+      edges: Array<{ id: string; source: string; target: string; type?: string }>;
+      viewport?: { x: number; y: number; zoom: number };
+    }>(),
+    
+    // Generated Context (compiled prompt)
+    compiledPrompt: text("compiled_prompt"), // AI-generated optimized prompt
+    compiledAt: text("compiled_at"),
+    tokenCount: integer("token_count"),
+    tokenBudget: text("token_budget", { enum: TOKEN_BUDGETS }).notNull().default("standard"),
+    
+    // Full content stored in R2 (for large compiled prompts)
+    r2Key: text("r2_key"),
+    
+    // Learning Status
+    learningStatus: text("learning_status", { enum: STACK_LEARNING_STATUSES }).notNull().default("pending"),
+    learningProgress: integer("learning_progress").notNull().default(0), // 0-100
+    learningError: text("learning_error"),
+    
+    // Forking
+    forkedFromId: text("forked_from_id"), // Original stack if forked
+    
+    // Visibility & Sharing
+    isPublic: integer("is_public", { mode: "boolean" }).notNull().default(false),
+    isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
+    isStarter: integer("is_starter", { mode: "boolean" }).notNull().default(false), // System starter stacks
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    
+    // Stats
+    forkCount: integer("fork_count").notNull().default(0),
+    useCount: integer("use_count").notNull().default(0),
+    installCount: integer("install_count").notNull().default(0),
+    
+    // Timestamps
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    index("stacks_user_id_idx").on(table.userId),
+    index("stacks_slug_idx").on(table.slug),
+    index("stacks_category_idx").on(table.category),
+    index("stacks_layer_idx").on(table.layer),
+    index("stacks_public_idx").on(table.isPublic),
+    index("stacks_featured_idx").on(table.isFeatured),
+    index("stacks_starter_idx").on(table.isStarter),
+    index("stacks_active_idx").on(table.isActive),
+    index("stacks_learning_status_idx").on(table.learningStatus),
+    index("stacks_forked_from_idx").on(table.forkedFromId),
+  ]
+);
+
+// Stack Repositories - GitHub repos for learning
+export const STACK_REPO_STATUSES = ["pending", "analyzing", "complete", "failed"] as const;
+export type StackRepoStatus = (typeof STACK_REPO_STATUSES)[number];
+
+export const stackRepos = sqliteTable(
+  "stack_repos",
+  {
+    id: text("id").primaryKey(),
+    stackId: text("stack_id")
+      .notNull()
+      .references(() => stacks.id, { onDelete: "cascade" }),
+    
+    // Repository Info
+    githubUrl: text("github_url").notNull(),
+    isPrivate: integer("is_private", { mode: "boolean" }).notNull().default(false),
+    branch: text("branch").default("main"),
+    paths: text("paths", { mode: "json" }).$type<string[]>(), // Specific paths to analyze
+    
+    // Extracted Knowledge
+    r2Key: text("r2_key"), // Full analysis stored in R2
+    summary: text("summary"), // AI-generated summary
+    paradigms: text("paradigms", { mode: "json" }).$type<string[]>(), // Detected patterns
+    packages: text("packages", { mode: "json" }).$type<string[]>(), // Extracted dependencies
+    directoryStructure: text("directory_structure"), // JSON tree structure
+    
+    // Status
+    status: text("status", { enum: STACK_REPO_STATUSES }).notNull().default("pending"),
+    indexedAt: text("indexed_at"),
+    error: text("error"),
+    
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    index("stack_repos_stack_idx").on(table.stackId),
+    index("stack_repos_status_idx").on(table.status),
+  ]
+);
+
+// Stack Compositions - Stacks built on top of other stacks
+export const stackCompositions = sqliteTable(
+  "stack_compositions",
+  {
+    id: text("id").primaryKey(),
+    parentStackId: text("parent_stack_id")
+      .notNull()
+      .references(() => stacks.id, { onDelete: "cascade" }),
+    childStackId: text("child_stack_id")
+      .notNull()
+      .references(() => stacks.id, { onDelete: "cascade" }),
+    
+    // Position in composition order
+    position: integer("position").notNull().default(0),
+    
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    index("stack_compositions_parent_idx").on(table.parentStackId),
+    index("stack_compositions_child_idx").on(table.childStackId),
+  ]
+);
+
+// Stack Packages - Package research results
+export const PACKAGE_REGISTRIES = ["npm", "cargo", "pypi", "hex", "rubygems", "go"] as const;
+export type PackageRegistry = (typeof PACKAGE_REGISTRIES)[number];
+
+export const STACK_PACKAGE_STATUSES = ["pending", "researching", "complete", "failed"] as const;
+export type StackPackageStatus = (typeof STACK_PACKAGE_STATUSES)[number];
+
+export const stackPackages = sqliteTable(
+  "stack_packages",
+  {
+    id: text("id").primaryKey(),
+    stackId: text("stack_id")
+      .notNull()
+      .references(() => stacks.id, { onDelete: "cascade" }),
+    
+    // Package Info
+    name: text("name").notNull(),
+    registry: text("registry", { enum: PACKAGE_REGISTRIES }).notNull().default("npm"),
+    version: text("version"),
+    
+    // Research Results
+    libraryId: text("library_id").references(() => libraries.id), // Link to indexed docs
+    documentationSummary: text("documentation_summary"),
+    keyApis: text("key_apis", { mode: "json" }).$type<string[]>(), // Important APIs/patterns
+    
+    // Status
+    status: text("status", { enum: STACK_PACKAGE_STATUSES }).notNull().default("pending"),
+    researchedAt: text("researched_at"),
+    error: text("error"),
+    
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    index("stack_packages_stack_idx").on(table.stackId),
+    index("stack_packages_library_idx").on(table.libraryId),
+    index("stack_packages_status_idx").on(table.status),
+  ]
+);
+
+// User's Stack Installations
+export const userStacks = sqliteTable(
+  "user_stacks",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    stackId: text("stack_id")
+      .notNull()
+      .references(() => stacks.id, { onDelete: "cascade" }),
+    
+    // Customization
+    customInstructions: text("custom_instructions"),
+    customPreferences: text("custom_preferences", { mode: "json" }).$type<StackPreferences>(),
+    
+    // Timestamps
+    installedAt: text("installed_at").notNull(),
+    lastUsedAt: text("last_used_at"),
+  },
+  (table) => [
+    index("user_stacks_user_idx").on(table.userId),
+    index("user_stacks_stack_idx").on(table.stackId),
+  ]
+);
+
+// Relations
+export const stacksRelations = relations(stacks, ({ one, many }) => ({
+  user: one(users, {
+    fields: [stacks.userId],
+    references: [users.id],
+  }),
+  forkedFrom: one(stacks, {
+    fields: [stacks.forkedFromId],
+    references: [stacks.id],
+    relationName: "forks",
+  }),
+  forks: many(stacks, { relationName: "forks" }),
+  repos: many(stackRepos),
+  packages: many(stackPackages),
+  parentCompositions: many(stackCompositions, { relationName: "parentStack" }),
+  childCompositions: many(stackCompositions, { relationName: "childStack" }),
+  userStacks: many(userStacks),
+}));
+
+export const stackReposRelations = relations(stackRepos, ({ one }) => ({
+  stack: one(stacks, {
+    fields: [stackRepos.stackId],
+    references: [stacks.id],
+  }),
+}));
+
+export const stackCompositionsRelations = relations(stackCompositions, ({ one }) => ({
+  parentStack: one(stacks, {
+    fields: [stackCompositions.parentStackId],
+    references: [stacks.id],
+    relationName: "parentStack",
+  }),
+  childStack: one(stacks, {
+    fields: [stackCompositions.childStackId],
+    references: [stacks.id],
+    relationName: "childStack",
+  }),
+}));
+
+export const stackPackagesRelations = relations(stackPackages, ({ one }) => ({
+  stack: one(stacks, {
+    fields: [stackPackages.stackId],
+    references: [stacks.id],
+  }),
+  library: one(libraries, {
+    fields: [stackPackages.libraryId],
+    references: [libraries.id],
+  }),
+}));
+
+export const userStacksRelations = relations(userStacks, ({ one }) => ({
+  user: one(users, {
+    fields: [userStacks.userId],
+    references: [users.id],
+  }),
+  stack: one(stacks, {
+    fields: [userStacks.stackId],
+    references: [stacks.id],
+  }),
+}));
+
+// ============================================================================
 // Type exports
 // ============================================================================
 
@@ -1237,3 +2267,35 @@ export type RefreshJob = typeof refreshJobs.$inferSelect;
 export type NewRefreshJob = typeof refreshJobs.$inferInsert;
 export type SkillSubmission = typeof skillSubmissions.$inferSelect;
 export type NewSkillSubmission = typeof skillSubmissions.$inferInsert;
+export type Flow = typeof flows.$inferSelect;
+export type NewFlow = typeof flows.$inferInsert;
+export type UserFlow = typeof userFlows.$inferSelect;
+export type NewUserFlow = typeof userFlows.$inferInsert;
+export type FlowSession = typeof flowSessions.$inferSelect;
+export type NewFlowSession = typeof flowSessions.$inferInsert;
+export type Learning = typeof learnings.$inferSelect;
+export type NewLearning = typeof learnings.$inferInsert;
+export type IntelligenceScore = typeof intelligenceScores.$inferSelect;
+export type NewIntelligenceScore = typeof intelligenceScores.$inferInsert;
+export type XpEvent = typeof xpEvents.$inferSelect;
+export type NewXpEvent = typeof xpEvents.$inferInsert;
+export type ConnectedRepo = typeof connectedRepos.$inferSelect;
+export type NewConnectedRepo = typeof connectedRepos.$inferInsert;
+export type RepoFile = typeof repoFiles.$inferSelect;
+export type NewRepoFile = typeof repoFiles.$inferInsert;
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
+export type CommunityLearning = typeof communityLearnings.$inferSelect;
+export type NewCommunityLearning = typeof communityLearnings.$inferInsert;
+export type LearningAdoption = typeof learningAdoptions.$inferSelect;
+export type NewLearningAdoption = typeof learningAdoptions.$inferInsert;
+export type Stack = typeof stacks.$inferSelect;
+export type NewStack = typeof stacks.$inferInsert;
+export type StackRepo = typeof stackRepos.$inferSelect;
+export type NewStackRepo = typeof stackRepos.$inferInsert;
+export type StackComposition = typeof stackCompositions.$inferSelect;
+export type NewStackComposition = typeof stackCompositions.$inferInsert;
+export type StackPackage = typeof stackPackages.$inferSelect;
+export type NewStackPackage = typeof stackPackages.$inferInsert;
+export type UserStack = typeof userStacks.$inferSelect;
+export type NewUserStack = typeof userStacks.$inferInsert;

@@ -68,12 +68,16 @@
     }
   ],
 
-  // Queues for ingestion pipeline
+  // Queues for ingestion pipeline and stack learning
   "queues": {
     "producers": [
       {
         "queue": "nexus-ingestion",
         "binding": "INGESTION_QUEUE"
+      },
+      {
+        "queue": "nexus-stack-learning",
+        "binding": "STACK_LEARNING_QUEUE"
       }
     ],
     "consumers": [
@@ -81,6 +85,11 @@
         "queue": "nexus-ingestion",
         "max_batch_size": 5,
         "max_batch_timeout": 30
+      },
+      {
+        "queue": "nexus-stack-learning",
+        "max_batch_size": 3,
+        "max_batch_timeout": 60
       }
     ]
   },

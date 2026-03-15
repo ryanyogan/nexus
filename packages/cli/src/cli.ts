@@ -14,8 +14,11 @@ const { version, description } = pkg;
 // Import command modules
 import { authCommand } from "./commands/auth/index.js";
 import { skillsCommand } from "./commands/skills/index.js";
+import { flowsCommand } from "./commands/flows/index.js";
 import { serversCommand } from "./commands/servers/index.js";
 import { docsCommand } from "./commands/docs/index.js";
+import { brainCommand } from "./commands/brain/index.js";
+import { reposCommand } from "./commands/repos/index.js";
 import { initCommand } from "./commands/init.js";
 import { statsCommand } from "./commands/stats.js";
 import { serveCommand } from "./commands/serve.js";
@@ -39,8 +42,11 @@ export const program = new Command()
 program.addCommand(initCommand);
 program.addCommand(authCommand);
 program.addCommand(skillsCommand);
+program.addCommand(flowsCommand);
 program.addCommand(serversCommand);
 program.addCommand(docsCommand);
+program.addCommand(brainCommand);
+program.addCommand(reposCommand);
 program.addCommand(statsCommand);
 program.addCommand(serveCommand);
 

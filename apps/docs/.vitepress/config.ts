@@ -7,12 +7,14 @@ export default defineConfig({
   // Exclude old Docusaurus content (root-level docs/ folder only)
   srcExclude: ['docs/**', 'src/**', '.docusaurus/**', '.astro/**', 'build/**', 'node_modules/**'],
   
-  // Only ignore dead links in specific patterns (old Docusaurus references)
+  // Only ignore dead links in specific patterns (old Docusaurus references and app links)
   ignoreDeadLinks: [
     /^\/mcp-tools\//,
     /^\/common-tasks\//,
     /^\/sdk\//,
     /^\/changelog$/,
+    /^\/dashboard\//,  // Dashboard links go to main app
+    /^\/admin\//,      // Admin links go to main app
   ],
   
   head: [
@@ -51,6 +53,7 @@ export default defineConfig({
     // Navigation bar
     nav: [
       { text: 'Guide', link: '/getting-started/introduction' },
+      { text: 'Flows', link: '/flows/overview' },
       { text: 'MCP Tools', link: '/tools/overview' },
       { text: 'CLI', link: '/cli/overview' },
       { text: 'API', link: '/api/overview' },
@@ -83,6 +86,17 @@ export default defineConfig({
             { text: 'VS Code', link: '/configuration/vscode' },
             { text: 'OpenCode', link: '/configuration/opencode' },
             { text: 'Environment Variables', link: '/configuration/environment' },
+          ],
+        },
+        {
+          text: 'Flows',
+          collapsed: false,
+          items: [
+            { text: 'Overview', link: '/flows/overview' },
+            { text: 'CLI Commands', link: '/flows/cli-commands' },
+            { text: 'MCP Tools', link: '/flows/mcp-tools' },
+            { text: 'Creating Flows', link: '/flows/creating-flows' },
+            { text: 'Best Practices', link: '/flows/best-practices' },
           ],
         },
         {
@@ -133,6 +147,7 @@ export default defineConfig({
             { text: 'nexus docs', link: '/cli/docs' },
             { text: 'nexus servers', link: '/cli/servers' },
             { text: 'nexus skills', link: '/cli/skills' },
+            { text: 'nexus flow', link: '/cli/flow' },
             { text: 'nexus serve', link: '/cli/serve' },
           ],
         },

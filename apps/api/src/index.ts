@@ -12,13 +12,17 @@ import { analyzeRouter } from "./routes/analyze";
 import { serversRouter } from "./routes/servers";
 import { secretsRouter } from "./routes/secrets";
 import { skillsRouter } from "./routes/skills";
+import flowsRouter from "./routes/flows";
+import brainRouter from "./routes/brain";
+import reposRouter from "./routes/repos";
+import stacksRouter from "./routes/stacks";
 import { userRouter } from "./routes/user";
 import { cliAuthRouter } from "./routes/cli-auth";
 import { adminAuth } from "./middleware/admin";
 import { usageMiddleware, mcpRateLimitMiddleware } from "./middleware/usage";
 import { authMiddleware } from "./middleware/auth";
 import { structuredLogger, logger } from "./middleware/logger";
-import type { AppContext, IngestionJob } from "./types";
+import type { AppContext, IngestionJob, StackLearningJob } from "./types";
 
 const app = new Hono<AppContext>();
 
@@ -65,6 +69,8 @@ app.use("/api/skills/*", usageMiddleware);
 app.route("/api/libraries", librariesRouter);
 app.route("/api/servers", serversRouter);
 app.route("/api/skills", skillsRouter);
+app.route("/api/flows", flowsRouter);
+app.route("/api/stacks", stacksRouter);
 app.route("/api/submissions", submissionsRouter);
 app.route("/api/server-submissions", serverSubmissionsRouter);
 app.route("/api/stats", statsRouter);
@@ -73,6 +79,8 @@ app.route("/api/analyze", analyzeRouter);
 // Protected user routes (require auth)
 app.route("/api/secrets", secretsRouter);
 app.route("/api/user", userRouter);
+app.route("/api/brain", brainRouter);
+app.route("/api/repos", reposRouter);
 
 // CLI authentication routes
 app.route("/api/cli/auth", cliAuthRouter);
@@ -146,47 +154,117 @@ export default {
     }
   },
 
-  // Queue consumer for ingestion jobs
+  // Queue consumer for ingestion and stack learning jobs
   async queue(
-    batch: MessageBatch<IngestionJob>,
+    batch: MessageBatch<IngestionJob | StackLearningJob>,
     env: Env,
     _ctx: ExecutionContext
   ): Promise<void> {
     const db = createDb(env.DB);
 
-    for (const message of batch.messages) {
-      const job = message.body;
-      logger.info("Processing ingestion job", { libraryId: job.libraryId, attempt: message.attempts });
-
-      try {
-        // Import dynamically to avoid circular deps
-        const { processIngestionJob } = await import("./lib/ingestion");
-        await processIngestionJob(job, env, db);
-        logger.info("Ingestion job completed", { libraryId: job.libraryId });
-        message.ack();
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error));
-        logger.error("Ingestion job failed", { libraryId: job.libraryId, attempt: message.attempts }, err);
-        
-        // Retry up to 3 times
-        if (message.attempts < 3) {
-          message.retry();
-        } else {
-          // Mark as failed in DB
-          const { libraries } = await import("@nexus/db");
-          const { eq } = await import("drizzle-orm");
-          await db
-            .update(libraries)
-            .set({
-              indexStatus: "failed",
-              indexError: error instanceof Error ? error.message : String(error),
-              updatedAt: new Date().toISOString(),
-            })
-            .where(eq(libraries.id, job.libraryId));
-          logger.error("Ingestion job permanently failed", { libraryId: job.libraryId, maxAttemptsReached: true }, err);
-          message.ack();
-        }
-      }
+    // Route based on queue name
+    if (batch.queue === "nexus-ingestion") {
+      await processIngestionBatch(batch as MessageBatch<IngestionJob>, env, db);
+    } else if (batch.queue === "nexus-stack-learning") {
+      await processStackLearningBatch(batch as MessageBatch<StackLearningJob>, env, db);
+    } else {
+      logger.warn("Unknown queue", { queue: batch.queue });
     }
   },
 };
+
+// Process ingestion jobs batch
+async function processIngestionBatch(
+  batch: MessageBatch<IngestionJob>,
+  env: Env,
+  db: ReturnType<typeof createDb>
+): Promise<void> {
+  for (const message of batch.messages) {
+    const job = message.body;
+    logger.info("Processing ingestion job", { libraryId: job.libraryId, attempt: message.attempts });
+
+    try {
+      // Import dynamically to avoid circular deps
+      const { processIngestionJob } = await import("./lib/ingestion");
+      await processIngestionJob(job, env, db);
+      logger.info("Ingestion job completed", { libraryId: job.libraryId });
+      message.ack();
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error("Ingestion job failed", { libraryId: job.libraryId, attempt: message.attempts }, err);
+      
+      // Retry up to 3 times
+      if (message.attempts < 3) {
+        message.retry();
+      } else {
+        // Mark as failed in DB
+        const { libraries } = await import("@nexus/db");
+        const { eq } = await import("drizzle-orm");
+        await db
+          .update(libraries)
+          .set({
+            indexStatus: "failed",
+            indexError: error instanceof Error ? error.message : String(error),
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(libraries.id, job.libraryId));
+        logger.error("Ingestion job permanently failed", { libraryId: job.libraryId, maxAttemptsReached: true }, err);
+        message.ack();
+      }
+    }
+  }
+}
+
+// Process stack learning jobs batch
+async function processStackLearningBatch(
+  batch: MessageBatch<StackLearningJob>,
+  env: Env,
+  db: ReturnType<typeof createDb>
+): Promise<void> {
+  for (const message of batch.messages) {
+    const job = message.body;
+    logger.info("Processing stack learning job", { 
+      stackId: job.stackId, 
+      taskType: job.taskType,
+      attempt: message.attempts 
+    });
+
+    try {
+      // Import dynamically to avoid circular deps
+      const { processStackLearningJob } = await import("./lib/stack-learning");
+      await processStackLearningJob(job, env, db);
+      logger.info("Stack learning job completed", { stackId: job.stackId, taskType: job.taskType });
+      message.ack();
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error("Stack learning job failed", { 
+        stackId: job.stackId, 
+        taskType: job.taskType,
+        attempt: message.attempts 
+      }, err);
+      
+      // Retry up to 3 times
+      if (message.attempts < 3) {
+        message.retry();
+      } else {
+        // Mark stack as failed in DB
+        const { stacks } = await import("@nexus/db");
+        const { eq } = await import("drizzle-orm");
+        await db
+          .update(stacks)
+          .set({
+            learningStatus: "failed",
+            learningError: error instanceof Error ? error.message : String(error),
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(stacks.id, job.stackId));
+        logger.error("Stack learning job permanently failed", { 
+          stackId: job.stackId, 
+          taskType: job.taskType,
+          maxAttemptsReached: true 
+        }, err);
+        message.ack();
+      }
+    }
+  }
+}

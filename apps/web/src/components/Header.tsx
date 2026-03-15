@@ -9,12 +9,13 @@ import {
   Settings,
   Key,
   BookOpen,
-  Brain,
   Server,
   Database,
   ArrowUpRight,
   Moon,
   Sun,
+  Layers,
+  Zap,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "@nexus/auth/client";
@@ -80,7 +81,7 @@ export default function Header({ session }: HeaderProps) {
 
   return (
     <header className="left-0 right-0 top-0 z-40 bg-background pt-4 md:pt-6">
-      <div className="mx-auto flex w-full max-w-[960px] items-center justify-between px-4 h-14">
+      <div className="mx-auto flex w-full max-w-[960px] items-center justify-between px-4 sm:px-6 lg:px-0 h-14">
         {/* Logo */}
         <Link
           to={isSignedIn ? "/dashboard" : "/"}
@@ -139,7 +140,7 @@ export default function Header({ session }: HeaderProps) {
                 </Link>
                 <Link
                   to="/"
-                  search={{ sort: "popular" }}
+                  search={{ filter: "servers" }}
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
                   <span className="font-mono text-xs font-bold uppercase tracking-wider">MCP SERVERS</span>
@@ -147,11 +148,18 @@ export default function Header({ session }: HeaderProps) {
                 </Link>
                 <Link
                   to="/"
-                  search={{ sort: "trending" }}
+                  search={{ filter: "skills" }}
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider">TRENDING</span>
-                  <Brain className="h-4 w-4" />
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">SKILLS</span>
+                  <Zap className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/dashboard/flows"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
+                >
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">FLOWS</span>
+                  <Layers className="h-4 w-4" />
                 </Link>
                 <div className="flex items-center justify-between px-4 py-3 text-muted-foreground cursor-not-allowed border-b border-border">
                   <span className="font-mono text-xs font-bold uppercase tracking-wider">MEMORY</span>
@@ -317,27 +325,26 @@ export default function Header({ session }: HeaderProps) {
             <div className="grid grid-cols-3 gap-2">
               <Link
                 to="/"
-                search={{ sort: "popular" }}
+                search={{ filter: "servers" }}
                 className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                POPULAR
+                SERVERS
               </Link>
               <Link
                 to="/"
-                search={{ sort: "trending" }}
+                search={{ filter: "skills" }}
                 className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                TRENDING
+                SKILLS
               </Link>
               <Link
-                to="/"
-                search={{ sort: "recent" }}
+                to="/dashboard/flows"
                 className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                RECENT
+                FLOWS
               </Link>
             </div>
             <button

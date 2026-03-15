@@ -53,11 +53,11 @@
   --color-primary-foreground: var(--color-white);
   --color-secondary: var(--color-gray-100);
   --color-secondary-foreground: var(--color-black);
-  --color-accent: var(--color-cyan-500);
-  --color-accent-foreground: var(--color-black);
+  --color-accent: var(--color-cyan-600);
+  --color-accent-foreground: var(--color-white);
   --color-destructive: #dc2626;
   --color-destructive-foreground: var(--color-white);
-  --color-ring: var(--color-cyan-500);
+  --color-ring: var(--color-cyan-600);
   
   /* Nearly square - max 2px radius */
   --radius: 2px;

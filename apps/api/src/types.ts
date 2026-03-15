@@ -137,6 +137,30 @@ export interface IngestionJob {
   context7Id?: string;
 }
 
+// ============================================================================
+// Stack Learning Types
+// ============================================================================
+
+export type StackLearningTaskType = "analyze_repo" | "research_package" | "compile_prompt";
+
+export interface StackLearningJob {
+  stackId: string;
+  userId: string;
+  taskType: StackLearningTaskType;
+  // For repo analysis
+  repoId?: string;
+  githubUrl?: string;
+  isPrivate?: boolean;
+  branch?: string;
+  paths?: string[];
+  // For package research
+  packageId?: string;
+  packageName?: string;
+  registry?: string;
+  // For compilation
+  tokenBudget?: "minimal" | "standard" | "comprehensive";
+}
+
 export interface ChunkData {
   id: string;
   title: string | null;
