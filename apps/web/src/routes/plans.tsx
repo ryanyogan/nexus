@@ -106,7 +106,7 @@ function PlansPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[880px] px-4 lg:px-0">
+      <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
         {/* Hero */}
         <div className="pt-24 pb-16">
           <h1 className="font-mono text-2xl font-bold uppercase tracking-tight text-foreground sm:text-3xl">

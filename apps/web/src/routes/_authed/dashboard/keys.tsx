@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Key,
@@ -6,9 +6,10 @@ import {
   Trash2,
   Copy,
   Check,
-  RefreshCw,
+  Loader2,
   AlertCircle,
   ArrowLeft,
+  X,
 } from "lucide-react";
 import { authFetch } from "../../../lib/api";
 
@@ -28,7 +29,6 @@ interface ApiKey {
 }
 
 function ApiKeysPage() {
-  const navigate = useNavigate();
   const { session } = Route.useRouteContext();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +49,7 @@ function ApiKeysPage() {
     try {
       const res = await authFetch("/api/user/tokens");
       if (!res.ok) throw new Error("Failed to fetch API keys");
-      const data = await res.json() as { tokens: ApiKey[] };
+      const data = (await res.json()) as { tokens: ApiKey[] };
       setKeys(data.tokens || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch API keys");
@@ -78,140 +78,177 @@ function ApiKeysPage() {
   if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="h-6 w-6 animate-spin border-2 border-accent border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8">
-        <button
-          onClick={() => navigate({ to: "/dashboard" })}
-          className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </button>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
-            <p className="mt-1 text-muted-foreground">
-              Manage your API keys for MCP server access
-            </p>
-          </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
+        {/* Header */}
+        <div className="pt-8 pb-6 md:pt-12 md:pb-8">
+          <Link
+            to="/dashboard"
+            className="mb-4 inline-flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Plus className="h-4 w-4" />
-            Create Key
-          </button>
-        </div>
-      </div>
-
-      {/* New Key Display */}
-      {newKeyValue && (
-        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800/50 dark:bg-green-900/20">
-          <h3 className="font-medium text-green-900 dark:text-green-100">
-            API Key Created
-          </h3>
-          <p className="mt-1 text-sm text-green-700 dark:text-green-300">
-            Copy this key now. You won&apos;t be able to see it again.
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <code className="flex-1 rounded bg-green-100 px-3 py-2 font-mono text-sm dark:bg-green-900/50">
-              {newKeyValue}
-            </code>
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Dashboard
+          </Link>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl">
+                API Keys
+              </h1>
+              <p className="mt-2 font-mono text-xs text-muted-foreground sm:text-sm">
+                Manage your API keys for Nexus access
+              </p>
+            </div>
             <button
-              onClick={() => copyKey(newKeyValue, "new")}
-              className="rounded-lg p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50"
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90"
             >
-              {copiedId === "new" ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+              <Plus className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Create Key</span>
+              <span className="sm:hidden">New</span>
             </button>
           </div>
-          <button
-            onClick={() => setNewKeyValue(null)}
-            className="mt-3 text-sm text-green-600 hover:underline dark:text-green-400"
-          >
-            I&apos;ve copied the key
-          </button>
         </div>
-      )}
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-900/20">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        {/* New Key Display */}
+        {newKeyValue && (
+          <div className="mb-6 border border-accent bg-accent/5 p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-mono text-sm font-bold uppercase text-foreground">
+                  API Key Created
+                </h3>
+                <p className="mt-1 font-mono text-xs text-muted-foreground">
+                  Copy this key now. You won&apos;t be able to see it again.
+                </p>
+              </div>
+              <button
+                onClick={() => setNewKeyValue(null)}
+                className="p-1 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+              <code className="flex-1 border border-border bg-background px-3 py-2 font-mono text-xs sm:text-sm">
+                {newKeyValue}
+              </code>
+              <button
+                onClick={() => copyKey(newKeyValue, "new")}
+                className="border border-border p-2 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+              >
+                {copiedId === "new" ? (
+                  <Check className="h-4 w-4 text-accent" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Keys List */}
-      {keys.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border p-12 text-center">
-          <Key className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">No API keys yet</h3>
-          <p className="mt-1 text-muted-foreground">
-            Create your first API key to start using Nexus MCP
-          </p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4" />
-            Create Key
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {keys.map((key) => (
-            <div
-              key={key.id}
-              className="rounded-lg border border-border bg-card p-4"
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 border border-red-500/50 bg-red-500/5 p-4">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <p className="font-mono text-xs text-red-500">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Keys List */}
+        {keys.length === 0 ? (
+          <div className="border border-dashed border-border p-8 text-center sm:p-12">
+            <Key className="mx-auto h-8 w-8 text-muted-foreground" />
+            <h3 className="mt-4 font-mono text-sm font-bold uppercase text-foreground">
+              No API keys yet
+            </h3>
+            <p className="mt-2 font-mono text-xs text-muted-foreground">
+              Create your first API key to start using Nexus
+            </p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="mt-6 inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <Key className="h-5 w-5 text-primary" />
+              <Plus className="h-3.5 w-3.5" />
+              Create Your First Key
+            </button>
+          </div>
+        ) : (
+          <div className="border border-border">
+            {keys.map((key, idx) => (
+              <div
+                key={key.id}
+                className={`flex items-center justify-between p-4 sm:p-5 ${
+                  idx !== keys.length - 1 ? "border-b border-border" : ""
+                }`}
+              >
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center border border-border">
+                    <Key className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-foreground">{key.name}</h3>
+                      <h3 className="font-mono text-sm font-bold text-foreground">
+                        {key.name}
+                      </h3>
                       {!key.isActive && (
-                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                        <span className="border border-red-500/50 bg-red-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-red-500">
                           Inactive
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 font-mono text-sm text-muted-foreground">
-                      {key.tokenPrefix}...
+                    <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                      {key.tokenPrefix}••••••••
                     </p>
-                    <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-[10px] text-muted-foreground sm:gap-3 sm:text-xs">
                       <span>Created {new Date(key.createdAt).toLocaleDateString()}</span>
                       {key.lastUsedAt && (
-                        <span>Last used {new Date(key.lastUsedAt).toLocaleDateString()}</span>
-                      )}
-                      {key.expiresAt && (
-                        <span>Expires {new Date(key.expiresAt).toLocaleDateString()}</span>
+                        <>
+                          <span className="text-border">|</span>
+                          <span>Last used {new Date(key.lastUsedAt).toLocaleDateString()}</span>
+                        </>
                       )}
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={() => deleteKey(key.id)}
-                  className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20"
+                  className="p-2 text-muted-foreground transition-colors hover:text-red-500"
                   title="Delete"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        )}
+
+        {/* Usage Info */}
+        <div className="mt-8 border-t border-border pt-6 md:mt-12 md:pt-8">
+          <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
+            Using Your API Key
+          </h2>
+          <div className="mt-4 space-y-4 font-mono text-xs text-muted-foreground">
+            <p>Include your API key in the Authorization header:</p>
+            <code className="block border border-border bg-muted/30 p-3 text-foreground">
+              Authorization: Bearer YOUR_API_KEY
+            </code>
+            <p>
+              Or use the <span className="text-foreground">X-API-Key</span> header:
+            </p>
+            <code className="block border border-border bg-muted/30 p-3 text-foreground">
+              X-API-Key: YOUR_API_KEY
+            </code>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Create Key Modal */}
       {showCreateModal && (
@@ -247,18 +284,18 @@ function CreateKeyModal({
     try {
       const res = await authFetch("/api/user/tokens", {
         method: "POST",
-        body: JSON.stringify({ 
-          name, 
-          scopes: ["read:docs", "read:memories", "write:memories", "read:servers"] 
+        body: JSON.stringify({
+          name,
+          scopes: ["read:docs", "read:memories", "write:memories", "read:servers"],
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json() as { error?: string };
+        const data = (await res.json()) as { error?: string };
         throw new Error(data.error || "Failed to create API key");
       }
 
-      const data = await res.json() as { token: string };
+      const data = (await res.json()) as { token: string };
       onSuccess(data.token);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create API key");
@@ -269,15 +306,25 @@ function CreateKeyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
-        <h2 className="text-lg font-semibold text-foreground">Create API Key</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+      <div className="w-full max-w-md border border-border bg-background p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
+            Create API Key
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="mt-2 font-mono text-xs text-muted-foreground">
           This key will have full access to your Nexus account
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6">
           <div>
-            <label className="block text-sm font-medium text-foreground">
+            <label className="block font-mono text-xs font-bold uppercase text-foreground">
               Key Name
             </label>
             <input
@@ -285,31 +332,31 @@ function CreateKeyModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My API Key"
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="mt-2 w-full border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
               required
             />
           </div>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800/50 dark:bg-red-900/20">
-              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            <div className="mt-4 border border-red-500/50 bg-red-500/5 p-3">
+              <p className="font-mono text-xs text-red-500">{error}</p>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="mt-6 flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              className="border border-border px-4 py-2 font-mono text-xs font-bold uppercase text-foreground transition-colors hover:bg-muted"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+              disabled={loading || !name.trim()}
+              className="inline-flex items-center gap-2 bg-accent px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-accent/90 disabled:opacity-50"
             >
-              {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Create Key
             </button>
           </div>

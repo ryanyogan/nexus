@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { z } from "zod";
@@ -383,12 +383,6 @@ export const Route = createFileRoute("/")({
     q: search.q,
     // Only q triggers refetch - sort is handled client-side
   }),
-  beforeLoad: async ({ context }) => {
-    const { session } = context;
-    if (session?.user) {
-      throw redirect({ to: "/dashboard" });
-    }
-  },
   loader: async ({ deps }) => {
     // Always fetch with popular sort on initial load
     // Client will re-sort based on selected tab
@@ -559,7 +553,7 @@ function HomePage() {
   
   const getTabIcon = (iconType: "docs" | "servers" | "skills" | null) => {
     if (!iconType) return null;
-    const iconClass = "h-2.5 w-2.5 sm:h-3 sm:w-3";
+    const iconClass = "h-3 w-3 sm:h-3.5 sm:w-3.5";
     switch (iconType) {
       case "docs": return <BookOpen className={iconClass} />;
       case "servers": return <Server className={iconClass} />;
@@ -569,7 +563,7 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[880px] px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
         {/* Hero */}
         <div className="pt-6 md:pt-12 lg:pt-16">
           <h1 className="font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl lg:text-3xl">
@@ -642,7 +636,7 @@ function HomePage() {
               return (
                 <span
                   key={`${t.id}-${idx}`}
-                  className="flex items-center gap-1 border-b border-transparent px-2 py-2 font-mono text-[10px] font-bold tracking-wide text-muted-foreground/50 cursor-not-allowed -mb-px sm:gap-1.5 sm:px-4 sm:text-xs md:py-2.5"
+                  className="flex items-center gap-1 border-b border-transparent px-2 py-2 font-mono text-xs font-bold tracking-wide text-muted-foreground/50 cursor-not-allowed -mb-px sm:gap-1.5 sm:px-4 md:py-2.5"
                 >
                   {getTabIcon(t.icon)}
                   <span className={t.icon ? "hidden sm:inline" : ""}>{t.label}</span>
@@ -661,7 +655,7 @@ function HomePage() {
                   setInputValue("");
                   inputRef.current?.blur();
                 }}
-                className={`flex items-center gap-1 border-b px-2 py-2 font-mono text-[10px] font-bold tracking-wide transition-colors -mb-px sm:gap-1.5 sm:px-4 sm:text-xs md:py-2.5 ${
+                className={`flex items-center gap-1 border-b px-2 py-2 font-mono text-xs font-bold tracking-wide transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-2.5 ${
                   isActive
                     ? "border-accent text-accent"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -676,9 +670,9 @@ function HomePage() {
           {isSearching && (
             <button
               onClick={handleSearchTabClick}
-              className="flex items-center gap-1 border-b border-accent px-2 py-2 font-mono text-[10px] font-bold tracking-wide text-accent -mb-px sm:gap-1.5 sm:px-4 sm:text-xs md:py-2.5"
+              className="flex items-center gap-1 border-b border-accent px-2 py-2 font-mono text-xs font-bold tracking-wide text-accent -mb-px sm:gap-1.5 sm:px-4 md:py-2.5"
             >
-              <Search className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <Search className="h-3 w-3" />
               <span className="hidden sm:inline">SEARCH</span>
             </button>
           )}
@@ -688,7 +682,7 @@ function HomePage() {
         <div>
           {/* Results count */}
           {searchQuery && (
-            <div className="mb-3 font-mono text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs md:mb-4">
+            <div className="mb-3 font-mono text-xs uppercase tracking-wide text-muted-foreground md:mb-4">
               {sortedItems.length} result{sortedItems.length !== 1 ? "s" : ""} for "{searchQuery}"
             </div>
           )}
@@ -704,13 +698,13 @@ function HomePage() {
           {sortedItems.length === 0 && !isLoadingMore && (
             <div className="py-8 text-center md:py-12">
               <Search className="mx-auto h-8 w-8 text-border md:h-10 md:w-10" />
-              <p className="mt-3 font-mono text-xs text-muted-foreground sm:text-sm md:mt-4">
+              <p className="mt-3 font-mono text-sm text-muted-foreground md:mt-4">
                 {searchQuery ? `No results for "${searchQuery}"` : "Nothing here yet"}
               </p>
               {searchQuery && (
                 <button
                   onClick={clearSearch}
-                  className="mt-3 font-mono text-[10px] font-bold uppercase text-accent hover:underline sm:text-xs md:mt-4"
+                  className="mt-3 font-mono text-xs font-bold uppercase text-accent hover:underline md:mt-4"
                 >
                   Clear search
                 </button>
@@ -721,21 +715,21 @@ function HomePage() {
           {/* View More button */}
           <div className="mt-4 flex items-center justify-center md:mt-6">
             {isLoadingMore && (
-              <div className="flex items-center gap-2 font-mono text-[10px] uppercase text-muted-foreground sm:text-xs">
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-accent sm:h-4 sm:w-4" />
+              <div className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin text-accent" />
                 Loading...
               </div>
             )}
             {!isLoadingMore && hasMore && sortedItems.length > 0 && (
               <button
                 onClick={loadMore}
-                className="border border-border bg-background px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-muted sm:px-6 sm:py-2 sm:text-xs"
+                className="border border-border bg-background px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-muted sm:px-6 sm:py-2"
               >
                 View More
               </button>
             )}
             {!hasMore && sortedItems.length > 0 && (
-              <p className="font-mono text-[10px] uppercase text-muted-foreground sm:text-xs">End of list</p>
+              <p className="font-mono text-xs uppercase text-muted-foreground">End of list</p>
             )}
           </div>
         </div>
@@ -743,7 +737,7 @@ function HomePage() {
         {/* Bottom section */}
         <div className="mt-8 border-t border-border pb-8 pt-6 md:mt-12 md:pb-12 md:pt-8">
           <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase sm:gap-2 sm:text-xs">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase">
               <a
                 href="https://docs.nexus.yogan.dev"
                 target="_blank"
@@ -751,7 +745,7 @@ function HomePage() {
                 className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-accent"
               >
                 Docs
-                <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <ArrowUpRight className="h-3 w-3" />
               </a>
               <span className="text-border">|</span>
               <Link to="/submit" className="text-muted-foreground transition-colors hover:text-accent">
@@ -764,11 +758,11 @@ function HomePage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-accent"
               >
-                <Github className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <Github className="h-3 w-3" />
                 GitHub
               </a>
             </div>
-            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase text-muted-foreground sm:gap-2 sm:text-xs">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground">
               <span>{loaderData.stats.libraries} libraries</span>
               <span className="text-border">|</span>
               <span>{loaderData.stats.servers} servers</span>
@@ -777,7 +771,7 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="mt-4 font-mono text-[10px] text-muted-foreground sm:text-xs md:mt-6">
+          <div className="mt-4 font-mono text-xs text-muted-foreground md:mt-6">
             <p>
               Pre-indexed docs with vector embeddings <span className="text-border">|</span> ~5K tokens instead of
               ~500K <span className="text-border">|</span> Free tier: 2,000 calls/month{" "}
@@ -868,19 +862,19 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
       </div>
 
       {/* Mobile: show first stat only */}
-      <div className="flex items-center font-mono text-[10px] text-muted-foreground sm:hidden">
+      <div className="flex items-center font-mono text-xs text-muted-foreground sm:hidden">
         <span className="tabular-nums">
           <span className="text-foreground/70">{stats[0].value}</span>
-          <span className="ml-1 text-[9px] text-muted-foreground/60">{stats[0].label}</span>
+          <span className="ml-1 text-[10px] text-muted-foreground/60">{stats[0].label}</span>
         </span>
       </div>
 
       {/* Desktop: show all stats */}
-      <div className="hidden items-center gap-3 font-mono text-[10px] text-muted-foreground sm:flex md:gap-4 md:text-[11px]">
+      <div className="hidden items-center gap-3 font-mono text-xs text-muted-foreground sm:flex md:gap-4">
         {stats.map((stat, idx) => (
           <span key={idx} className="tabular-nums">
             <span className="text-foreground/70">{stat.value}</span>
-            <span className="ml-1 text-[9px] text-muted-foreground/60 md:text-[10px]">{stat.label}</span>
+            <span className="ml-1 text-[10px] text-muted-foreground/60 md:text-xs">{stat.label}</span>
           </span>
         ))}
       </div>
