@@ -49,9 +49,12 @@ export const authMiddleware = createMiddleware<AppContext>(async (c, next) => {
         });
         c.set("authType", "token");
         c.set("tokenScopes", result.scopes);
+        return next();
       }
     }
 
+    // API key was provided but invalid - mark as anonymous
+    c.set("authType", "anonymous");
     return next();
   }
 
