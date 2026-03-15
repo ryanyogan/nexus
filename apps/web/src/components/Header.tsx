@@ -196,7 +196,7 @@ export default function Header({ session }: HeaderProps) {
           {/* Submit CTA */}
           <Link
             to="/submit"
-            className="ml-1 flex items-center gap-1 border border-foreground bg-foreground text-background px-3 py-1.5 hover:bg-foreground/90 transition-colors"
+            className="ml-1 flex items-center gap-1 border border-foreground bg-foreground text-background px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors"
           >
             <Plus className="h-3 w-3" />
             SUBMIT
@@ -268,7 +268,7 @@ export default function Header({ session }: HeaderProps) {
           ) : (
             <a
               href="/sign-in"
-              className="hidden md:flex items-center border border-border px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider hover:bg-muted transition-colors"
+              className="hidden md:flex items-center gap-1 border border-border px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider hover:bg-muted transition-colors"
             >
               LOG IN
             </a>
