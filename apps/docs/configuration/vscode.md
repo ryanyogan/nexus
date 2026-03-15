@@ -9,7 +9,12 @@ import Terminal from '../.vitepress/theme/components/Terminal.vue'
 
 ## Prerequisites
 
-You need an API key to use Nexus. Get one by running:
+- VS Code 1.99+
+- GitHub Copilot extension
+- MCP support enabled in Copilot
+- Nexus API key
+
+Get your API key by running:
 
 <Terminal title="Terminal">
 <span class="terminal-line prompt">npx @nexus/cli auth login</span>
@@ -17,21 +22,43 @@ You need an API key to use Nexus. Get one by running:
 
 Or create one at [nexus.yogan.dev/dashboard/keys](https://nexus.yogan.dev/dashboard/keys).
 
-## Requirements
-
-- VS Code 1.99+
-- GitHub Copilot extension
-- MCP support enabled in Copilot
-
 ## Settings Configuration
 
 1. Open VS Code Settings (`Cmd+,` or `Ctrl+,`)
 2. Search for "MCP"
 3. Click "Edit in settings.json"
 
-## Configuration
+## Remote Mode (Recommended)
 
-Add the following to your settings:
+Connect directly to the hosted Nexus service:
+
+```json
+{
+  "github.copilot.chat.mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.nexus.yogan.dev/sse",
+        "--header",
+        "Authorization:Bearer ${NEXUS_API_KEY}"
+      ],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+<Callout type="info" title="How it works">
+The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key as a Bearer token for authentication.
+</Callout>
+
+## Local Mode
+
+Run the Nexus CLI locally (useful for offline access):
 
 ```json
 {
@@ -48,18 +75,7 @@ Add the following to your settings:
 ```
 
 <Callout type="tip" title="Using CLI Login?">
-If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can simplify the config:
-
-```json
-{
-  "github.copilot.chat.mcpServers": {
-    "nexus": {
-      "command": "npx",
-      "args": ["-y", "@nexus/cli", "serve"]
-    }
-  }
-}
-```
+If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can omit the `env` section in local mode.
 </Callout>
 
 ## Verification
@@ -73,9 +89,9 @@ If you authenticated with `npx @nexus/cli auth login`, the CLI automatically use
 
 ### "API key required" Error
 
-Make sure you've added your API key:
-- Via `env.NEXUS_API_KEY` in the settings, OR
-- Via CLI login (`npx @nexus/cli auth login`)
+Make sure your API key is configured:
+- **Remote mode**: Check the `--header` argument and `NEXUS_API_KEY` env var
+- **Local mode**: Set `NEXUS_API_KEY` env var, or use CLI login
 
 ### Nexus Not Appearing
 
@@ -84,8 +100,6 @@ Make sure you've added your API key:
 3. Try restarting VS Code
 
 ### Testing Your Setup
-
-Run the CLI directly to test:
 
 <Terminal title="Terminal">
 <span class="terminal-line prompt">npx @nexus/cli serve</span>

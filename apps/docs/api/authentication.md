@@ -9,10 +9,10 @@ Nexus requires an API key for all MCP tool calls. This enables usage tracking, p
 The easiest way to get started:
 
 ```bash
-npx @nexus/cli login
+npx @nexus/cli auth login
 ```
 
-This opens your browser for GitHub authentication and automatically generates an API key stored in `~/.nexus/config.json`.
+This opens your browser for GitHub/Google authentication and automatically generates an API key stored in `~/.nexus/config.json`.
 
 ### Option 2: Dashboard
 
@@ -27,9 +27,37 @@ API keys are only shown once. Store them securely!
 
 ## Configuring Your AI Client
 
-### Claude Desktop
+### Remote Mode (Recommended)
 
-Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+Use `mcp-remote` to connect to the hosted Nexus service. Pass your API key via the `--header` flag:
+
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.nexus.yogan.dev/sse",
+        "--header",
+        "Authorization:Bearer ${NEXUS_API_KEY}"
+      ],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+::: tip How it works
+The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key as a Bearer token. The `${NEXUS_API_KEY}` syntax references the environment variable.
+:::
+
+### Local Mode
+
+Run the Nexus CLI locally. The CLI reads your API key from the environment or stored credentials:
 
 ```json
 {
@@ -45,73 +73,28 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 }
 ```
 
-### Cursor
+::: tip Using CLI Login?
+If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can omit the `env` section.
+:::
 
-Add to `.cursor/mcp.json` in your project or global config:
+### Client-Specific Guides
 
-```json
-{
-  "mcpServers": {
-    "nexus": {
-      "command": "npx",
-      "args": ["-y", "@nexus/cli", "serve"],
-      "env": {
-        "NEXUS_API_KEY": "nxs_your_api_key_here"
-      }
-    }
-  }
-}
+- [Claude Desktop](/configuration/claude-desktop)
+- [Cursor](/configuration/cursor)
+- [VS Code](/configuration/vscode)
+- [OpenCode](/configuration/opencode)
+
+### Direct HTTP Connection
+
+For clients supporting HTTP transport (SSE/Streamable HTTP) directly:
+
+```
+URL: https://mcp.nexus.yogan.dev/sse
+Headers:
+  Authorization: Bearer nxs_your_api_key_here
 ```
 
-### VS Code (Copilot / Continue)
-
-Add to your VS Code settings or MCP config:
-
-```json
-{
-  "mcpServers": {
-    "nexus": {
-      "command": "npx",
-      "args": ["-y", "@nexus/cli", "serve"],
-      "env": {
-        "NEXUS_API_KEY": "nxs_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-### Cline
-
-Configure in Cline's MCP settings panel or `~/.cline/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "nexus": {
-      "command": "npx",
-      "args": ["-y", "@nexus/cli", "serve"],
-      "env": {
-        "NEXUS_API_KEY": "nxs_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-### OpenCode / Codex / Other Clients
-
-Most MCP clients follow a similar pattern. The key configuration:
-
-| Setting | Value |
-|---------|-------|
-| Command | `npx` |
-| Args | `["-y", "@nexus/cli", "serve"]` |
-| Environment | `NEXUS_API_KEY=nxs_your_key` |
-
-### Remote HTTP Connection
-
-For clients supporting HTTP transport (SSE/Streamable HTTP):
+Or for the HTTP endpoint:
 
 ```
 URL: https://api.nexus.yogan.dev/mcp
@@ -150,11 +133,11 @@ If you try to use Nexus without an API key:
 {
   "error": {
     "code": -32001,
-    "message": "API key required. Get your free API key at https://nexus.yogan.dev/dashboard/keys or run 'npx @nexus/cli login' to authenticate.",
+    "message": "Authentication required. Get your API key at https://nexus.yogan.dev/dashboard/settings or run: npx @nexus/cli auth login",
     "data": {
-      "docsUrl": "https://docs.nexus.yogan.dev/getting-started",
-      "dashboardUrl": "https://nexus.yogan.dev/dashboard/keys",
-      "cliCommand": "npx @nexus/cli login"
+      "docsUrl": "https://nexus.yogan.dev/docs/api/authentication",
+      "dashboardUrl": "https://nexus.yogan.dev/dashboard/settings",
+      "cliCommand": "npx @nexus/cli auth login"
     }
   }
 }

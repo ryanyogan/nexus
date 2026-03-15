@@ -25,9 +25,37 @@ Or create one at [nexus.yogan.dev/dashboard/keys](https://nexus.yogan.dev/dashbo
 | Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
 | Linux | `~/.config/Claude/claude_desktop_config.json` |
 
-## Configuration
+## Remote Mode (Recommended)
 
-Add the following to your config file:
+Connect directly to the hosted Nexus service:
+
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.nexus.yogan.dev/sse",
+        "--header",
+        "Authorization:Bearer ${NEXUS_API_KEY}"
+      ],
+      "env": {
+        "NEXUS_API_KEY": "nxs_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+<Callout type="info" title="How it works">
+The `mcp-remote` package bridges your local MCP client to the remote Nexus server. The `--header` flag passes your API key as a Bearer token for authentication.
+</Callout>
+
+## Local Mode
+
+Run the Nexus CLI locally (useful for offline access):
 
 ```json
 {
@@ -44,7 +72,7 @@ Add the following to your config file:
 ```
 
 <Callout type="tip" title="Using CLI Login?">
-If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can simplify the config:
+If you authenticated with `npx @nexus/cli auth login`, the CLI automatically uses your stored key. You can omit the `env` section in local mode:
 
 ```json
 {
@@ -71,9 +99,9 @@ After saving the configuration:
 
 ### "API key required" Error
 
-Make sure you've added your API key to the config:
-- Via `env.NEXUS_API_KEY` in the config file, OR
-- Via CLI login (`npx @nexus/cli auth login`)
+Make sure your API key is configured:
+- **Remote mode**: Check the `--header` argument and `NEXUS_API_KEY` env var
+- **Local mode**: Set `NEXUS_API_KEY` env var, or use CLI login
 
 ### Nexus Not Appearing
 
@@ -82,13 +110,17 @@ Make sure you've added your API key to the config:
 3. Check Claude Desktop logs for errors
 4. Try restarting Claude Desktop
 
-### Testing Your Setup
+### Testing Remote Connection
 
-Run the CLI directly to test:
+Test that `mcp-remote` can connect:
+
+<Terminal title="Terminal">
+<span class="terminal-line prompt">NEXUS_API_KEY=nxs_your_key npx mcp-remote https://mcp.nexus.yogan.dev/sse --header "Authorization:Bearer \${NEXUS_API_KEY}"</span>
+</Terminal>
+
+### Testing Local Mode
 
 <Terminal title="Terminal">
 <span class="terminal-line prompt">npx @nexus/cli serve</span>
 <span class="terminal-line output">Nexus MCP server running...</span>
 </Terminal>
-
-If you see errors, the issue is with your API key or network connection.
