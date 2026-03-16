@@ -95,10 +95,49 @@ app.use("/mcp/*", authMiddleware);
 app.use("/mcp/*", mcpRateLimitMiddleware);
 app.route("/mcp", mcpRouter);
 
-// SSE endpoint for MCP - redirects to /mcp for actual requests
-// This supports clients that expect an /sse endpoint (like OpenCode native remote)
+// SSE endpoint for MCP - supports both StreamableHTTP (POST) and SSE (GET) transports
+// This enables native remote mode for clients like OpenCode
 app.use("/sse", authMiddleware);
 app.use("/sse", mcpRateLimitMiddleware);
+
+// POST /sse - StreamableHTTP transport (OpenCode tries this first)
+// Forwards to /mcp and wraps response in SSE format
+app.post("/sse", async (c) => {
+  const body = await c.req.json();
+  
+  // Forward the request to /mcp endpoint internally
+  const mcpResponse = await app.request("/mcp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": c.req.header("Authorization") || "",
+      "NEXUS_API_KEY": c.req.header("NEXUS_API_KEY") || "",
+    },
+    body: JSON.stringify(body),
+  }, c.env);
+  
+  const responseData = await mcpResponse.json();
+  const sessionId = mcpResponse.headers.get("Mcp-Session-Id");
+  
+  // Return as SSE-formatted response
+  const sseResponse = `event: message\ndata: ${JSON.stringify(responseData)}\n\n`;
+  
+  const headers: Record<string, string> = {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, NEXUS_API_KEY, Mcp-Session-Id",
+    "Access-Control-Expose-Headers": "Mcp-Session-Id",
+  };
+  
+  if (sessionId) {
+    headers["Mcp-Session-Id"] = sessionId;
+  }
+  
+  return new Response(sseResponse, { headers });
+});
+
+// GET /sse - SSE transport (fallback, keeps connection open)
 app.get("/sse", async (c) => {
   // Generate a unique session ID for this SSE connection
   const sessionId = crypto.randomUUID();
