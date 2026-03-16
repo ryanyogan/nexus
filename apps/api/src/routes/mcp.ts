@@ -2479,4 +2479,70 @@ async function toolListStacks(
   };
 }
 
+/**
+ * Handle MCP request with full context (for use from /sse endpoint)
+ * Returns the response body and metadata without wrapping in Hono response
+ */
+export async function handleMCPRequestWithContext(
+  request: MCPRequest,
+  c: import("hono").Context<AppContext>
+): Promise<{ body: MCPResponse; sessionId?: string; status: number }> {
+  const db = c.get("db");
+  const kv = c.env.KV;
+  const user = c.get("user");
+  const authType = c.get("authType");
+
+  // Require authentication for tool calls
+  const publicMethods = ["initialize", "tools/list", "resources/list", "prompts/list"];
+  const requiresAuth = !publicMethods.includes(request.method);
+
+  if (requiresAuth && authType === "anonymous") {
+    return {
+      body: {
+        jsonrpc: "2.0",
+        id: request.id,
+        error: API_KEY_REQUIRED_ERROR,
+      },
+      status: 401,
+    };
+  }
+
+  // Session management using KV
+  let sessionId = c.req.header("Mcp-Session-Id");
+  let isNewSession = false;
+
+  if (request.method === "initialize") {
+    sessionId = await createSession(kv, user?.id);
+    isNewSession = true;
+  } else if (sessionId) {
+    const session = await getSession(kv, sessionId);
+    if (!session) {
+      sessionId = await createSession(kv, user?.id);
+      isNewSession = true;
+    }
+  }
+
+  try {
+    const response = await handleMCPRequest(request, db, c.env);
+    return {
+      body: response,
+      sessionId: isNewSession ? sessionId : undefined,
+      status: 200,
+    };
+  } catch (error) {
+    console.error("MCP request error:", error);
+    return {
+      body: {
+        jsonrpc: "2.0",
+        id: request.id,
+        error: {
+          code: -32603,
+          message: error instanceof Error ? error.message : "Internal error",
+        },
+      },
+      status: 500,
+    };
+  }
+}
+
 export { mcpRouter };

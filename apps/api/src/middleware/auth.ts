@@ -49,6 +49,7 @@ export const authMiddleware = createMiddleware<AppContext>(async (c, next) => {
         });
         c.set("authType", "token");
         c.set("tokenScopes", result.scopes);
+        c.set("tokenId", result.tokenId);
         return next();
       }
     }

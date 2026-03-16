@@ -95,32 +95,21 @@ app.use("/mcp/*", authMiddleware);
 app.use("/mcp/*", mcpRateLimitMiddleware);
 app.route("/mcp", mcpRouter);
 
-// SSE endpoint for MCP - supports both StreamableHTTP (POST) and SSE (GET) transports
+// SSE endpoint for MCP - supports StreamableHTTP transport with SSE response format
 // This enables native remote mode for clients like OpenCode
 app.use("/sse", authMiddleware);
 app.use("/sse", mcpRateLimitMiddleware);
 
-// POST /sse - StreamableHTTP transport (OpenCode tries this first)
-// Forwards to /mcp and wraps response in SSE format
+// Mount the MCP router at /sse as well, but wrap responses in SSE format
 app.post("/sse", async (c) => {
+  // Import the MCP handler logic
+  const { handleMCPRequestWithContext } = await import("./routes/mcp");
+  
   const body = await c.req.json();
+  const response = await handleMCPRequestWithContext(body, c);
   
-  // Forward the request to /mcp endpoint internally
-  const mcpResponse = await app.request("/mcp", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": c.req.header("Authorization") || "",
-      "NEXUS_API_KEY": c.req.header("NEXUS_API_KEY") || "",
-    },
-    body: JSON.stringify(body),
-  }, c.env);
-  
-  const responseData = await mcpResponse.json();
-  const sessionId = mcpResponse.headers.get("Mcp-Session-Id");
-  
-  // Return as SSE-formatted response
-  const sseResponse = `event: message\ndata: ${JSON.stringify(responseData)}\n\n`;
+  // Wrap response in SSE format
+  const sseResponse = `event: message\ndata: ${JSON.stringify(response.body)}\n\n`;
   
   const headers: Record<string, string> = {
     "Content-Type": "text/event-stream",
@@ -130,14 +119,17 @@ app.post("/sse", async (c) => {
     "Access-Control-Expose-Headers": "Mcp-Session-Id",
   };
   
-  if (sessionId) {
-    headers["Mcp-Session-Id"] = sessionId;
+  if (response.sessionId) {
+    headers["Mcp-Session-Id"] = response.sessionId;
   }
   
-  return new Response(sseResponse, { headers });
+  return new Response(sseResponse, { 
+    headers,
+    status: response.status,
+  });
 });
 
-// GET /sse - SSE transport (fallback, keeps connection open)
+// GET /sse - SSE transport (fallback, keeps connection open for streaming)
 app.get("/sse", async (c) => {
   // Generate a unique session ID for this SSE connection
   const sessionId = crypto.randomUUID();

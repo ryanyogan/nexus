@@ -4,6 +4,7 @@ import { apiTokens, type Database, type ApiTokenScope } from "@nexus/db";
 export interface TokenValidationResult {
   valid: boolean;
   userId?: string | null;
+  tokenId?: string;
   scopes?: ApiTokenScope[];
   error?: string;
 }
@@ -91,6 +92,7 @@ export async function validateToken(
   return {
     valid: true,
     userId: apiToken.userId,
+    tokenId: apiToken.id,
     scopes: apiToken.scopes || [],
   };
 }

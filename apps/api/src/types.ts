@@ -27,6 +27,7 @@ export interface AppContext {
     session?: AuthSession;
     authType?: AuthType;
     tokenScopes?: ApiTokenScope[];
+    tokenId?: string;
   };
 }
 

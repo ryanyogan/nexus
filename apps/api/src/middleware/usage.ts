@@ -134,13 +134,13 @@ export const mcpRateLimitMiddleware = createMiddleware<AppContext>(
   async (c, next) => {
     const authType = c.get("authType") || "anonymous";
     const userId = c.get("user")?.id;
-    const apiKeyId = c.req.header("X-API-Key");
+    const tokenId = c.get("tokenId"); // Get token ID from auth middleware
     const ipAddress =
       c.req.header("CF-Connecting-IP") ||
       c.req.header("X-Forwarded-For")?.split(",")[0]?.trim();
 
     // Build rate limit key with MCP prefix
-    const rateLimitKey = `mcp:${getRateLimitKey(apiKeyId, userId, ipAddress)}`;
+    const rateLimitKey = `mcp:${getRateLimitKey(tokenId, userId, ipAddress)}`;
     const rateLimiter = (c.env as any).RATE_LIMITER;
     
     // Check rate limit
@@ -177,7 +177,7 @@ export const mcpRateLimitMiddleware = createMiddleware<AppContext>(
 
     trackUsage(analytics, {
       userId: userId,
-      apiKeyId: apiKeyId,
+      apiKeyId: tokenId, // Use token ID from auth context
       endpoint: "/mcp",
       method: c.req.method,
       statusCode: c.res.status,
