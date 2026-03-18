@@ -29,6 +29,7 @@ export const libraries = sqliteTable(
     githubBranch: text("github_branch").default("main"),
     githubDocsPaths: text("github_docs_paths", { mode: "json" }).$type<string[]>().default([]),
     lastCommitSha: text("last_commit_sha"),
+    githubStars: integer("github_stars").default(0),
 
     // Website source details
     websiteUrl: text("website_url"),
@@ -89,6 +90,7 @@ export const libraries = sqliteTable(
     index("libraries_status_idx").on(table.indexStatus),
     index("libraries_active_idx").on(table.isActive),
     index("libraries_featured_idx").on(table.isFeatured),
+    index("libraries_github_stars_idx").on(table.githubStars),
   ]
 );
 

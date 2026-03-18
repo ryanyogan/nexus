@@ -96,11 +96,11 @@ function LibraryDetailPage() {
     return num.toString();
   };
 
-  // Trust score label
+  // Trust score label (0-100 scale)
   const getTrustLabel = (score: number | null) => {
     if (!score) return null;
-    if (score >= 8) return "High";
-    if (score >= 5) return "Medium";
+    if (score >= 80) return "High";
+    if (score >= 50) return "Medium";
     return "Low";
   };
 
@@ -212,17 +212,10 @@ function LibraryDetailPage() {
             <span className="font-bold text-foreground">{formatNumber(library.totalTokens)}</span>
             <span className="uppercase text-muted-foreground">tokens</span>
           </div>
-          {library.context7TotalSnippets && library.context7TotalSnippets > 0 && (
-            <div className="flex items-center gap-2">
-              <Code className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="font-bold text-foreground">{formatNumber(library.context7TotalSnippets)}</span>
-              <span className="uppercase text-muted-foreground">snippets</span>
-            </div>
-          )}
-          {library.context7Stars && library.context7Stars > 0 && (
+          {library.githubStars && library.githubStars > 0 && (
             <div className="flex items-center gap-2">
               <Star className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="font-bold text-foreground">{formatNumber(library.context7Stars)}</span>
+              <span className="font-bold text-foreground">{formatNumber(library.githubStars)}</span>
               <span className="uppercase text-muted-foreground">stars</span>
             </div>
           )}
@@ -331,14 +324,7 @@ nexus.queryDocs({
                     </dd>
                   </div>
                 )}
-                {library.context7Id && (
-                  <div className="flex items-start justify-between">
-                    <dt className="uppercase text-muted-foreground">Context7 ID</dt>
-                    <dd className="text-foreground">
-                      {library.context7Id}
-                    </dd>
-                  </div>
-                )}
+
               </dl>
             </div>
           </div>
@@ -397,22 +383,22 @@ nexus.queryDocs({
                      library.indexStatus === "failed" ? "Failed" : "Pending"}
                   </dd>
                 </div>
-                {library.context7TrustScore && (
+                {library.trustScore && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Trust</dt>
                     <dd className="flex items-center gap-1 text-foreground">
-                      <span className="font-bold">{library.context7TrustScore}/10</span>
+                      <span className="font-bold">{library.trustScore}</span>
                       <span className="text-muted-foreground">
-                        ({getTrustLabel(library.context7TrustScore)})
+                        ({getTrustLabel(library.trustScore)})
                       </span>
                     </dd>
                   </div>
                 )}
-                {library.context7BenchmarkScore && (
+                {library.benchmarkScore && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Quality</dt>
                     <dd className="font-bold text-foreground">
-                      {library.context7BenchmarkScore}%
+                      {library.benchmarkScore}%
                     </dd>
                   </div>
                 )}

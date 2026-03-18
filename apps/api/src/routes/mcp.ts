@@ -1444,11 +1444,52 @@ async function toolResolveLibrary(
     .limit(10);
 
   if (results.length === 0) {
-    return {
-      success: false,
-      message: `No libraries found matching "${libraryName}". Use list-libraries to see available libraries.`,
-      suggestions: [],
-    };
+    // Try to resolve and queue the library for indexing
+    const { resolveAndQueueLibrary } = await import("../lib/library-resolver");
+    const resolved = await resolveAndQueueLibrary(libraryName, db, env);
+
+    switch (resolved.status) {
+      case "queued":
+        return {
+          success: false,
+          status: "indexing",
+          message: `We don't have docs for "${libraryName}" yet, but we're fetching them now! Try again in ~${resolved.estimatedReadyIn} seconds.`,
+          libraryId: resolved.libraryId,
+          libraryName: resolved.libraryName,
+          repositoryUrl: resolved.repositoryUrl,
+          description: resolved.description,
+          estimatedReadyIn: resolved.estimatedReadyIn,
+        };
+
+      case "indexing":
+        return {
+          success: false,
+          status: "indexing",
+          message: `Documentation for "${libraryName}" is currently being indexed. Try again in ~${resolved.estimatedReadyIn} seconds.`,
+          libraryId: resolved.libraryId,
+          libraryName: resolved.libraryName,
+          estimatedReadyIn: resolved.estimatedReadyIn,
+        };
+
+      case "indexed":
+        // Race condition: library was indexed between our search and resolve
+        return {
+          success: true,
+          libraryId: resolved.libraryId,
+          libraryName: resolved.libraryName,
+          message: "Library is now available!",
+          recommendation: `Use libraryId "${resolved.libraryId}" with query-docs to search this library's documentation.`,
+        };
+
+      case "rejected":
+      default:
+        return {
+          success: false,
+          status: "not_found",
+          message: resolved.reason || `No libraries found matching "${libraryName}".`,
+          submitUrl: "https://nexus.yogan.dev/submit",
+        };
+    }
   }
 
   // Format results
@@ -1513,15 +1554,38 @@ async function toolQueryDocs(
     .limit(1);
 
   if (!library) {
+    // Try to resolve and queue the library
+    const { resolveAndQueueLibrary } = await import("../lib/library-resolver");
+    const resolved = await resolveAndQueueLibrary(libraryId, db, env);
+
+    if (resolved.status === "queued" || resolved.status === "indexing") {
+      return {
+        success: false,
+        status: "indexing",
+        message: `Documentation for "${libraryId}" is being indexed. Try again in ~${resolved.estimatedReadyIn || 30} seconds.`,
+        libraryId: resolved.libraryId,
+        estimatedReadyIn: resolved.estimatedReadyIn || 30,
+      };
+    }
+
     throw new Error(
-      `Library "${libraryId}" not found. Use resolve-library to search for available libraries.`
+      resolved.reason || `Library "${libraryId}" not found. Use resolve-library to search for available libraries.`
     );
   }
 
   if (library.indexStatus !== "indexed") {
-    throw new Error(
-      `Library "${libraryId}" is not yet indexed (status: ${library.indexStatus}). Try again later.`
-    );
+    // Return a helpful response instead of throwing
+    return {
+      success: false,
+      status: library.indexStatus,
+      message:
+        library.indexStatus === "indexing" || library.indexStatus === "pending"
+          ? `Documentation for "${libraryId}" is being indexed. Try again in ~30 seconds.`
+          : `Library "${libraryId}" indexing failed. Use resolve-library to check status or submit for re-indexing.`,
+      libraryId: library.id,
+      libraryName: library.name,
+      estimatedReadyIn: library.indexStatus === "indexing" || library.indexStatus === "pending" ? 30 : undefined,
+    };
   }
 
   // Generate query embedding

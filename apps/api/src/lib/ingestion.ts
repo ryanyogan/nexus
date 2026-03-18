@@ -91,6 +91,7 @@ export async function processIngestionJob(
           githubRepo: metadata.repo,
           githubBranch: metadata.branch,
           lastCommitSha: metadata.commitSha,
+          githubStars: metadata.stars,
           versions: versions.slice(0, 50).map(v => v.version), // Store top 50 version strings
           updatedAt: new Date().toISOString(),
         })
