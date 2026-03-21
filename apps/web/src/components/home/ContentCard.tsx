@@ -158,12 +158,12 @@ export function ContentCard({ item }: ContentCardProps) {
   return (
     <Link
       to={getDetailUrl()}
-      className="group flex flex-col border border-border bg-background p-4 transition-all hover:border-accent/50 hover:bg-muted/30"
+      className="group flex flex-col bg-background p-6 transition-colors hover:bg-muted/30"
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-border bg-muted/50 text-muted-foreground transition-colors group-hover:border-accent/50 group-hover:text-accent">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-muted/50 text-muted-foreground transition-colors group-hover:text-accent">
             {getIcon()}
           </div>
           <div className="min-w-0">
@@ -204,7 +204,7 @@ export function ContentCard({ item }: ContentCardProps) {
 
 export function ContentCardSkeleton() {
   return (
-    <div className="flex flex-col border border-border bg-background p-4 animate-pulse">
+    <div className="flex flex-col bg-background p-6 animate-pulse">
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className="h-10 w-10 shrink-0 bg-muted" />

@@ -1,5 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, X, ArrowRight, Search, Brain, Server, Zap, Sparkles, Layers } from "lucide-react";
+import {
+  Check,
+  X,
+  ArrowRight,
+  Search,
+  Brain,
+  Server,
+  Zap,
+  Sparkles,
+  Layers,
+  FileText,
+} from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
@@ -21,11 +32,11 @@ const plans = [
       { text: "1 API key", included: true },
       { text: "Documentation search", included: true },
       { text: "MCP server discovery", included: true },
-      { text: "3 Stacks", included: true },
+      { text: "3 Stacks + 3 Prompts", included: true },
       { text: "Community support", included: true },
       { text: "Persistent memory", included: false },
-      { text: "Private repositories", included: false },
-      { text: "Stack marketplace publishing", included: false },
+      { text: "Private prompts & stacks", included: false },
+      { text: "Prompt inheritance", included: false },
     ],
     cta: "Get Started",
     ctaLink: "/sign-in",
@@ -42,11 +53,11 @@ const plans = [
       { text: "10 API keys", included: true },
       { text: "Documentation search", included: true },
       { text: "MCP server discovery", included: true },
-      { text: "Unlimited Stacks", included: true },
+      { text: "Unlimited Stacks & Prompts", included: true },
       { text: "Priority support", included: true },
       { text: "Unlimited persistent memory", included: true },
-      { text: "Private repositories", included: true },
-      { text: "Stack marketplace publishing", included: true },
+      { text: "Private prompts & stacks", included: true },
+      { text: "Prompt & stack inheritance", included: true },
     ],
     cta: "Upgrade to Pro",
     ctaLink: "/dashboard/billing",
@@ -81,14 +92,22 @@ const features = [
   },
   {
     id: "04",
-    title: "Stacks",
+    title: "Prompts",
     description:
-      "AI-powered project scaffolding. Compose stack instructions, CLI preferences, and repo knowledge into token-efficient prompts.",
-    icon: Layers,
+      "Save, share, and extend system prompts. Build on community templates or create your own reusable configurations.",
+    icon: FileText,
     pro: false,
   },
   {
     id: "05",
+    title: "Stacks",
+    description:
+      "AI-powered project scaffolding. Compose instructions, CLI preferences, and repo patterns with inheritance.",
+    icon: Layers,
+    pro: false,
+  },
+  {
+    id: "06",
     title: "Token Efficiency",
     description:
       "Semantic search returns only relevant chunks. Save 90%+ on context tokens compared to full docs.",
