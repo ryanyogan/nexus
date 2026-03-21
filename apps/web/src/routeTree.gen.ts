@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from "./routes/__root";
 import { Route as TerminalRouteImport } from "./routes/terminal";
 import { Route as SignInRouteImport } from "./routes/sign-in";
 import { Route as PlansRouteImport } from "./routes/plans";
+import { Route as ExploreRouteImport } from "./routes/explore";
 import { Route as AuthedRouteImport } from "./routes/_authed";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as ExploreIndexRouteImport } from "./routes/explore/index";
@@ -23,6 +24,7 @@ import { Route as CodeSessionsRouteImport } from "./routes/code/sessions";
 import { Route as AuthCliRouteImport } from "./routes/auth/cli";
 import { Route as AuthedSubmitServerRouteImport } from "./routes/_authed/submit-server";
 import { Route as AuthedSubmitRouteImport } from "./routes/_authed/submit";
+import { Route as AuthedDashboardRouteImport } from "./routes/_authed/dashboard";
 import { Route as AuthedAdminRouteImport } from "./routes/_authed/admin";
 import { Route as ExploreSkillsIndexRouteImport } from "./routes/explore/skills.index";
 import { Route as ExploreServersIndexRouteImport } from "./routes/explore/servers.index";
@@ -65,6 +67,11 @@ const PlansRoute = PlansRouteImport.update({
   path: "/plans",
   getParentRoute: () => rootRouteImport,
 } as any);
+const ExploreRoute = ExploreRouteImport.update({
+  id: "/explore",
+  path: "/explore",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const AuthedRoute = AuthedRouteImport.update({
   id: "/_authed",
   getParentRoute: () => rootRouteImport,
@@ -75,9 +82,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any);
 const ExploreIndexRoute = ExploreIndexRouteImport.update({
-  id: "/explore/",
-  path: "/explore/",
-  getParentRoute: () => rootRouteImport,
+  id: "/",
+  path: "/",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const CodeIndexRoute = CodeIndexRouteImport.update({
   id: "/code/",
@@ -90,14 +97,14 @@ const LibrariesLibraryIdRoute = LibrariesLibraryIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any);
 const ExploreStatsRoute = ExploreStatsRouteImport.update({
-  id: "/explore/stats",
-  path: "/explore/stats",
-  getParentRoute: () => rootRouteImport,
+  id: "/stats",
+  path: "/stats",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const ExploreDocsRoute = ExploreDocsRouteImport.update({
-  id: "/explore/docs",
-  path: "/explore/docs",
-  getParentRoute: () => rootRouteImport,
+  id: "/docs",
+  path: "/docs",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const CodeSessionsRoute = CodeSessionsRouteImport.update({
   id: "/code/sessions",
@@ -119,20 +126,25 @@ const AuthedSubmitRoute = AuthedSubmitRouteImport.update({
   path: "/submit",
   getParentRoute: () => AuthedRoute,
 } as any);
+const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
+  id: "/dashboard",
+  path: "/dashboard",
+  getParentRoute: () => AuthedRoute,
+} as any);
 const AuthedAdminRoute = AuthedAdminRouteImport.update({
   id: "/admin",
   path: "/admin",
   getParentRoute: () => AuthedRoute,
 } as any);
 const ExploreSkillsIndexRoute = ExploreSkillsIndexRouteImport.update({
-  id: "/explore/skills/",
-  path: "/explore/skills/",
-  getParentRoute: () => rootRouteImport,
+  id: "/skills/",
+  path: "/skills/",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const ExploreServersIndexRoute = ExploreServersIndexRouteImport.update({
-  id: "/explore/servers/",
-  path: "/explore/servers/",
-  getParentRoute: () => rootRouteImport,
+  id: "/servers/",
+  path: "/servers/",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const AuthedSettingsIndexRoute = AuthedSettingsIndexRouteImport.update({
   id: "/settings/",
@@ -140,9 +152,9 @@ const AuthedSettingsIndexRoute = AuthedSettingsIndexRouteImport.update({
   getParentRoute: () => AuthedRoute,
 } as any);
 const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
-  id: "/dashboard/",
-  path: "/dashboard/",
-  getParentRoute: () => AuthedRoute,
+  id: "/",
+  path: "/",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   id: "/",
@@ -150,19 +162,19 @@ const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   getParentRoute: () => AuthedAdminRoute,
 } as any);
 const ExploreStacksStackSlugRoute = ExploreStacksStackSlugRouteImport.update({
-  id: "/explore/stacks/$stackSlug",
-  path: "/explore/stacks/$stackSlug",
-  getParentRoute: () => rootRouteImport,
+  id: "/stacks/$stackSlug",
+  path: "/stacks/$stackSlug",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const ExploreSkillsSkillIdRoute = ExploreSkillsSkillIdRouteImport.update({
-  id: "/explore/skills/$skillId",
-  path: "/explore/skills/$skillId",
-  getParentRoute: () => rootRouteImport,
+  id: "/skills/$skillId",
+  path: "/skills/$skillId",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const ExploreServersServerIdRoute = ExploreServersServerIdRouteImport.update({
-  id: "/explore/servers/$serverId",
-  path: "/explore/servers/$serverId",
-  getParentRoute: () => rootRouteImport,
+  id: "/servers/$serverId",
+  path: "/servers/$serverId",
+  getParentRoute: () => ExploreRoute,
 } as any);
 const ExploreDocsLibraryIdRoute = ExploreDocsLibraryIdRouteImport.update({
   id: "/$libraryId",
@@ -180,29 +192,29 @@ const AuthedSettingsSecretsRoute = AuthedSettingsSecretsRouteImport.update({
   getParentRoute: () => AuthedRoute,
 } as any);
 const AuthedDashboardSkillsRoute = AuthedDashboardSkillsRouteImport.update({
-  id: "/dashboard/skills",
-  path: "/dashboard/skills",
-  getParentRoute: () => AuthedRoute,
+  id: "/skills",
+  path: "/skills",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardReposRoute = AuthedDashboardReposRouteImport.update({
-  id: "/dashboard/repos",
-  path: "/dashboard/repos",
-  getParentRoute: () => AuthedRoute,
+  id: "/repos",
+  path: "/repos",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardKeysRoute = AuthedDashboardKeysRouteImport.update({
-  id: "/dashboard/keys",
-  path: "/dashboard/keys",
-  getParentRoute: () => AuthedRoute,
+  id: "/keys",
+  path: "/keys",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardBrainRoute = AuthedDashboardBrainRouteImport.update({
-  id: "/dashboard/brain",
-  path: "/dashboard/brain",
-  getParentRoute: () => AuthedRoute,
+  id: "/brain",
+  path: "/brain",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardBillingRoute = AuthedDashboardBillingRouteImport.update({
-  id: "/dashboard/billing",
-  path: "/dashboard/billing",
-  getParentRoute: () => AuthedRoute,
+  id: "/billing",
+  path: "/billing",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedAdminSubmissionsRoute = AuthedAdminSubmissionsRouteImport.update({
   id: "/submissions",
@@ -220,42 +232,44 @@ const AuthedAdminLibrariesRoute = AuthedAdminLibrariesRouteImport.update({
   getParentRoute: () => AuthedAdminRoute,
 } as any);
 const AuthedDashboardStacksIndexRoute = AuthedDashboardStacksIndexRouteImport.update({
-  id: "/dashboard/stacks/",
-  path: "/dashboard/stacks/",
-  getParentRoute: () => AuthedRoute,
+  id: "/stacks/",
+  path: "/stacks/",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardPromptsIndexRoute = AuthedDashboardPromptsIndexRouteImport.update({
-  id: "/dashboard/prompts/",
-  path: "/dashboard/prompts/",
-  getParentRoute: () => AuthedRoute,
+  id: "/prompts/",
+  path: "/prompts/",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardStacksNewRoute = AuthedDashboardStacksNewRouteImport.update({
-  id: "/dashboard/stacks/new",
-  path: "/dashboard/stacks/new",
-  getParentRoute: () => AuthedRoute,
+  id: "/stacks/new",
+  path: "/stacks/new",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardStacksStackIdRoute = AuthedDashboardStacksStackIdRouteImport.update({
-  id: "/dashboard/stacks/$stackId",
-  path: "/dashboard/stacks/$stackId",
-  getParentRoute: () => AuthedRoute,
+  id: "/stacks/$stackId",
+  path: "/stacks/$stackId",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardPromptsNewRoute = AuthedDashboardPromptsNewRouteImport.update({
-  id: "/dashboard/prompts/new",
-  path: "/dashboard/prompts/new",
-  getParentRoute: () => AuthedRoute,
+  id: "/prompts/new",
+  path: "/prompts/new",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 const AuthedDashboardPromptsPromptIdRoute = AuthedDashboardPromptsPromptIdRouteImport.update({
-  id: "/dashboard/prompts/$promptId",
-  path: "/dashboard/prompts/$promptId",
-  getParentRoute: () => AuthedRoute,
+  id: "/prompts/$promptId",
+  path: "/prompts/$promptId",
+  getParentRoute: () => AuthedDashboardRoute,
 } as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/explore": typeof ExploreRouteWithChildren;
   "/plans": typeof PlansRoute;
   "/sign-in": typeof SignInRoute;
   "/terminal": typeof TerminalRoute;
   "/admin": typeof AuthedAdminRouteWithChildren;
+  "/dashboard": typeof AuthedDashboardRouteWithChildren;
   "/submit": typeof AuthedSubmitRoute;
   "/submit-server": typeof AuthedSubmitServerRoute;
   "/auth/cli": typeof AuthCliRoute;
@@ -335,10 +349,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
   "/_authed": typeof AuthedRouteWithChildren;
+  "/explore": typeof ExploreRouteWithChildren;
   "/plans": typeof PlansRoute;
   "/sign-in": typeof SignInRoute;
   "/terminal": typeof TerminalRoute;
   "/_authed/admin": typeof AuthedAdminRouteWithChildren;
+  "/_authed/dashboard": typeof AuthedDashboardRouteWithChildren;
   "/_authed/submit": typeof AuthedSubmitRoute;
   "/_authed/submit-server": typeof AuthedSubmitServerRoute;
   "/auth/cli": typeof AuthCliRoute;
@@ -378,10 +394,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | "/"
+    | "/explore"
     | "/plans"
     | "/sign-in"
     | "/terminal"
     | "/admin"
+    | "/dashboard"
     | "/submit"
     | "/submit-server"
     | "/auth/cli"
@@ -460,10 +478,12 @@ export interface FileRouteTypes {
     | "__root__"
     | "/"
     | "/_authed"
+    | "/explore"
     | "/plans"
     | "/sign-in"
     | "/terminal"
     | "/_authed/admin"
+    | "/_authed/dashboard"
     | "/_authed/submit"
     | "/_authed/submit-server"
     | "/auth/cli"
@@ -503,22 +523,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   AuthedRoute: typeof AuthedRouteWithChildren;
+  ExploreRoute: typeof ExploreRouteWithChildren;
   PlansRoute: typeof PlansRoute;
   SignInRoute: typeof SignInRoute;
   TerminalRoute: typeof TerminalRoute;
   AuthCliRoute: typeof AuthCliRoute;
   CodeSessionsRoute: typeof CodeSessionsRoute;
-  ExploreDocsRoute: typeof ExploreDocsRouteWithChildren;
-  ExploreStatsRoute: typeof ExploreStatsRoute;
   LibrariesLibraryIdRoute: typeof LibrariesLibraryIdRoute;
   CodeIndexRoute: typeof CodeIndexRoute;
-  ExploreIndexRoute: typeof ExploreIndexRoute;
   CodeSessionSessionIdRoute: typeof CodeSessionSessionIdRoute;
-  ExploreServersServerIdRoute: typeof ExploreServersServerIdRoute;
-  ExploreSkillsSkillIdRoute: typeof ExploreSkillsSkillIdRoute;
-  ExploreStacksStackSlugRoute: typeof ExploreStacksStackSlugRoute;
-  ExploreServersIndexRoute: typeof ExploreServersIndexRoute;
-  ExploreSkillsIndexRoute: typeof ExploreSkillsIndexRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -544,6 +557,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof PlansRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/explore": {
+      id: "/explore";
+      path: "/explore";
+      fullPath: "/explore";
+      preLoaderRoute: typeof ExploreRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/_authed": {
       id: "/_authed";
       path: "";
@@ -560,10 +580,10 @@ declare module "@tanstack/react-router" {
     };
     "/explore/": {
       id: "/explore/";
-      path: "/explore";
+      path: "/";
       fullPath: "/explore/";
       preLoaderRoute: typeof ExploreIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/code/": {
       id: "/code/";
@@ -581,17 +601,17 @@ declare module "@tanstack/react-router" {
     };
     "/explore/stats": {
       id: "/explore/stats";
-      path: "/explore/stats";
+      path: "/stats";
       fullPath: "/explore/stats";
       preLoaderRoute: typeof ExploreStatsRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/explore/docs": {
       id: "/explore/docs";
-      path: "/explore/docs";
+      path: "/docs";
       fullPath: "/explore/docs";
       preLoaderRoute: typeof ExploreDocsRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/code/sessions": {
       id: "/code/sessions";
@@ -621,6 +641,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AuthedSubmitRouteImport;
       parentRoute: typeof AuthedRoute;
     };
+    "/_authed/dashboard": {
+      id: "/_authed/dashboard";
+      path: "/dashboard";
+      fullPath: "/dashboard";
+      preLoaderRoute: typeof AuthedDashboardRouteImport;
+      parentRoute: typeof AuthedRoute;
+    };
     "/_authed/admin": {
       id: "/_authed/admin";
       path: "/admin";
@@ -630,17 +657,17 @@ declare module "@tanstack/react-router" {
     };
     "/explore/skills/": {
       id: "/explore/skills/";
-      path: "/explore/skills";
+      path: "/skills";
       fullPath: "/explore/skills/";
       preLoaderRoute: typeof ExploreSkillsIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/explore/servers/": {
       id: "/explore/servers/";
-      path: "/explore/servers";
+      path: "/servers";
       fullPath: "/explore/servers/";
       preLoaderRoute: typeof ExploreServersIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/_authed/settings/": {
       id: "/_authed/settings/";
@@ -651,10 +678,10 @@ declare module "@tanstack/react-router" {
     };
     "/_authed/dashboard/": {
       id: "/_authed/dashboard/";
-      path: "/dashboard";
+      path: "/";
       fullPath: "/dashboard/";
       preLoaderRoute: typeof AuthedDashboardIndexRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/admin/": {
       id: "/_authed/admin/";
@@ -665,24 +692,24 @@ declare module "@tanstack/react-router" {
     };
     "/explore/stacks/$stackSlug": {
       id: "/explore/stacks/$stackSlug";
-      path: "/explore/stacks/$stackSlug";
+      path: "/stacks/$stackSlug";
       fullPath: "/explore/stacks/$stackSlug";
       preLoaderRoute: typeof ExploreStacksStackSlugRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/explore/skills/$skillId": {
       id: "/explore/skills/$skillId";
-      path: "/explore/skills/$skillId";
+      path: "/skills/$skillId";
       fullPath: "/explore/skills/$skillId";
       preLoaderRoute: typeof ExploreSkillsSkillIdRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/explore/servers/$serverId": {
       id: "/explore/servers/$serverId";
-      path: "/explore/servers/$serverId";
+      path: "/servers/$serverId";
       fullPath: "/explore/servers/$serverId";
       preLoaderRoute: typeof ExploreServersServerIdRouteImport;
-      parentRoute: typeof rootRouteImport;
+      parentRoute: typeof ExploreRoute;
     };
     "/explore/docs/$libraryId": {
       id: "/explore/docs/$libraryId";
@@ -707,38 +734,38 @@ declare module "@tanstack/react-router" {
     };
     "/_authed/dashboard/skills": {
       id: "/_authed/dashboard/skills";
-      path: "/dashboard/skills";
+      path: "/skills";
       fullPath: "/dashboard/skills";
       preLoaderRoute: typeof AuthedDashboardSkillsRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/repos": {
       id: "/_authed/dashboard/repos";
-      path: "/dashboard/repos";
+      path: "/repos";
       fullPath: "/dashboard/repos";
       preLoaderRoute: typeof AuthedDashboardReposRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/keys": {
       id: "/_authed/dashboard/keys";
-      path: "/dashboard/keys";
+      path: "/keys";
       fullPath: "/dashboard/keys";
       preLoaderRoute: typeof AuthedDashboardKeysRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/brain": {
       id: "/_authed/dashboard/brain";
-      path: "/dashboard/brain";
+      path: "/brain";
       fullPath: "/dashboard/brain";
       preLoaderRoute: typeof AuthedDashboardBrainRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/billing": {
       id: "/_authed/dashboard/billing";
-      path: "/dashboard/billing";
+      path: "/billing";
       fullPath: "/dashboard/billing";
       preLoaderRoute: typeof AuthedDashboardBillingRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/admin/submissions": {
       id: "/_authed/admin/submissions";
@@ -763,45 +790,45 @@ declare module "@tanstack/react-router" {
     };
     "/_authed/dashboard/stacks/": {
       id: "/_authed/dashboard/stacks/";
-      path: "/dashboard/stacks";
+      path: "/stacks";
       fullPath: "/dashboard/stacks/";
       preLoaderRoute: typeof AuthedDashboardStacksIndexRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/prompts/": {
       id: "/_authed/dashboard/prompts/";
-      path: "/dashboard/prompts";
+      path: "/prompts";
       fullPath: "/dashboard/prompts/";
       preLoaderRoute: typeof AuthedDashboardPromptsIndexRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/stacks/new": {
       id: "/_authed/dashboard/stacks/new";
-      path: "/dashboard/stacks/new";
+      path: "/stacks/new";
       fullPath: "/dashboard/stacks/new";
       preLoaderRoute: typeof AuthedDashboardStacksNewRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/stacks/$stackId": {
       id: "/_authed/dashboard/stacks/$stackId";
-      path: "/dashboard/stacks/$stackId";
+      path: "/stacks/$stackId";
       fullPath: "/dashboard/stacks/$stackId";
       preLoaderRoute: typeof AuthedDashboardStacksStackIdRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/prompts/new": {
       id: "/_authed/dashboard/prompts/new";
-      path: "/dashboard/prompts/new";
+      path: "/prompts/new";
       fullPath: "/dashboard/prompts/new";
       preLoaderRoute: typeof AuthedDashboardPromptsNewRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
     "/_authed/dashboard/prompts/$promptId": {
       id: "/_authed/dashboard/prompts/$promptId";
-      path: "/dashboard/prompts/$promptId";
+      path: "/prompts/$promptId";
       fullPath: "/dashboard/prompts/$promptId";
       preLoaderRoute: typeof AuthedDashboardPromptsPromptIdRouteImport;
-      parentRoute: typeof AuthedRoute;
+      parentRoute: typeof AuthedDashboardRoute;
     };
   }
 }
@@ -822,18 +849,13 @@ const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
 
 const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(AuthedAdminRouteChildren);
 
-interface AuthedRouteChildren {
-  AuthedAdminRoute: typeof AuthedAdminRouteWithChildren;
-  AuthedSubmitRoute: typeof AuthedSubmitRoute;
-  AuthedSubmitServerRoute: typeof AuthedSubmitServerRoute;
+interface AuthedDashboardRouteChildren {
   AuthedDashboardBillingRoute: typeof AuthedDashboardBillingRoute;
   AuthedDashboardBrainRoute: typeof AuthedDashboardBrainRoute;
   AuthedDashboardKeysRoute: typeof AuthedDashboardKeysRoute;
   AuthedDashboardReposRoute: typeof AuthedDashboardReposRoute;
   AuthedDashboardSkillsRoute: typeof AuthedDashboardSkillsRoute;
-  AuthedSettingsSecretsRoute: typeof AuthedSettingsSecretsRoute;
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute;
-  AuthedSettingsIndexRoute: typeof AuthedSettingsIndexRoute;
   AuthedDashboardPromptsPromptIdRoute: typeof AuthedDashboardPromptsPromptIdRoute;
   AuthedDashboardPromptsNewRoute: typeof AuthedDashboardPromptsNewRoute;
   AuthedDashboardStacksStackIdRoute: typeof AuthedDashboardStacksStackIdRoute;
@@ -842,24 +864,41 @@ interface AuthedRouteChildren {
   AuthedDashboardStacksIndexRoute: typeof AuthedDashboardStacksIndexRoute;
 }
 
-const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedAdminRoute: AuthedAdminRouteWithChildren,
-  AuthedSubmitRoute: AuthedSubmitRoute,
-  AuthedSubmitServerRoute: AuthedSubmitServerRoute,
+const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
   AuthedDashboardBillingRoute: AuthedDashboardBillingRoute,
   AuthedDashboardBrainRoute: AuthedDashboardBrainRoute,
   AuthedDashboardKeysRoute: AuthedDashboardKeysRoute,
   AuthedDashboardReposRoute: AuthedDashboardReposRoute,
   AuthedDashboardSkillsRoute: AuthedDashboardSkillsRoute,
-  AuthedSettingsSecretsRoute: AuthedSettingsSecretsRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
-  AuthedSettingsIndexRoute: AuthedSettingsIndexRoute,
   AuthedDashboardPromptsPromptIdRoute: AuthedDashboardPromptsPromptIdRoute,
   AuthedDashboardPromptsNewRoute: AuthedDashboardPromptsNewRoute,
   AuthedDashboardStacksStackIdRoute: AuthedDashboardStacksStackIdRoute,
   AuthedDashboardStacksNewRoute: AuthedDashboardStacksNewRoute,
   AuthedDashboardPromptsIndexRoute: AuthedDashboardPromptsIndexRoute,
   AuthedDashboardStacksIndexRoute: AuthedDashboardStacksIndexRoute,
+};
+
+const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
+  AuthedDashboardRouteChildren
+);
+
+interface AuthedRouteChildren {
+  AuthedAdminRoute: typeof AuthedAdminRouteWithChildren;
+  AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren;
+  AuthedSubmitRoute: typeof AuthedSubmitRoute;
+  AuthedSubmitServerRoute: typeof AuthedSubmitServerRoute;
+  AuthedSettingsSecretsRoute: typeof AuthedSettingsSecretsRoute;
+  AuthedSettingsIndexRoute: typeof AuthedSettingsIndexRoute;
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAdminRoute: AuthedAdminRouteWithChildren,
+  AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
+  AuthedSubmitRoute: AuthedSubmitRoute,
+  AuthedSubmitServerRoute: AuthedSubmitServerRoute,
+  AuthedSettingsSecretsRoute: AuthedSettingsSecretsRoute,
+  AuthedSettingsIndexRoute: AuthedSettingsIndexRoute,
 };
 
 const AuthedRouteWithChildren = AuthedRoute._addFileChildren(AuthedRouteChildren);
@@ -874,25 +913,42 @@ const ExploreDocsRouteChildren: ExploreDocsRouteChildren = {
 
 const ExploreDocsRouteWithChildren = ExploreDocsRoute._addFileChildren(ExploreDocsRouteChildren);
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AuthedRoute: AuthedRouteWithChildren,
-  PlansRoute: PlansRoute,
-  SignInRoute: SignInRoute,
-  TerminalRoute: TerminalRoute,
-  AuthCliRoute: AuthCliRoute,
-  CodeSessionsRoute: CodeSessionsRoute,
+interface ExploreRouteChildren {
+  ExploreDocsRoute: typeof ExploreDocsRouteWithChildren;
+  ExploreStatsRoute: typeof ExploreStatsRoute;
+  ExploreIndexRoute: typeof ExploreIndexRoute;
+  ExploreServersServerIdRoute: typeof ExploreServersServerIdRoute;
+  ExploreSkillsSkillIdRoute: typeof ExploreSkillsSkillIdRoute;
+  ExploreStacksStackSlugRoute: typeof ExploreStacksStackSlugRoute;
+  ExploreServersIndexRoute: typeof ExploreServersIndexRoute;
+  ExploreSkillsIndexRoute: typeof ExploreSkillsIndexRoute;
+}
+
+const ExploreRouteChildren: ExploreRouteChildren = {
   ExploreDocsRoute: ExploreDocsRouteWithChildren,
   ExploreStatsRoute: ExploreStatsRoute,
-  LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
-  CodeIndexRoute: CodeIndexRoute,
   ExploreIndexRoute: ExploreIndexRoute,
-  CodeSessionSessionIdRoute: CodeSessionSessionIdRoute,
   ExploreServersServerIdRoute: ExploreServersServerIdRoute,
   ExploreSkillsSkillIdRoute: ExploreSkillsSkillIdRoute,
   ExploreStacksStackSlugRoute: ExploreStacksStackSlugRoute,
   ExploreServersIndexRoute: ExploreServersIndexRoute,
   ExploreSkillsIndexRoute: ExploreSkillsIndexRoute,
+};
+
+const ExploreRouteWithChildren = ExploreRoute._addFileChildren(ExploreRouteChildren);
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthedRoute: AuthedRouteWithChildren,
+  ExploreRoute: ExploreRouteWithChildren,
+  PlansRoute: PlansRoute,
+  SignInRoute: SignInRoute,
+  TerminalRoute: TerminalRoute,
+  AuthCliRoute: AuthCliRoute,
+  CodeSessionsRoute: CodeSessionsRoute,
+  LibrariesLibraryIdRoute: LibrariesLibraryIdRoute,
+  CodeIndexRoute: CodeIndexRoute,
+  CodeSessionSessionIdRoute: CodeSessionSessionIdRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
