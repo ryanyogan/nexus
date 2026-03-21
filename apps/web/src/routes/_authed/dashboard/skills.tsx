@@ -38,7 +38,7 @@ function InstalledSkillsPage() {
 
   useEffect(() => {
     if (session?.user) {
-      fetchInstalledSkills();
+      void fetchInstalledSkills();
     }
   }, [session]);
 

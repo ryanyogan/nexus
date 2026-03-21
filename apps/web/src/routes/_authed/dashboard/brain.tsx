@@ -100,7 +100,7 @@ function BrainPage() {
 
   useEffect(() => {
     if (session?.user) {
-      fetchData();
+      void fetchData();
     }
   }, [session]);
 

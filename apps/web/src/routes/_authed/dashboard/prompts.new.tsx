@@ -69,7 +69,7 @@ function NewPromptPage() {
   });
 
   useEffect(() => {
-    fetchParentPrompts();
+    void fetchParentPrompts();
   }, []);
 
   async function fetchParentPrompts() {
@@ -123,7 +123,7 @@ function NewPromptPage() {
       }
 
       await res.json();
-      navigate({ to: "/dashboard/prompts" as any });
+      void navigate({ to: "/dashboard/prompts" as any });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create prompt");
     } finally {

@@ -159,7 +159,7 @@ function SkillDetailPage() {
         setContentLoading(false);
       }
     };
-    fetchContent();
+    void fetchContent();
   }, [skill.id]);
 
   const copyContent = async () => {

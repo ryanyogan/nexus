@@ -84,8 +84,8 @@ function EditPromptPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    fetchPrompt();
-    fetchParentPrompts();
+    void fetchPrompt();
+    void fetchParentPrompts();
   }, [promptId]);
 
   async function fetchPrompt() {
@@ -160,7 +160,7 @@ function EditPromptPage() {
     try {
       const res = await authFetch(`/api/prompts/${promptId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete prompt");
-      navigate({ to: "/dashboard/prompts" as any });
+      void navigate({ to: "/dashboard/prompts" as any });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete prompt");
     } finally {

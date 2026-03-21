@@ -109,7 +109,7 @@ function StackEditorPage() {
         setLoading(false);
       }
     }
-    fetchStack();
+    void fetchStack();
   }, [stackId]);
 
   // Fetch starter stacks for sidebar
@@ -125,7 +125,7 @@ function StackEditorPage() {
         // Ignore
       }
     }
-    fetchStarters();
+    void fetchStarters();
   }, []);
 
   const handleCanvasChange = useCallback((data: CanvasData) => {
@@ -227,7 +227,7 @@ function StackEditorPage() {
       if (!res.ok) {
         throw new Error("Failed to delete stack");
       }
-      navigate({ to: "/dashboard/stacks" });
+      void navigate({ to: "/dashboard/stacks" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete stack");
     }

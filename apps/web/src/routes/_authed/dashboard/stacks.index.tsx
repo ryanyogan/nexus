@@ -58,7 +58,7 @@ function StacksPage() {
 
   useEffect(() => {
     if (session?.user) {
-      fetchStacks();
+      void fetchStacks();
     }
   }, [session, activeTab]);
 
@@ -152,7 +152,7 @@ function StacksPage() {
   }
 
   function copyId(id: string) {
-    navigator.clipboard.writeText(id);
+    void navigator.clipboard.writeText(id);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   }

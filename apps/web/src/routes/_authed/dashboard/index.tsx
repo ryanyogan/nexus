@@ -56,7 +56,7 @@ function DashboardPage() {
   // Fetch dashboard stats
   useEffect(() => {
     if (session?.user) {
-      fetchStats();
+      void fetchStats();
     }
   }, [session]);
 
@@ -134,7 +134,7 @@ function DashboardPage() {
   }
 
   const copyToClipboard = (text: string, keyId: string) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
     setCopiedKey(keyId);
     setTimeout(() => setCopiedKey(null), 2000);
   };

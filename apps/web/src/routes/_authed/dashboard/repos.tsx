@@ -79,7 +79,7 @@ function ReposPage() {
 
   useEffect(() => {
     if (session?.user) {
-      fetchRepos();
+      void fetchRepos();
     }
   }, [session]);
 
@@ -229,7 +229,7 @@ function ReposPage() {
             <button
               onClick={() => {
                 setShowConnect(true);
-                fetchAvailableRepos();
+                void fetchAvailableRepos();
               }}
               disabled={limits ? limits.currentRepoCount >= limits.maxRepos : false}
               className="flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-background transition-colors hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -299,7 +299,7 @@ function ReposPage() {
               <button
                 onClick={() => {
                   setShowConnect(true);
-                  fetchAvailableRepos();
+                  void fetchAvailableRepos();
                 }}
                 className="mt-4 inline-flex items-center gap-2 font-mono text-xs font-bold uppercase text-accent hover:underline"
               >

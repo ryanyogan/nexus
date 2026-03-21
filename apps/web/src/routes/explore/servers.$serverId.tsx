@@ -107,7 +107,7 @@ function ServerDetailPage() {
         setConfigLoading(false);
       }
     };
-    fetchConfig();
+    void fetchConfig();
   }, [server.id, configFormat]);
 
   const copyConfig = async () => {

@@ -71,7 +71,7 @@ function NewStackPage() {
         // Ignore errors for starters
       }
     }
-    fetchStarters();
+    void fetchStarters();
   }, []);
 
   const handleCanvasChange = useCallback((data: CanvasData) => {
@@ -115,7 +115,7 @@ function NewStackPage() {
 
       const data = (await res.json()) as { stack: { id: string } };
       setHasChanges(false);
-      navigate({ to: "/dashboard/stacks/$stackId", params: { stackId: data.stack.id } });
+      void navigate({ to: "/dashboard/stacks/$stackId", params: { stackId: data.stack.id } });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create stack");
     } finally {

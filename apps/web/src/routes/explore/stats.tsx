@@ -90,7 +90,7 @@ function StatsPage() {
   ]);
 
   useEffect(() => {
-    fetchStats();
+    void fetchStats();
   }, []);
 
   async function fetchStats() {

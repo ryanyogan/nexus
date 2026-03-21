@@ -67,7 +67,7 @@ function PromptsPage() {
 
   useEffect(() => {
     if (session?.user) {
-      fetchPrompts();
+      void fetchPrompts();
     }
   }, [session, activeTab]);
 
@@ -170,7 +170,7 @@ function PromptsPage() {
   }
 
   function copyId(id: string) {
-    navigator.clipboard.writeText(id);
+    void navigator.clipboard.writeText(id);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   }
@@ -278,7 +278,7 @@ function PromptsPage() {
               <button
                 onClick={async () => {
                   await authFetch("/api/prompts/deactivate-all", { method: "POST" });
-                  fetchPrompts();
+                  void fetchPrompts();
                 }}
                 className="font-mono text-xs font-bold uppercase text-muted-foreground transition-colors hover:text-foreground"
               >
