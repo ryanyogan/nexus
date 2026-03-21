@@ -1,17 +1,9 @@
 import { eq } from "drizzle-orm";
 import { libraries, chunks, libraryStats, type Database } from "@nexus/db";
-import {
-  fetchGitHubDocs,
-  fetchGitHubDocsEnhanced,
-  getGitHubRepoMetadata,
-  fetchIncrementalChanges,
-  parseGitHubUrl,
-  type FetchResult,
-  type FetchedFile,
-} from "./fetchers/github";
+import { fetchGitHubDocsEnhanced, type FetchResult } from "./fetchers/github";
 import { fetchContext7Docs } from "./fetchers/context7";
 import { fetchWebsiteDocs, fetchWebsiteLlmTxt } from "./fetchers/website";
-import { parseMarkdown, parseMultipleDocuments, type ParsedDocument } from "./parsers/markdown";
+import { parseMultipleDocuments } from "./parsers/markdown";
 import { analyzeDocumentation, serializeAnalysis, quickBenchmarkScore } from "./analysis";
 import { chunkFiles } from "./chunker";
 import { generateEmbeddings } from "./embeddings";

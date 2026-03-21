@@ -5,7 +5,7 @@
  * trust scores, and quality metrics.
  */
 
-import type { ParsedDocument, CodeBlock, Section } from "./parsers/markdown";
+import type { ParsedDocument } from "./parsers/markdown";
 
 // ============================================================================
 // Types

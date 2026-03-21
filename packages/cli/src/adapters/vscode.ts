@@ -7,7 +7,6 @@
  * Note: VS Code uses project-level config, not global
  */
 
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { BaseAdapter } from "./base.js";
 import type { EditorType, McpServerConfig } from "./types.js";

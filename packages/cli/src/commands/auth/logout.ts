@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { logger } from "../../utils/logger.js";
-import { outputJson, outputJsonError, isJsonOutput } from "../../utils/json.js";
+import { outputJson, isJsonOutput } from "../../utils/json.js";
 import { clearAuth, isAuthenticated, getAuth } from "../../services/config.js";
 
 interface LogoutOptions {

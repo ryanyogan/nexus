@@ -46,7 +46,7 @@ export const initCommand = new Command("init")
       const selectedEditors = await runInit();
       logger.newline();
       logger.success(`Setup complete! Configured ${selectedEditors.length} editor(s).`);
-    } catch (error) {
+    } catch {
       // Fall back to simple mode if Ink fails
       logger.warn("Interactive mode failed, falling back to simple mode.");
       showSimpleInit();

@@ -8,7 +8,6 @@ import {
   mcpServers,
   mcpServerStats,
   serverSubmissions,
-  type NewMcpServer,
 } from "@nexus/db";
 import type { AppContext, IngestionJob } from "../types";
 import { zValidator } from "@hono/zod-validator";
@@ -2047,8 +2046,6 @@ adminRouter.get("/sync/jobs/:id", async (c) => {
  * Get overall sync statistics
  */
 adminRouter.get("/sync/stats", async (c) => {
-  const db = c.get("db");
-
   // Count libraries with Context7 data
   const syncedResult = await c.env.DB.prepare(
     `SELECT COUNT(*) as count FROM libraries WHERE context7_synced_at IS NOT NULL`

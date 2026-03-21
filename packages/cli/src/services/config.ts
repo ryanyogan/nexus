@@ -1,8 +1,6 @@
 import Conf from "conf";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import {
-  getGlobalConfigPath,
   getProjectConfigPath,
   getGlobalConfigDir,
   getProjectConfigDir,

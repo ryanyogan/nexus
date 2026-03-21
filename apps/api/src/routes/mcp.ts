@@ -1076,7 +1076,7 @@ async function handleResourcesList(request: MCPRequest, db: Database): Promise<M
 async function handleResourcesRead(
   request: MCPRequest,
   db: Database,
-  env: Env
+  _env: Env
 ): Promise<MCPResponse> {
   const params = request.params as { uri?: string };
   const uri = params?.uri;
@@ -1287,7 +1287,11 @@ function handlePromptsList(request: MCPRequest): MCPResponse {
   };
 }
 
-async function handlePromptsGet(request: MCPRequest, db: Database, env: Env): Promise<MCPResponse> {
+async function handlePromptsGet(
+  request: MCPRequest,
+  _db: Database,
+  _env: Env
+): Promise<MCPResponse> {
   const params = request.params as { name?: string; arguments?: Record<string, string> };
   const promptName = params?.name;
   const promptArgs = params?.arguments || {};

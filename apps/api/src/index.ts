@@ -126,7 +126,7 @@ app.post("/sse", async (c) => {
 });
 
 // GET /sse - SSE transport (fallback, keeps connection open for streaming)
-app.get("/sse", async (c) => {
+app.get("/sse", async (_c) => {
   // Generate a unique session ID for this SSE connection
   const sessionId = crypto.randomUUID();
 

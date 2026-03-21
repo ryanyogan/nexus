@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { eq, like, desc, sql, and, inArray } from "drizzle-orm";
+import { eq, like, desc, sql, and } from "drizzle-orm";
 import { libraries, chunks, libraryStats } from "@nexus/db";
 import { generateQueryEmbedding } from "../lib/embeddings";
 import type { AppContext } from "../types";

@@ -1,8 +1,7 @@
 import { Hono } from "hono";
-import { eq, like, and, desc, or, sql, inArray } from "drizzle-orm";
-import { skills, userSkills, type Database } from "@nexus/db";
+import { eq, like, and, desc, or, sql } from "drizzle-orm";
+import { skills, userSkills } from "@nexus/db";
 import type { AppContext } from "../types";
-import { z } from "zod";
 
 const skillsRouter = new Hono<AppContext>();
 

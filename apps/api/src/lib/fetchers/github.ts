@@ -89,7 +89,7 @@ const USER_AGENT = "Nexus-Docs-Indexer/1.0";
 // LLM.txt Priority Files (checked first, in order of priority)
 // ============================================================================
 
-const LLM_TXT_FILES = [
+const _LLM_TXT_FILES = [
   "llms.txt",
   "llms-full.txt",
   "LLMS.txt",

@@ -227,7 +227,7 @@ function compilePackages(
     return 0;
   });
 
-  const tokensPerPackage = Math.floor(budget / Math.max(packages.length, 1));
+  const _tokensPerPackage = Math.floor(budget / Math.max(packages.length, 1));
   let currentTokens = estimateTokens(lines.join("\n"));
 
   for (const pkg of sorted) {

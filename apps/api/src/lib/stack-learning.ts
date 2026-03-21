@@ -7,9 +7,6 @@ import {
   libraries,
   PACKAGE_REGISTRIES,
   type Database,
-  type Stack,
-  type StackRepo,
-  type StackPackage,
   type PackageRegistry,
 } from "@nexus/db";
 import type { StackLearningJob } from "../types";
@@ -417,9 +414,9 @@ async function checkAndAdvanceProgress(stackId: string, db: Database, env: Env):
  * Get token for private repo access from user's API vault.
  */
 async function getPrivateRepoToken(
-  userId: string,
+  _userId: string,
   env: Env,
-  db: Database
+  _db: Database
 ): Promise<string | undefined> {
   // TODO: Implement fetching from user secrets
   // For now, fall back to env token

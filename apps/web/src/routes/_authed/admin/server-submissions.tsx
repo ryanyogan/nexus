@@ -72,7 +72,7 @@ function AdminServerSubmissionsPage() {
         const error = (await res.json()) as { error?: string };
         alert(error.error || "Failed to approve");
       }
-    } catch (error) {
+    } catch {
       alert("Failed to approve submission");
     } finally {
       setActionLoading(null);
@@ -101,7 +101,7 @@ function AdminServerSubmissionsPage() {
         const error = (await res.json()) as { error?: string };
         alert(error.error || "Failed to reject");
       }
-    } catch (error) {
+    } catch {
       alert("Failed to reject submission");
     } finally {
       setActionLoading(null);

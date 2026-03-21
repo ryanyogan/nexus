@@ -244,7 +244,7 @@ function createDownloadCommand(): Command {
           if (!jsonOutput) {
             logger.info(`Found ${librariesToDownload.length} dependencies to check`);
           }
-        } catch (error) {
+        } catch {
           if (jsonOutput) {
             outputJson({ error: "Failed to read package.json" });
           } else {
@@ -311,7 +311,7 @@ function createDownloadCommand(): Command {
           if (!jsonOutput) {
             logger.log(`  ${chalk.green("✓")} ${lib} -> ${libraryId}`);
           }
-        } catch (error) {
+        } catch {
           failed.push(lib);
           if (!jsonOutput) {
             logger.log(`  ${chalk.red("✗")} ${lib} - failed`);

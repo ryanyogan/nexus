@@ -53,7 +53,7 @@ export async function analyzeGitHubRepo(
   githubUrl: string,
   options: AnalyzeOptions = {}
 ): Promise<RepoAnalysis> {
-  const { token, branch = "main", paths = [] } = options;
+  const { token, branch = "main", paths: _paths = [] } = options;
 
   // Parse GitHub URL
   const parsed = parseGitHubUrl(githubUrl);
@@ -393,7 +393,7 @@ function detectParadigms(
 function generateSummary(
   techStack: TechStackInfo,
   paradigms: string[],
-  keyFiles: KeyFile[]
+  _keyFiles: KeyFile[]
 ): string {
   const parts: string[] = [];
 

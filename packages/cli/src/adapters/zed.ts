@@ -5,7 +5,7 @@
  * Format: { "context_servers": { "name": { "settings": { "command": ... } } } }
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { BaseAdapter } from "./base.js";

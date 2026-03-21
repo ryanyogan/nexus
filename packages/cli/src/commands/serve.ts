@@ -43,10 +43,10 @@ interface RepoFileType {
   content?: string;
 }
 
-interface RepoTreeNodeType {
+interface _RepoTreeNodeType {
   name: string;
   type: string;
-  children?: RepoTreeNodeType[];
+  children?: _RepoTreeNodeType[];
 }
 
 /**
@@ -101,7 +101,7 @@ function createClient(): Nexus | null {
 /**
  * Run as stdio MCP server
  */
-async function runStdioServer(options: ServeOptions): Promise<void> {
+async function runStdioServer(_options: ServeOptions): Promise<void> {
   const client = createClient();
 
   // Create MCP server
