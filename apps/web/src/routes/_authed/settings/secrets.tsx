@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Key,
   Plus,
@@ -11,24 +11,31 @@ import {
   RefreshCw,
   Shield,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-import { authFetch, SECRET_PROVIDERS, type SecretProvider } from "../../../lib/api";
+import {
+  useSecrets,
+  useRevealSecret,
+  useCreateSecret,
+  useDeleteSecret,
+  type SecretProvider,
+  type UserSecret,
+} from "../../../hooks/use-dashboard-queries";
 
 export const Route = createFileRoute("/_authed/settings/secrets")({
   component: SecretsPage,
 });
 
-interface UserSecret {
-  id: string;
-  name: string;
-  provider: SecretProvider;
-  description?: string;
-  keyPrefix?: string;
-  lastUsedAt?: string;
-  usageCount: number;
-  isActive: boolean;
-  createdAt: string;
-}
+const SECRET_PROVIDERS: SecretProvider[] = [
+  "openai",
+  "anthropic",
+  "google",
+  "azure",
+  "aws",
+  "github",
+  "cloudflare",
+  "custom",
+];
 
 const PROVIDER_LABELS: Record<SecretProvider, string> = {
   openai: "OpenAI",
@@ -53,44 +60,24 @@ const PROVIDER_COLORS: Record<SecretProvider, string> = {
 };
 
 function SecretsPage() {
-  const { session } = Route.useRouteContext();
-  const [secrets, setSecrets] = useState<UserSecret[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [revealedSecrets, setRevealedSecrets] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Fetch secrets
-  useEffect(() => {
-    if (session?.user) {
-      fetchSecrets();
-    }
-  }, [session]);
+  // Queries
+  const { data, isPending, isError, error } = useSecrets();
+  const secrets = data?.secrets ?? [];
 
-  async function fetchSecrets() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await authFetch("/api/secrets");
-      if (!res.ok) throw new Error("Failed to fetch secrets");
-      const data = (await res.json()) as { secrets: UserSecret[] };
-      setSecrets(data.secrets);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch secrets");
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Mutations
+  const revealMutation = useRevealSecret();
+  const deleteMutation = useDeleteSecret();
 
-  async function revealSecret(id: string) {
+  async function handleRevealSecret(id: string) {
     try {
-      const res = await authFetch(`/api/secrets/${id}?decrypt=true`);
-      if (!res.ok) throw new Error("Failed to reveal secret");
-      const data = (await res.json()) as { secret: { value: string } };
-      setRevealedSecrets((prev) => ({ ...prev, [id]: data.secret.value }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to reveal secret");
+      const result = await revealMutation.mutateAsync(id);
+      setRevealedSecrets((prev) => ({ ...prev, [id]: result.secret.value }));
+    } catch {
+      // Error handled by mutation state
     }
   }
 
@@ -111,21 +98,21 @@ function SecretsPage() {
     }
   }
 
-  async function deleteSecret(id: string) {
+  function handleDeleteSecret(id: string) {
     if (!confirm("Are you sure you want to delete this secret?")) return;
-    try {
-      const res = await authFetch(`/api/secrets/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete secret");
-      setSecrets((prev) => prev.filter((s) => s.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete secret");
-    }
+    deleteMutation.mutate(id);
   }
 
-  if (loading) {
+  // Get the current error message
+  const errorMessage =
+    revealMutation.error?.message ||
+    deleteMutation.error?.message ||
+    (isError ? (error as Error)?.message : null);
+
+  if (isPending) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -162,11 +149,11 @@ function SecretsPage() {
         </div>
       </div>
 
-      {error && (
+      {errorMessage && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-900/20">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            <p className="text-sm text-red-700 dark:text-red-300">{errorMessage}</p>
           </div>
         </div>
       )}
@@ -188,101 +175,144 @@ function SecretsPage() {
       ) : (
         <div className="space-y-4">
           {secrets.map((secret) => (
-            <div key={secret.id} className="rounded-lg border border-border bg-card p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <Key className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-foreground">{secret.name}</h3>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${PROVIDER_COLORS[secret.provider]}`}
-                      >
-                        {PROVIDER_LABELS[secret.provider]}
-                      </span>
-                      {!secret.isActive && (
-                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                          Inactive
-                        </span>
-                      )}
-                    </div>
-                    {secret.description && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">{secret.description}</p>
-                    )}
-                    <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="font-mono">{secret.keyPrefix}</span>
-                      <span>Used {secret.usageCount} times</span>
-                      {secret.lastUsedAt && (
-                        <span>Last used {new Date(secret.lastUsedAt).toLocaleDateString()}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {revealedSecrets[secret.id] ? (
-                    <>
-                      <button
-                        onClick={() => copySecret(secret.id)}
-                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        title="Copy"
-                      >
-                        {copiedId === secret.id ? (
-                          <Check className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => hideSecret(secret.id)}
-                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        title="Hide"
-                      >
-                        <EyeOff className="h-4 w-4" />
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => revealSecret(secret.id)}
-                      className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      title="Reveal"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => deleteSecret(secret.id)}
-                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20"
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {revealedSecrets[secret.id] && (
-                <div className="mt-4 rounded-lg bg-muted p-3">
-                  <code className="break-all text-sm text-foreground">
-                    {revealedSecrets[secret.id]}
-                  </code>
-                </div>
-              )}
-            </div>
+            <SecretCard
+              key={secret.id}
+              secret={secret}
+              revealedValue={revealedSecrets[secret.id]}
+              copiedId={copiedId}
+              isRevealing={revealMutation.isPending && revealMutation.variables === secret.id}
+              isDeleting={deleteMutation.isPending && deleteMutation.variables === secret.id}
+              onReveal={handleRevealSecret}
+              onHide={hideSecret}
+              onCopy={copySecret}
+              onDelete={handleDeleteSecret}
+            />
           ))}
         </div>
       )}
 
       {/* Add Secret Modal */}
-      {showAddModal && (
-        <AddSecretModal
-          onClose={() => setShowAddModal(false)}
-          onSuccess={() => {
-            setShowAddModal(false);
-            fetchSecrets();
-          }}
-        />
+      {showAddModal && <AddSecretModal onClose={() => setShowAddModal(false)} />}
+    </div>
+  );
+}
+
+// ============================================================================
+// Secret Card Component
+// ============================================================================
+
+interface SecretCardProps {
+  secret: UserSecret;
+  revealedValue?: string;
+  copiedId: string | null;
+  isRevealing: boolean;
+  isDeleting: boolean;
+  onReveal: (id: string) => void;
+  onHide: (id: string) => void;
+  onCopy: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+function SecretCard({
+  secret,
+  revealedValue,
+  copiedId,
+  isRevealing,
+  isDeleting,
+  onReveal,
+  onHide,
+  onCopy,
+  onDelete,
+}: SecretCardProps) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Key className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-foreground">{secret.name}</h3>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${PROVIDER_COLORS[secret.provider]}`}
+              >
+                {PROVIDER_LABELS[secret.provider]}
+              </span>
+              {!secret.isActive && (
+                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                  Inactive
+                </span>
+              )}
+            </div>
+            {secret.description && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{secret.description}</p>
+            )}
+            <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+              <span className="font-mono">{secret.keyPrefix}</span>
+              <span>Used {secret.usageCount} times</span>
+              {secret.lastUsedAt && (
+                <span>Last used {new Date(secret.lastUsedAt).toLocaleDateString()}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {revealedValue ? (
+            <>
+              <button
+                onClick={() => onCopy(secret.id)}
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title="Copy"
+              >
+                {copiedId === secret.id ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+              <button
+                onClick={() => onHide(secret.id)}
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title="Hide"
+              >
+                <EyeOff className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => onReveal(secret.id)}
+              disabled={isRevealing}
+              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+              title="Reveal"
+            >
+              {isRevealing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          )}
+          <button
+            onClick={() => onDelete(secret.id)}
+            disabled={isDeleting}
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 disabled:opacity-50"
+            title="Delete"
+          >
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {revealedValue && (
+        <div className="mt-4 rounded-lg bg-muted p-3">
+          <code className="break-all text-sm text-foreground">{revealedValue}</code>
+        </div>
       )}
     </div>
   );
@@ -292,35 +322,22 @@ function SecretsPage() {
 // Add Secret Modal
 // ============================================================================
 
-function AddSecretModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+function AddSecretModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [provider, setProvider] = useState<SecretProvider>("openai");
   const [value, setValue] = useState("");
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const createMutation = useCreateSecret();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
     try {
-      const res = await authFetch("/api/secrets", {
-        method: "POST",
-        body: JSON.stringify({ name, provider, value, description }),
-      });
-
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        throw new Error(data.error || "Failed to add secret");
-      }
-
-      onSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add secret");
-    } finally {
-      setLoading(false);
+      await createMutation.mutateAsync({ name, provider, value, description });
+      onClose();
+    } catch {
+      // Error handled by mutation state
     }
   }
 
@@ -385,9 +402,11 @@ function AddSecretModal({ onClose, onSuccess }: { onClose: () => void; onSuccess
             />
           </div>
 
-          {error && (
+          {createMutation.error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800/50 dark:bg-red-900/20">
-              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                {createMutation.error.message}
+              </p>
             </div>
           )}
 
@@ -401,10 +420,10 @@ function AddSecretModal({ onClose, onSuccess }: { onClose: () => void; onSuccess
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={createMutation.isPending}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
+              {createMutation.isPending && <RefreshCw className="h-4 w-4 animate-spin" />}
               Add Secret
             </button>
           </div>

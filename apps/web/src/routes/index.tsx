@@ -1,12 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { z } from "zod";
 import { Search, Github, ArrowUpRight, X, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useDebounce } from "../hooks/use-debounce";
-import { getHomePageData, normalizeAndSort, PAGE_SIZE } from "../server/home";
+import { getHomePageData, normalizeAndSort } from "../server/home";
 import { ContentRow, ContentListSkeleton } from "../components/home";
 import { SearchTabs } from "../components/home/SearchTabs";
-import type { SortMode, ContentFilter, ContentItem } from "../types/home";
+import { queryKeys } from "../lib/query-keys";
+import type { SortMode, ContentFilter } from "../types/home";
 
 // ============================================================================
 // Search Params Schema
@@ -24,26 +27,24 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/")({
   validateSearch: searchSchema,
-  loaderDeps: ({ search }) => ({
-    q: search.q,
-    filter: search.filter,
-  }),
-  loader: async ({ deps }) => {
-    return getHomePageData({
-      data: {
-        sort: "popular",
-        filter: deps.filter,
-        q: deps.q,
-        cursor: 0,
-      },
+  // No loaderDeps - TanStack Query handles search param changes
+  loader: async ({ context }) => {
+    // Prefetch initial page data for SSR
+    await context.queryClient.prefetchInfiniteQuery({
+      queryKey: queryKeys.home.list({ sort: "popular", filter: "all", q: undefined }),
+      queryFn: ({ pageParam = 0 }) =>
+        getHomePageData({
+          data: { sort: "popular", filter: "all", cursor: pageParam },
+        }),
+      initialPageParam: 0,
     });
+    return {};
   },
-  pendingComponent: HomePageSkeleton,
   component: HomePage,
 });
 
 // ============================================================================
-// Skeleton Component (Shows during route transitions)
+// Skeleton Component (Shows during initial load)
 // ============================================================================
 
 function HomePageSkeleton() {
@@ -51,19 +52,19 @@ function HomePageSkeleton() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
         {/* Hero Skeleton */}
-        <div className="pt-10 md:pt-14 lg:pt-20 animate-pulse">
-          <div className="h-12 w-32 bg-muted rounded mb-3 sm:h-14 lg:h-16" />
-          <div className="h-8 w-64 bg-muted rounded mb-2 sm:w-80" />
-          <div className="h-6 w-96 bg-muted rounded mb-5" />
-          <div className="h-4 w-72 bg-muted rounded" />
+        <div className="animate-pulse pt-10 md:pt-14 lg:pt-20">
+          <div className="mb-3 h-12 w-32 rounded bg-muted sm:h-14 lg:h-16" />
+          <div className="mb-2 h-8 w-64 rounded bg-muted sm:w-80" />
+          <div className="mb-5 h-6 w-96 rounded bg-muted" />
+          <div className="h-4 w-72 rounded bg-muted" />
         </div>
 
         {/* Search Skeleton */}
-        <div className="mt-10 md:mt-12 lg:mt-16 animate-pulse">
-          <div className="h-12 max-w-lg bg-muted border border-border rounded" />
-          <div className="mt-8 mb-5 flex items-center gap-4 border-b border-border pb-2">
+        <div className="mt-10 animate-pulse md:mt-12 lg:mt-16">
+          <div className="h-12 max-w-lg rounded border border-border bg-muted" />
+          <div className="mb-5 mt-8 flex items-center gap-4 border-b border-border pb-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-4 w-16 bg-muted rounded" />
+              <div key={i} className="h-4 w-16 rounded bg-muted" />
             ))}
           </div>
         </div>
@@ -80,7 +81,6 @@ function HomePageSkeleton() {
 // ============================================================================
 
 function HomePage() {
-  const loaderData = Route.useLoaderData();
   const { sort, filter, q } = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,11 +89,7 @@ function HomePage() {
   const activeFilter = (filter || "all") as ContentFilter;
   const searchQuery = q || "";
 
-  // Local state for UI
-  const [items, setItems] = useState<ContentItem[]>(loaderData.items);
-  const [hasMore, setHasMore] = useState(loaderData.hasMore);
-  const [cursor, setCursor] = useState(PAGE_SIZE);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Local state for search input
   const [inputValue, setInputValue] = useState(searchQuery);
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -102,6 +98,66 @@ function HomePage() {
 
   // Determine if we're in search mode
   const isSearching = Boolean(searchQuery) || searchFocused;
+
+  // ========================================
+  // TanStack Query - Infinite Query
+  // ========================================
+
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isPending } =
+    useInfiniteQuery({
+      queryKey: queryKeys.home.list({
+        sort: activeSort,
+        filter: activeFilter,
+        q: searchQuery || undefined,
+      }),
+      queryFn: ({ pageParam = 0 }) =>
+        getHomePageData({
+          data: {
+            sort: activeSort,
+            filter: activeFilter,
+            q: searchQuery || undefined,
+            cursor: pageParam,
+          },
+        }),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
+      // Keep previous data visible while fetching new data (smooth UX)
+      placeholderData: keepPreviousData,
+    });
+
+  // Flatten pages into items
+  const allItems = useMemo(() => {
+    return data?.pages.flatMap((page) => page.items) ?? [];
+  }, [data]);
+
+  // Get stats from first page
+  const stats = data?.pages[0]?.stats;
+
+  // Client-side sort (only when not searching - search results are pre-sorted by relevance)
+  const sortedItems = useMemo(() => {
+    let filtered = allItems;
+
+    // Apply content type filter (already filtered server-side, but double-check)
+    if (activeFilter !== "all") {
+      const typeMap: Record<ContentFilter, string> = {
+        all: "all",
+        docs: "doc",
+        servers: "server",
+        skills: "skill",
+        stacks: "stack",
+        prompts: "prompt",
+      };
+      filtered = allItems.filter((item) => item.type === typeMap[activeFilter]);
+    }
+
+    // Don't re-sort search results
+    if (isSearching) return filtered;
+    return normalizeAndSort([...filtered], activeSort);
+  }, [allItems, activeSort, activeFilter, isSearching]);
+
+  // ========================================
+  // Search Input Effects
+  // ========================================
 
   // Sync input with URL
   useEffect(() => {
@@ -119,7 +175,7 @@ function HomePage() {
       trimmed === currentInputTrimmed &&
       !(trimmed === "" && currentUrlQuery === "")
     ) {
-      navigate({
+      void navigate({
         search: (prev) => ({
           ...prev,
           q: trimmed || undefined,
@@ -128,58 +184,9 @@ function HomePage() {
     }
   }, [debouncedInputValue, navigate, searchQuery, inputValue]);
 
-  // Reset state when loader data changes
-  useEffect(() => {
-    setItems(loaderData.items);
-    setHasMore(loaderData.hasMore);
-    setCursor(PAGE_SIZE);
-  }, [loaderData]);
-
-  // Client-side sort and filter
-  const sortedItems = useMemo(() => {
-    let filtered = items;
-
-    // Apply content type filter for client-side filtering
-    if (activeFilter !== "all") {
-      const typeMap: Record<ContentFilter, string> = {
-        all: "all",
-        docs: "doc",
-        servers: "server",
-        skills: "skill",
-        stacks: "stack",
-        prompts: "prompt",
-      };
-      filtered = items.filter((item) => item.type === typeMap[activeFilter]);
-    }
-
-    if (isSearching) return filtered;
-    return normalizeAndSort([...filtered], activeSort);
-  }, [items, activeSort, activeFilter, isSearching]);
-
-  // Load more function
-  const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore) return;
-
-    setIsLoadingMore(true);
-    try {
-      const data = await getHomePageData({
-        data: {
-          sort: activeSort,
-          filter: activeFilter,
-          q: searchQuery || undefined,
-          cursor,
-        },
-      });
-
-      setItems((prev) => [...prev, ...data.items]);
-      setHasMore(data.hasMore);
-      setCursor((prev) => prev + PAGE_SIZE);
-    } catch (error) {
-      console.error("Failed to load more:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [activeSort, activeFilter, hasMore, cursor, searchQuery, isLoadingMore]);
+  // ========================================
+  // Event Handlers
+  // ========================================
 
   const handleSearchTabClick = () => {
     inputRef.current?.focus();
@@ -187,7 +194,7 @@ function HomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate({
+    void navigate({
       search: (prev) => ({
         ...prev,
         q: inputValue.trim() || undefined,
@@ -203,7 +210,7 @@ function HomePage() {
 
   const handleClearAndNavigate = () => {
     clearSearch();
-    navigate({
+    void navigate({
       search: (prev) => ({
         ...prev,
         q: undefined,
@@ -222,6 +229,14 @@ function HomePage() {
     }
   };
 
+  // Show skeleton only on initial load (no cached data)
+  if (isPending) {
+    return <HomePageSkeleton />;
+  }
+
+  // Detect if we're fetching new search results (not loading more)
+  const isRefetching = isFetching && !isFetchingNextPage;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
@@ -230,10 +245,10 @@ function HomePage() {
           <h1 className="font-mono text-4xl font-black uppercase tracking-tight text-accent sm:text-5xl lg:text-6xl">
             Ship.
           </h1>
-          <p className="mt-3 font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl lg:text-3xl md:mt-4">
+          <p className="mt-3 font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl md:mt-4 lg:text-3xl">
             Docs compressed. Stacks ready.
           </p>
-          <p className="mt-2 font-mono text-base uppercase tracking-wide text-foreground/80 sm:text-lg lg:text-xl md:mt-3">
+          <p className="mt-2 font-mono text-base uppercase tracking-wide text-foreground/80 sm:text-lg md:mt-3 lg:text-xl">
             MCP servers, starter stacks, persistent <span className="text-accent">memory</span> —
             pre-indexed.
           </p>
@@ -247,10 +262,10 @@ function HomePage() {
             <span className="text-border">|</span>
             <Link
               to="/plans"
-              className="group ml-2 sm:ml-2 inline-flex items-center gap-1 transition-colors"
+              className="group ml-2 inline-flex items-center gap-1 transition-colors sm:ml-2"
             >
               <span className="font-bold text-accent">PRO</span>
-              <ArrowUpRight className="h-3 w-3 text-accent transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowUpRight className="h-3 w-3 text-accent transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </p>
         </div>
@@ -258,7 +273,7 @@ function HomePage() {
         {/* Search + Tabs */}
         <div className="mt-10 md:mt-12 lg:mt-16">
           <form onSubmit={handleSearch}>
-            <div className="flex h-12 max-w-lg items-center gap-4 border border-foreground bg-background px-4 font-mono md:h-12 shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.3)]">
+            <div className="flex h-12 max-w-lg items-center gap-4 border border-foreground bg-background px-4 font-mono shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.3)] md:h-12">
               <Search className="h-5 w-5 shrink-0 text-foreground" />
               <input
                 ref={inputRef}
@@ -275,7 +290,9 @@ function HomePage() {
                 placeholder="Search docs, servers, skills, prompts..."
                 className="h-full flex-1 bg-transparent text-base text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
               />
-              {inputValue && (
+              {/* Show loading spinner during search/filter changes */}
+              {isRefetching && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-accent" />}
+              {inputValue && !isRefetching && (
                 <button
                   type="button"
                   onClick={handleClearAndNavigate}
@@ -304,8 +321,8 @@ function HomePage() {
             </div>
           )}
 
-          {/* Content List */}
-          <div>
+          {/* Content List - slightly faded during refetch for subtle feedback */}
+          <div className={cn(isRefetching && "opacity-60 transition-opacity")}>
             {sortedItems.map((item, idx) => (
               <ContentRow
                 key={`${item.type}-${item.id}`}
@@ -316,7 +333,7 @@ function HomePage() {
           </div>
 
           {/* Empty state */}
-          {sortedItems.length === 0 && !isLoadingMore && (
+          {sortedItems.length === 0 && !isFetching && (
             <div className="py-8 text-center md:py-12">
               <Search className="mx-auto h-8 w-8 text-border md:h-10 md:w-10" />
               <p className="mt-3 font-mono text-sm text-muted-foreground md:mt-4">
@@ -335,21 +352,21 @@ function HomePage() {
 
           {/* View More button */}
           <div className="mt-4 flex items-center justify-center md:mt-6">
-            {isLoadingMore && (
+            {isFetchingNextPage && (
               <div className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin text-accent" />
                 Loading...
               </div>
             )}
-            {!isLoadingMore && hasMore && sortedItems.length > 0 && (
+            {!isFetchingNextPage && hasNextPage && sortedItems.length > 0 && (
               <button
-                onClick={loadMore}
+                onClick={() => void fetchNextPage()}
                 className="border border-border bg-background px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-muted sm:px-6 sm:py-2"
               >
                 View More
               </button>
             )}
-            {!hasMore && sortedItems.length > 0 && (
+            {!hasNextPage && sortedItems.length > 0 && (
               <p className="font-mono text-xs uppercase text-muted-foreground">End of list</p>
             )}
           </div>
@@ -387,15 +404,15 @@ function HomePage() {
               </a>
             </div>
             <div className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground">
-              <span>{loaderData.stats.libraries} libraries</span>
+              <span>{stats?.libraries ?? 0} libraries</span>
               <span className="text-border">|</span>
-              <span>{loaderData.stats.servers} servers</span>
+              <span>{stats?.servers ?? 0} servers</span>
               <span className="text-border">|</span>
-              <span>{loaderData.stats.skills} skills</span>
+              <span>{stats?.skills ?? 0} skills</span>
               <span className="text-border">|</span>
-              <span>{loaderData.stats.stacks} stacks</span>
+              <span>{stats?.stacks ?? 0} stacks</span>
               <span className="text-border">|</span>
-              <span>{loaderData.stats.prompts} prompts</span>
+              <span>{stats?.prompts ?? 0} prompts</span>
             </div>
           </div>
 

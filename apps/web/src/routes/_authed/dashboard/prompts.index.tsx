@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Zap,
   Plus,
@@ -16,146 +16,78 @@ import {
   Settings,
   ArrowUpRight,
 } from "lucide-react";
-import { authFetch } from "../../../lib/api";
+import {
+  usePrompts,
+  useActivatePrompt,
+  useDeactivatePrompt,
+  useInstallPrompt,
+  useUninstallPrompt,
+  useDeletePrompt,
+  useDeactivateAllPrompts,
+  useDownloadPrompt,
+  type Prompt,
+} from "../../../hooks/use-dashboard-queries";
 
 export const Route = createFileRoute("/_authed/dashboard/prompts/")({
   component: PromptsPage,
 });
 
-interface PromptPreferences {
-  verbosity?: "concise" | "balanced" | "detailed";
-  codeStyle?: "minimal" | "documented" | "verbose";
-  responseFormat?: "full" | "compact" | "code-only" | "summary";
-  useEmojis?: boolean;
-  preferredLanguage?: string;
-}
-
-interface Prompt {
-  id: string;
-  userId: string | null;
-  name: string;
-  slug: string;
-  description: string | null;
-  systemPrompt: string;
-  parentPromptId: string | null;
-  skills: string[];
-  libraries: string[];
-  mcpServers: string[];
-  preferences: PromptPreferences;
-  category: string;
-  tags: string[];
-  isPublic: boolean;
-  isStarterPack: boolean;
-  isFeatured: boolean;
-  installCount: number;
-  usageCount: number;
-  createdAt: string;
-  updatedAt: string;
-  isInstalled?: boolean;
-  isActive?: boolean;
-  isOwned?: boolean;
-}
-
 function PromptsPage() {
-  const { session } = Route.useRouteContext();
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "starter" | "my">("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (session?.user) {
-      void fetchPrompts();
+  // Queries
+  const { data, isPending, isError, error } = usePrompts(activeTab);
+  const prompts = data?.prompts ?? [];
+
+  // Mutations
+  const activateMutation = useActivatePrompt();
+  const deactivateMutation = useDeactivatePrompt();
+  const installMutation = useInstallPrompt();
+  const uninstallMutation = useUninstallPrompt();
+  const deleteMutation = useDeletePrompt();
+  const deactivateAllMutation = useDeactivateAllPrompts();
+  const downloadMutation = useDownloadPrompt();
+
+  // Track which prompt is currently being acted upon
+  const actionLoading = activateMutation.isPending
+    ? activateMutation.variables
+    : deactivateMutation.isPending
+      ? deactivateMutation.variables
+      : installMutation.isPending
+        ? installMutation.variables
+        : uninstallMutation.isPending
+          ? uninstallMutation.variables
+          : deleteMutation.isPending
+            ? deleteMutation.variables
+            : null;
+
+  async function handleActivate(promptId: string) {
+    // Install first if needed
+    const prompt = prompts.find((p) => p.id === promptId);
+    if (prompt && !prompt.isInstalled) {
+      await installMutation.mutateAsync(promptId);
     }
-  }, [session, activeTab]);
-
-  async function fetchPrompts() {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (activeTab === "starter") params.set("starter", "true");
-      if (activeTab === "my") params.set("my", "true");
-
-      const res = await authFetch(`/api/prompts?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch prompts");
-      const data = (await res.json()) as { prompts: Prompt[] };
-      setPrompts(data.prompts || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch prompts");
-    } finally {
-      setLoading(false);
-    }
+    activateMutation.mutate(promptId);
   }
 
-  async function activatePrompt(promptId: string) {
-    setActionLoading(promptId);
-    try {
-      // Install first if needed
-      const prompt = prompts.find((p) => p.id === promptId);
-      if (!prompt?.isInstalled) {
-        await authFetch(`/api/prompts/${promptId}/install`, { method: "POST" });
-      }
-
-      await authFetch(`/api/prompts/${promptId}/activate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      await fetchPrompts();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to activate prompt");
-    } finally {
-      setActionLoading(null);
-    }
+  function handleDeactivate(promptId: string) {
+    deactivateMutation.mutate(promptId);
   }
 
-  async function deactivatePrompt(promptId: string) {
-    setActionLoading(promptId);
-    try {
-      await authFetch(`/api/prompts/${promptId}/deactivate`, { method: "POST" });
-      await fetchPrompts();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to deactivate prompt");
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  async function uninstallPrompt(promptId: string) {
+  function handleUninstall(promptId: string) {
     if (!confirm("Are you sure you want to uninstall this prompt?")) return;
-    setActionLoading(promptId);
-    try {
-      await authFetch(`/api/prompts/${promptId}/install`, { method: "DELETE" });
-      await fetchPrompts();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to uninstall prompt");
-    } finally {
-      setActionLoading(null);
-    }
+    uninstallMutation.mutate(promptId);
   }
 
-  async function deletePrompt(promptId: string) {
+  function handleDelete(promptId: string) {
     if (!confirm("Are you sure you want to delete this prompt? This cannot be undone.")) return;
-    setActionLoading(promptId);
-    try {
-      await authFetch(`/api/prompts/${promptId}`, { method: "DELETE" });
-      await fetchPrompts();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete prompt");
-    } finally {
-      setActionLoading(null);
-    }
+    deleteMutation.mutate(promptId);
   }
 
-  async function downloadPrompt(promptId: string) {
+  async function handleDownload(promptId: string) {
     try {
-      const res = await authFetch(`/api/prompts/${promptId}/download`);
-      if (!res.ok) throw new Error("Failed to download prompt");
-      const data = (await res.json()) as { filename: string; content: string };
-
+      const data = await downloadMutation.mutateAsync(promptId);
       // Create download
       const blob = new Blob([data.content], { type: "text/markdown" });
       const url = URL.createObjectURL(blob);
@@ -164,8 +96,8 @@ function PromptsPage() {
       a.download = data.filename;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to download prompt");
+    } catch {
+      // Error handled by mutation state
     }
   }
 
@@ -175,12 +107,18 @@ function PromptsPage() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
-  // Group prompts by type (for potential future use)
-  // const starterPrompts = prompts.filter(p => p.isStarterPack);
-  // const myPrompts = prompts.filter(p => p.isOwned && !p.isStarterPack);
-  // const installedPrompts = prompts.filter(p => p.isInstalled && !p.isOwned);
+  // Get the current error message
+  const errorMessage =
+    activateMutation.error?.message ||
+    deactivateMutation.error?.message ||
+    installMutation.error?.message ||
+    uninstallMutation.error?.message ||
+    deleteMutation.error?.message ||
+    downloadMutation.error?.message ||
+    deactivateAllMutation.error?.message ||
+    (isError ? (error as Error)?.message : null);
 
-  if (loading) {
+  if (isPending) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="h-6 w-6 animate-spin border-2 border-accent border-t-transparent" />
@@ -220,9 +158,9 @@ function PromptsPage() {
         </div>
 
         {/* Error */}
-        {error && (
+        {errorMessage && (
           <div className="mb-6 border border-destructive bg-destructive/10 p-4">
-            <p className="font-mono text-sm text-destructive">{error}</p>
+            <p className="font-mono text-sm text-destructive">{errorMessage}</p>
           </div>
         )}
 
@@ -276,13 +214,15 @@ function PromptsPage() {
                 </p>
               </div>
               <button
-                onClick={async () => {
-                  await authFetch("/api/prompts/deactivate-all", { method: "POST" });
-                  void fetchPrompts();
-                }}
-                className="font-mono text-xs font-bold uppercase text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => deactivateAllMutation.mutate()}
+                disabled={deactivateAllMutation.isPending}
+                className="font-mono text-xs font-bold uppercase text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
               >
-                Deactivate All
+                {deactivateAllMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Deactivate All"
+                )}
               </button>
             </div>
           </div>
@@ -313,11 +253,11 @@ function PromptsPage() {
                 prompt={prompt}
                 actionLoading={actionLoading}
                 copiedId={copiedId}
-                onActivate={activatePrompt}
-                onDeactivate={deactivatePrompt}
-                onUninstall={uninstallPrompt}
-                onDelete={deletePrompt}
-                onDownload={downloadPrompt}
+                onActivate={handleActivate}
+                onDeactivate={handleDeactivate}
+                onUninstall={handleUninstall}
+                onDelete={handleDelete}
+                onDownload={handleDownload}
                 onCopyId={copyId}
               />
             ))

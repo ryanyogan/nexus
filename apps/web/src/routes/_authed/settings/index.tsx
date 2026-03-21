@@ -1,22 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { FileText, Code, Zap, Save, Check, AlertCircle, Loader2 } from "lucide-react";
-import { authFetch } from "../../../lib/api";
+import {
+  usePreferences,
+  useUpdatePreferences,
+  type ResponseFormat,
+  type UserPreferences,
+} from "../../../hooks/use-dashboard-queries";
 
 export const Route = createFileRoute("/_authed/settings/")({
   component: SettingsPage,
 });
-
-type ResponseFormat = "full" | "compact" | "code-only" | "summary";
-
-interface UserPreferences {
-  defaultResponseFormat: ResponseFormat;
-  defaultTokenBudget: number | null;
-  showCodeLineNumbers: boolean;
-  preferredCodeLanguage: string;
-  emailNotifications: boolean;
-  emailWeeklyDigest: boolean;
-}
 
 const RESPONSE_FORMAT_OPTIONS: {
   value: ResponseFormat;
@@ -67,11 +61,12 @@ const CODE_LANGUAGES = [
 ];
 
 function SettingsPage() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
+  // Query
+  const { data: serverPreferences, isPending, isError, error } = usePreferences();
+
+  // Local state for editing (initialized from query)
   const [preferences, setPreferences] = useState<UserPreferences>({
     defaultResponseFormat: "full",
     defaultTokenBudget: null,
@@ -81,56 +76,31 @@ function SettingsPage() {
     emailWeeklyDigest: false,
   });
 
-  // Load preferences from API
+  // Sync local state when server data loads
   useEffect(() => {
-    async function loadPreferences() {
-      try {
-        const res = await authFetch("/user/preferences");
-        if (res.ok) {
-          const data = (await res.json()) as UserPreferences;
-          setPreferences({
-            defaultResponseFormat: data.defaultResponseFormat || "full",
-            defaultTokenBudget: data.defaultTokenBudget,
-            showCodeLineNumbers: data.showCodeLineNumbers ?? true,
-            preferredCodeLanguage: data.preferredCodeLanguage || "",
-            emailNotifications: data.emailNotifications ?? true,
-            emailWeeklyDigest: data.emailWeeklyDigest ?? false,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to load preferences:", err);
-      } finally {
-        setLoading(false);
-      }
+    if (serverPreferences) {
+      setPreferences(serverPreferences);
     }
-    loadPreferences();
-  }, []);
+  }, [serverPreferences]);
+
+  // Mutation
+  const updateMutation = useUpdatePreferences();
 
   const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-
     try {
-      const res = await authFetch("/user/preferences", {
-        method: "PUT",
-        body: JSON.stringify(preferences),
-      });
-
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        throw new Error(data.error || "Failed to save preferences");
-      }
-
+      await updateMutation.mutateAsync(preferences);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save preferences");
-    } finally {
-      setSaving(false);
+    } catch {
+      // Error handled by mutation state
     }
   };
 
-  if (loading) {
+  // Get the current error message
+  const errorMessage =
+    updateMutation.error?.message || (isError ? (error as Error)?.message : null);
+
+  if (isPending) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
@@ -323,10 +293,10 @@ function SettingsPage() {
 
       {/* Save Button */}
       <div className="flex items-center justify-end gap-4 border-t border-stone-200 pt-6">
-        {error && (
+        {errorMessage && (
           <span className="flex items-center gap-1 text-sm text-red-600">
             <AlertCircle className="h-4 w-4" />
-            {error}
+            {errorMessage}
           </span>
         )}
         {saved && (
@@ -337,10 +307,10 @@ function SettingsPage() {
         )}
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={updateMutation.isPending}
           className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
         >
-          {saving ? (
+          {updateMutation.isPending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
               Saving...

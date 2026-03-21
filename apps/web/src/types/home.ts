@@ -120,6 +120,7 @@ export interface HomePageData {
   stats: HomeStats;
   items: ContentItem[];
   hasMore: boolean;
+  nextCursor: number;
   total: number;
 }
 

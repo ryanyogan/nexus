@@ -497,6 +497,7 @@ export const getHomePageData = createServerFn({ method: "GET" })
         stats,
         items: sortedItems.slice(cursor, cursor + PAGE_SIZE),
         hasMore: sortedItems.length > cursor + PAGE_SIZE,
+        nextCursor: cursor + PAGE_SIZE,
         total,
       };
     })

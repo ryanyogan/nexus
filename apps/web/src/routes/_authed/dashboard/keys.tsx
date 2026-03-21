@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Key, Plus, Trash2, Copy, Check, Loader2, AlertCircle, X } from "lucide-react";
-import { authFetch } from "../../../lib/api";
-import { PageHeader, CenteredSpinner, PageSkeleton } from "../../../components/layout";
+import { PageHeader, PageSkeleton } from "../../../components/layout";
+import { useApiKeys, useCreateApiKey, useDeleteApiKey } from "../../../hooks/use-dashboard-queries";
 
 // ============================================================================
 // Route Definition
@@ -14,53 +14,19 @@ export const Route = createFileRoute("/_authed/dashboard/keys")({
 });
 
 // ============================================================================
-// Types
-// ============================================================================
-
-interface ApiKey {
-  id: string;
-  name: string;
-  tokenPrefix: string;
-  scopes: string[];
-  lastUsedAt: string | null;
-  expiresAt: string | null;
-  isActive: boolean;
-  createdAt: string;
-}
-
-// ============================================================================
 // Main Component
 // ============================================================================
 
 function ApiKeysPage() {
-  const { session } = Route.useRouteContext();
-  const [keys, setKeys] = useState<ApiKey[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isPending, error: queryError } = useApiKeys();
+  const deleteKeyMutation = useDeleteApiKey();
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (session?.user) {
-      void fetchKeys();
-    }
-  }, [session]);
-
-  async function fetchKeys() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await authFetch("/api/user/tokens");
-      if (!res.ok) throw new Error("Failed to fetch API keys");
-      const data = (await res.json()) as { tokens: ApiKey[] };
-      setKeys(data.tokens || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch API keys");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const keys = data?.tokens ?? [];
+  const error = queryError?.message || (deleteKeyMutation.error?.message ?? null);
 
   async function copyKey(value: string, id: string) {
     await navigator.clipboard.writeText(value);
@@ -68,19 +34,13 @@ function ApiKeysPage() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
-  async function deleteKey(id: string) {
+  function handleDeleteKey(id: string) {
     if (!confirm("Are you sure you want to delete this API key?")) return;
-    try {
-      const res = await authFetch(`/api/user/tokens/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete API key");
-      setKeys((prev) => prev.filter((k) => k.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete API key");
-    }
+    deleteKeyMutation.mutate(id);
   }
 
-  if (loading) {
-    return <CenteredSpinner />;
+  if (isPending) {
+    return <PageSkeleton hasBack hasIcon hasActions rows={3} />;
   }
 
   return (
@@ -205,11 +165,16 @@ function ApiKeysPage() {
                 </div>
               </div>
               <button
-                onClick={() => deleteKey(key.id)}
-                className="p-2 text-muted-foreground transition-colors hover:text-red-500"
+                onClick={() => handleDeleteKey(key.id)}
+                disabled={deleteKeyMutation.isPending}
+                className="p-2 text-muted-foreground transition-colors hover:text-red-500 disabled:opacity-50"
                 title="Delete"
               >
-                <Trash2 className="h-4 w-4" />
+                {deleteKeyMutation.isPending && deleteKeyMutation.variables === key.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
               </button>
             </div>
           ))}
@@ -242,7 +207,6 @@ function ApiKeysPage() {
           onSuccess={(token) => {
             setShowCreateModal(false);
             setNewKeyValue(token);
-            void fetchKeys();
           }}
         />
       )}
@@ -262,35 +226,21 @@ function CreateKeyModal({
   onSuccess: (token: string) => void;
 }) {
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const createKeyMutation = useCreateApiKey();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await authFetch("/api/user/tokens", {
-        method: "POST",
-        body: JSON.stringify({
-          name,
-          scopes: ["read:docs", "read:memories", "write:memories", "read:servers"],
-        }),
-      });
-
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        throw new Error(data.error || "Failed to create API key");
+    createKeyMutation.mutate(
+      {
+        name,
+        scopes: ["read:docs", "read:memories", "write:memories", "read:servers"],
+      },
+      {
+        onSuccess: (data) => {
+          onSuccess(data.token);
+        },
       }
-
-      const data = (await res.json()) as { token: string };
-      onSuccess(data.token);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create API key");
-    } finally {
-      setLoading(false);
-    }
+    );
   }
 
   return (
@@ -326,9 +276,9 @@ function CreateKeyModal({
             />
           </div>
 
-          {error && (
+          {createKeyMutation.error && (
             <div className="mt-4 border border-red-500/50 bg-red-500/5 p-3">
-              <p className="font-mono text-xs text-red-500">{error}</p>
+              <p className="font-mono text-xs text-red-500">{createKeyMutation.error.message}</p>
             </div>
           )}
 
@@ -342,10 +292,10 @@ function CreateKeyModal({
             </button>
             <button
               type="submit"
-              disabled={loading || !name.trim()}
+              disabled={createKeyMutation.isPending || !name.trim()}
               className="inline-flex items-center gap-2 bg-accent px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-accent/90 disabled:opacity-50"
             >
-              {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {createKeyMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Create Key
             </button>
           </div>

@@ -5,6 +5,7 @@ import {
   Outlet,
   useMatches,
 } from "@tanstack/react-router";
+import { QueryClientProvider } from "@tanstack/react-query";
 import type { RouterContext } from "../router";
 import Header from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -38,7 +39,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   const matches = useMatches();
-  const { session } = Route.useRouteContext();
+  const { session, queryClient } = Route.useRouteContext();
 
   // Check if we're on a code editor route - hide footer for full height
   const isCodeEditor = matches.some((match) => match.pathname.startsWith("/code"));
@@ -77,14 +78,16 @@ function RootComponent() {
         />
       </head>
       <body className="flex min-h-screen flex-col overflow-x-hidden bg-background font-sans text-foreground antialiased">
-        <Header session={session} />
-        <main
-          className={cn("flex-grow pt-0", isCodeEditor && "h-[calc(100vh-4rem)] overflow-hidden")}
-        >
-          <Outlet />
-        </main>
-        {!isCodeEditor && <Footer />}
-        <DevModeBadge />
+        <QueryClientProvider client={queryClient}>
+          <Header session={session} />
+          <main
+            className={cn("flex-grow pt-0", isCodeEditor && "h-[calc(100vh-4rem)] overflow-hidden")}
+          >
+            <Outlet />
+          </main>
+          {!isCodeEditor && <Footer />}
+          <DevModeBadge />
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>

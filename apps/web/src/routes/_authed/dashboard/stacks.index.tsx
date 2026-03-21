@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Layers,
   Plus,
@@ -16,139 +16,105 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import {
+  useStacks,
+  useInstallStack,
+  useUninstallStack,
+  useDeleteStack,
+  type Stack,
+} from "../../../hooks/use-dashboard-queries";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "../../../lib/api";
+
+// ============================================================================
+// Route Definition
+// ============================================================================
 
 export const Route = createFileRoute("/_authed/dashboard/stacks/")({
   component: StacksPage,
 });
 
-interface Stack {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  category: string;
-  layer: number;
-  tags: string[];
-  tokenBudget: string;
-  learningStatus: string;
-  isPublic: boolean;
-  isFeatured: boolean;
-  isStarter: boolean;
-  forkCount: number;
-  useCount: number;
-  installCount: number;
-  userId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  isInstalled?: boolean;
-  isOwned?: boolean;
-}
+// ============================================================================
+// Main Component
+// ============================================================================
 
 function StacksPage() {
-  const { session } = Route.useRouteContext();
-  const [stacks, setStacks] = useState<Stack[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "starter" | "my" | "installed">("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (session?.user) {
-      void fetchStacks();
-    }
-  }, [session, activeTab]);
+  const { data, isPending, error: queryError } = useStacks(activeTab);
+  const installMutation = useInstallStack();
+  const uninstallMutation = useUninstallStack();
+  const deleteMutation = useDeleteStack();
 
-  async function fetchStacks() {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (activeTab === "starter") params.set("filter", "starter");
-      if (activeTab === "my") params.set("filter", "my");
-      if (activeTab === "installed") params.set("filter", "installed");
+  const queryClient = useQueryClient();
 
-      const res = await authFetch(`/api/stacks?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch stacks");
-      const data = (await res.json()) as { stacks: Stack[] };
-      setStacks(data.stacks || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch stacks");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function installStack(stackId: string) {
-    setActionLoading(stackId);
-    try {
-      const res = await authFetch(`/api/stacks/${stackId}/install`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to install stack");
-      await fetchStacks();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to install stack");
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  async function uninstallStack(stackId: string) {
-    if (!confirm("Are you sure you want to uninstall this stack?")) return;
-    setActionLoading(stackId);
-    try {
-      const res = await authFetch(`/api/stacks/${stackId}/install`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to uninstall stack");
-      await fetchStacks();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to uninstall stack");
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  async function forkStack(stackId: string) {
-    setActionLoading(stackId);
-    try {
+  // Fork mutation
+  const forkMutation = useMutation({
+    mutationFn: async (stackId: string) => {
       const res = await authFetch(`/api/stacks/${stackId}/fork`, { method: "POST" });
       if (!res.ok) throw new Error("Failed to fork stack");
-      const data = (await res.json()) as { stack: Stack };
-      // Navigate to the new stack
-      window.location.href = `/dashboard/stacks/${data.stack.id}`;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fork stack");
-    } finally {
-      setActionLoading(null);
-    }
-  }
+      return res.json() as Promise<{ stack: Stack }>;
+    },
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: ["dashboard", "stacks"] });
+      void navigate({ to: "/dashboard/stacks/$stackId", params: { stackId: data.stack.id } });
+    },
+  });
 
-  async function deleteStack(stackId: string) {
-    if (!confirm("Are you sure you want to delete this stack? This cannot be undone.")) return;
-    setActionLoading(stackId);
-    try {
-      const res = await authFetch(`/api/stacks/${stackId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete stack");
-      await fetchStacks();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete stack");
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  async function compileStack(stackId: string) {
-    setActionLoading(stackId);
-    try {
+  // Compile mutation
+  const compileMutation = useMutation({
+    mutationFn: async (stackId: string) => {
       const res = await authFetch(`/api/stacks/${stackId}/compile`, { method: "POST" });
       if (!res.ok) throw new Error("Failed to start compilation");
-      await fetchStacks();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to compile stack");
-    } finally {
-      setActionLoading(null);
-    }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["dashboard", "stacks"] });
+    },
+  });
+
+  const stacks = data?.stacks ?? [];
+
+  // Determine which mutation is loading
+  const getActionLoading = (stackId: string) => {
+    if (installMutation.isPending && installMutation.variables === stackId) return true;
+    if (uninstallMutation.isPending && uninstallMutation.variables === stackId) return true;
+    if (deleteMutation.isPending && deleteMutation.variables === stackId) return true;
+    if (forkMutation.isPending && forkMutation.variables === stackId) return true;
+    if (compileMutation.isPending && compileMutation.variables === stackId) return true;
+    return false;
+  };
+
+  const error =
+    queryError?.message ||
+    installMutation.error?.message ||
+    uninstallMutation.error?.message ||
+    deleteMutation.error?.message ||
+    forkMutation.error?.message ||
+    compileMutation.error?.message ||
+    null;
+
+  function handleInstall(stackId: string) {
+    installMutation.mutate(stackId);
+  }
+
+  function handleUninstall(stackId: string) {
+    if (!confirm("Are you sure you want to uninstall this stack?")) return;
+    uninstallMutation.mutate(stackId);
+  }
+
+  function handleFork(stackId: string) {
+    forkMutation.mutate(stackId);
+  }
+
+  function handleDelete(stackId: string) {
+    if (!confirm("Are you sure you want to delete this stack? This cannot be undone.")) return;
+    deleteMutation.mutate(stackId);
+  }
+
+  function handleCompile(stackId: string) {
+    compileMutation.mutate(stackId);
   }
 
   function copyId(id: string) {
@@ -157,7 +123,7 @@ function StacksPage() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
-  if (loading) {
+  if (isPending) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="h-6 w-6 animate-spin border-2 border-accent border-t-transparent" />
@@ -169,7 +135,7 @@ function StacksPage() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
         {/* Header */}
-        <div className="pt-8 pb-6 md:pt-12 md:pb-8">
+        <div className="pb-6 pt-8 md:pb-8 md:pt-12">
           <Link
             to="/dashboard"
             className="mb-4 inline-flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground transition-colors hover:text-foreground"
@@ -209,7 +175,7 @@ function StacksPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wide transition-colors -mb-px border-b-2 ${
+              className={`-mb-px border-b-2 px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wide transition-colors ${
                 activeTab === tab
                   ? "border-foreground text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -253,13 +219,13 @@ function StacksPage() {
               <StackCard
                 key={stack.id}
                 stack={stack}
-                actionLoading={actionLoading}
+                isLoading={getActionLoading(stack.id)}
                 copiedId={copiedId}
-                onInstall={installStack}
-                onUninstall={uninstallStack}
-                onFork={forkStack}
-                onDelete={deleteStack}
-                onCompile={compileStack}
+                onInstall={handleInstall}
+                onUninstall={handleUninstall}
+                onFork={handleFork}
+                onDelete={handleDelete}
+                onCompile={handleCompile}
                 onCopyId={copyId}
               />
             ))
@@ -267,7 +233,7 @@ function StacksPage() {
         </div>
 
         {/* Help Section */}
-        <div className="mt-12 border-t border-border pt-8 pb-12">
+        <div className="mt-12 border-t border-border pb-12 pt-8">
           <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
             How Stacks Work
           </h2>
@@ -320,7 +286,7 @@ function StacksPage() {
 
 interface StackCardProps {
   stack: Stack;
-  actionLoading: string | null;
+  isLoading: boolean;
   copiedId: string | null;
   onInstall: (id: string) => void;
   onUninstall: (id: string) => void;
@@ -332,7 +298,7 @@ interface StackCardProps {
 
 function StackCard({
   stack,
-  actionLoading,
+  isLoading,
   copiedId,
   onInstall,
   onUninstall,
@@ -341,7 +307,6 @@ function StackCard({
   onCompile,
   onCopyId,
 }: StackCardProps) {
-  const isLoading = actionLoading === stack.id;
   const isOwned = stack.userId !== null;
   const bgColor = stack.color || "var(--color-accent)";
 
@@ -356,7 +321,7 @@ function StackCard({
       <div className="p-4 sm:p-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
             {/* Icon */}
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center text-white"
@@ -365,12 +330,12 @@ function StackCard({
               {stack.icon || <Layers className="h-5 w-5" />}
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <Link
                   to="/dashboard/stacks/$stackId"
                   params={{ stackId: stack.id }}
-                  className="font-mono text-sm font-bold uppercase tracking-wide text-foreground hover:text-accent transition-colors truncate"
+                  className="truncate font-mono text-sm font-bold uppercase tracking-wide text-foreground transition-colors hover:text-accent"
                 >
                   {stack.name}
                 </Link>
@@ -386,7 +351,7 @@ function StackCard({
                 )}
               </div>
               {stack.description && (
-                <p className="mt-1 font-mono text-xs text-muted-foreground line-clamp-2">
+                <p className="mt-1 line-clamp-2 font-mono text-xs text-muted-foreground">
                   {stack.description}
                 </p>
               )}

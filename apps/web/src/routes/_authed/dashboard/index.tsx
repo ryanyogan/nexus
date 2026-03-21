@@ -1,137 +1,64 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Key, Zap, CreditCard, ArrowRight, Copy, Check, ArrowUpRight, Layers } from "lucide-react";
-import { authFetch } from "../../../lib/api";
+import { useDashboardStats } from "../../../hooks/use-dashboard-queries";
+
+// ============================================================================
+// Route Definition
+// ============================================================================
 
 export const Route = createFileRoute("/_authed/dashboard/")({
   component: DashboardPage,
 });
 
-interface DashboardStats {
-  plan: "free" | "pro" | "team";
-  mcpQueries: {
-    used: number;
-    limit: number | null;
-    percentUsed: number;
-  };
-  apiKeys: {
-    count: number;
-    limit: number;
-    keys: Array<{
-      id: string;
-      name: string;
-      prefix: string;
-      lastUsed: string | null;
-    }>;
-  };
-  skills: {
-    installed: number;
-  };
-  stacks: {
-    count: number;
-    recent: Array<{
-      id: string;
-      name: string;
-      slug: string;
-      icon: string | null;
-      color: string | null;
-    }>;
-  };
-  prompts: {
-    count: number;
-    recent: Array<{
-      id: string;
-      name: string;
-      isActive: boolean;
-    }>;
-  };
+// ============================================================================
+// Loading Skeleton
+// ============================================================================
+
+function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
+        {/* Header */}
+        <div className="pb-6 pt-8 md:pb-8 md:pt-12">
+          <div className="h-7 w-32 animate-pulse rounded bg-muted" />
+          <div className="mt-2 h-4 w-48 animate-pulse rounded bg-muted" />
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-background p-4 sm:p-6">
+              <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+              <div className="mt-2 h-8 w-24 animate-pulse rounded bg-muted" />
+              <div className="mt-1 h-3 w-32 animate-pulse rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+
+        {/* Sections */}
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="mt-8 md:mt-12">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+            </div>
+            <div className="h-32 animate-pulse rounded border border-border bg-muted/20" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
+
+// ============================================================================
+// Main Component
+// ============================================================================
 
 function DashboardPage() {
   const { session } = Route.useRouteContext();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: stats, isPending } = useDashboardStats();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  // Fetch dashboard stats
-  useEffect(() => {
-    if (session?.user) {
-      void fetchStats();
-    }
-  }, [session]);
-
-  async function fetchStats() {
-    setLoading(true);
-    try {
-      // Fetch user stats, tokens, stacks, and prompts in parallel
-      const [statsRes, tokensRes, stacksRes, promptsRes] = await Promise.all([
-        authFetch("/api/user/stats"),
-        authFetch("/api/user/tokens"),
-        authFetch("/api/stacks?filter=my&limit=3"),
-        authFetch("/api/prompts?filter=my&limit=3"),
-      ]);
-
-      const statsData = (statsRes.ok ? await statsRes.json() : {}) as any;
-      const tokensData = (tokensRes.ok ? await tokensRes.json() : { tokens: [] }) as any;
-      const stacksData = (stacksRes.ok ? await stacksRes.json() : { stacks: [], total: 0 }) as any;
-      const promptsData = (
-        promptsRes.ok ? await promptsRes.json() : { prompts: [], total: 0 }
-      ) as any;
-
-      setStats({
-        plan: statsData.plan || "free",
-        mcpQueries: {
-          used: statsData.mcpQueries?.used || 0,
-          limit: statsData.mcpQueries?.limit || 2000,
-          percentUsed: statsData.mcpQueries?.percentUsed || 0,
-        },
-        apiKeys: {
-          count: statsData.apiKeys?.count || 0,
-          limit: statsData.apiKeys?.limit || 1,
-          keys: (tokensData.tokens || []).slice(0, 3).map((t: any) => ({
-            id: t.id,
-            name: t.name,
-            prefix: t.tokenPrefix,
-            lastUsed: t.lastUsedAt,
-          })),
-        },
-        skills: {
-          installed: statsData.skills?.installed || 0,
-        },
-        stacks: {
-          count: stacksData.total || stacksData.stacks?.length || 0,
-          recent: (stacksData.stacks || []).slice(0, 3).map((s: any) => ({
-            id: s.id,
-            name: s.name,
-            slug: s.slug,
-            icon: s.icon,
-            color: s.color,
-          })),
-        },
-        prompts: {
-          count: promptsData.total || promptsData.prompts?.length || 0,
-          recent: (promptsData.prompts || []).slice(0, 3).map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            isActive: p.isActive,
-          })),
-        },
-      });
-    } catch (err) {
-      console.error("Failed to fetch stats:", err);
-      // Fallback to defaults on error
-      setStats({
-        plan: "free",
-        mcpQueries: { used: 0, limit: 2000, percentUsed: 0 },
-        apiKeys: { count: 0, limit: 1, keys: [] },
-        skills: { installed: 0 },
-        stacks: { count: 0, recent: [] },
-        prompts: { count: 0, recent: [] },
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const copyToClipboard = (text: string, keyId: string) => {
     void navigator.clipboard.writeText(text);
@@ -139,19 +66,15 @@ function DashboardPage() {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-6 w-6 animate-spin border-2 border-accent border-t-transparent" />
-      </div>
-    );
+  if (isPending) {
+    return <DashboardSkeleton />;
   }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-0">
         {/* Header */}
-        <div className="pt-8 pb-6 md:pt-12 md:pb-8">
+        <div className="pb-6 pt-8 md:pb-8 md:pt-12">
           <h1 className="font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl">
             Dashboard
           </h1>
@@ -161,7 +84,7 @@ function DashboardPage() {
         </div>
 
         {/* Plan & Usage Stats */}
-        <div className="grid grid-cols-1 gap-px bg-border border border-border md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-3">
           {/* Plan Status */}
           <div className="bg-background p-4 sm:p-6">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -233,7 +156,7 @@ function DashboardPage() {
 
         {/* API Keys Section */}
         <div className="mt-8 md:mt-12">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
               API Keys
             </h2>
@@ -294,7 +217,7 @@ function DashboardPage() {
 
         {/* My Stacks Section */}
         <div className="mt-8 md:mt-12">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
               My Stacks
             </h2>
@@ -327,7 +250,7 @@ function DashboardPage() {
                   >
                     <Layers className="h-4 w-4" />
                   </div>
-                  <span className="font-mono text-sm font-bold uppercase truncate">
+                  <span className="truncate font-mono text-sm font-bold uppercase">
                     {stack.name}
                   </span>
                 </Link>
@@ -348,9 +271,9 @@ function DashboardPage() {
           )}
         </div>
 
-        {/* My Flows Section */}
+        {/* My Prompts Section */}
         <div className="mt-8 md:mt-12">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
               My Prompts
             </h2>
@@ -375,10 +298,10 @@ function DashboardPage() {
                   }`}
                 >
                   {prompt.isActive && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-accent animate-pulse" />
+                    <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-accent" />
                   )}
                   <Zap className="h-4 w-4 shrink-0 text-accent" />
-                  <span className="font-mono text-sm font-bold uppercase truncate">
+                  <span className="truncate font-mono text-sm font-bold uppercase">
                     {prompt.name}
                   </span>
                 </Link>
@@ -400,10 +323,10 @@ function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 md:mt-12 grid grid-cols-1 gap-px bg-border border border-border sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-1 gap-px border border-border bg-border sm:grid-cols-2 md:mt-12 lg:grid-cols-4">
           <Link
             to="/dashboard/keys"
-            className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
+            className="group bg-background p-4 transition-colors hover:bg-muted/30 sm:p-6"
           >
             <div className="flex items-center gap-3">
               <Key className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
@@ -418,7 +341,7 @@ function DashboardPage() {
 
           <Link
             to="/dashboard/stacks"
-            className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
+            className="group bg-background p-4 transition-colors hover:bg-muted/30 sm:p-6"
           >
             <div className="flex items-center gap-3">
               <Layers className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
@@ -433,7 +356,7 @@ function DashboardPage() {
 
           <Link
             to="/dashboard/prompts"
-            className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
+            className="group bg-background p-4 transition-colors hover:bg-muted/30 sm:p-6"
           >
             <div className="flex items-center gap-3">
               <Zap className="h-4 w-4 text-accent" />
@@ -448,7 +371,7 @@ function DashboardPage() {
 
           <Link
             to="/dashboard/billing"
-            className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
+            className="group bg-background p-4 transition-colors hover:bg-muted/30 sm:p-6"
           >
             <div className="flex items-center gap-3">
               <CreditCard className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
@@ -464,7 +387,7 @@ function DashboardPage() {
 
         {/* Upgrade Banner (for free users) */}
         {stats?.plan === "free" && (
-          <div className="mt-8 md:mt-12 border border-accent p-6 sm:p-8">
+          <div className="mt-8 border border-accent p-6 sm:p-8 md:mt-12">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">

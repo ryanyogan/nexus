@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -24,70 +24,25 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { authFetch } from "../../../lib/api";
+import {
+  useBrainScore,
+  useLearnings,
+  useXpHistory,
+  useCreateLearning,
+  useToggleLearning,
+  useDeleteLearning,
+  type Learning,
+} from "../../../hooks/use-dashboard-queries";
 
 export const Route = createFileRoute("/_authed/dashboard/brain")({
   component: BrainPage,
 });
 
-interface Learning {
-  id: string;
-  type: "correction" | "pattern" | "preference" | "skill";
-  category: string | null;
-  trigger: string;
-  response: string;
-  context: string | null;
-  source: "explicit" | "implicit" | "community";
-  scope: "global" | "project" | "library" | "flow";
-  project: string | null;
-  libraryId: string | null;
-  flowId: string | null;
-  confidence: number;
-  usageCount: number;
-  successRate: number | null;
-  isActive: boolean;
-  createdAt: string;
-}
-
-interface IntelligenceScore {
-  totalXp: number;
-  level: number;
-  currentLevelXp: number;
-  xpToNextLevel: number;
-  categoryXp: Record<string, number>;
-  currentStreak: number;
-  longestStreak: number;
-  achievements: string[];
-  stats: {
-    totalQueries: number;
-    totalMemories: number;
-    totalLearnings: number;
-    totalFlowsCreated: number;
-    totalReposIndexed: number;
-  };
-}
-
-interface XpEvent {
-  id: string;
-  eventType: string;
-  xpAmount: number;
-  category: string;
-  description: string | null;
-  createdAt: string;
-}
-
 const ACCENT_COLOR = "#06b6d4";
 
 function BrainPage() {
-  const { session } = Route.useRouteContext();
-  const [score, setScore] = useState<IntelligenceScore | null>(null);
-  const [learnings, setLearnings] = useState<Learning[]>([]);
-  const [xpHistory, setXpHistory] = useState<XpEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"learnings" | "xp">("learnings");
   const [learningFilter, setLearningFilter] = useState<string>("all");
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // New learning form state
   const [showNewLearning, setShowNewLearning] = useState(false);
@@ -98,98 +53,58 @@ function BrainPage() {
     scope: "global" as const,
   });
 
-  useEffect(() => {
-    if (session?.user) {
-      void fetchData();
-    }
-  }, [session]);
+  // Queries
+  const scoreQuery = useBrainScore();
+  const learningsQuery = useLearnings(learningFilter);
+  const xpHistoryQuery = useXpHistory();
 
-  async function fetchData() {
-    setLoading(true);
-    setError(null);
-    try {
-      const [scoreRes, learningsRes, xpRes] = await Promise.all([
-        authFetch("/api/brain/score"),
-        authFetch("/api/brain/learnings?limit=50"),
-        authFetch("/api/brain/xp-history?limit=20"),
-      ]);
+  const score = scoreQuery.data?.score ?? null;
+  const learnings = learningsQuery.data?.learnings ?? [];
+  const xpHistory = xpHistoryQuery.data?.events ?? [];
 
-      if (!scoreRes.ok || !learningsRes.ok || !xpRes.ok) {
-        throw new Error("Failed to fetch brain data");
-      }
+  // Mutations
+  const createMutation = useCreateLearning();
+  const toggleMutation = useToggleLearning();
+  const deleteMutation = useDeleteLearning();
 
-      const scoreData = (await scoreRes.json()) as { score: IntelligenceScore };
-      const learningsData = (await learningsRes.json()) as { learnings: Learning[] };
-      const xpData = (await xpRes.json()) as { events: XpEvent[] };
+  // Track which learning is currently being acted upon
+  const actionLoading = createMutation.isPending
+    ? "new"
+    : toggleMutation.isPending
+      ? toggleMutation.variables?.id
+      : deleteMutation.isPending
+        ? deleteMutation.variables
+        : null;
 
-      setScore(scoreData.score);
-      setLearnings(learningsData.learnings || []);
-      setXpHistory(xpData.events || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch data");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function createLearning() {
+  async function handleCreateLearning() {
     if (!newLearning.trigger || !newLearning.response) return;
 
-    setActionLoading("new");
     try {
-      const res = await authFetch("/api/brain/learnings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newLearning),
-      });
-
-      if (!res.ok) throw new Error("Failed to create learning");
-
+      await createMutation.mutateAsync(newLearning);
       setShowNewLearning(false);
       setNewLearning({ trigger: "", response: "", type: "correction", scope: "global" });
-      await fetchData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create learning");
-    } finally {
-      setActionLoading(null);
+    } catch {
+      // Error handled by mutation state
     }
   }
 
-  async function deleteLearning(id: string) {
+  function handleToggleLearning(id: string, isActive: boolean) {
+    toggleMutation.mutate({ id, isActive: !isActive });
+  }
+
+  function handleDeleteLearning(id: string) {
     if (!confirm("Are you sure you want to delete this learning?")) return;
-
-    setActionLoading(id);
-    try {
-      await authFetch(`/api/brain/learnings/${id}`, { method: "DELETE" });
-      await fetchData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete learning");
-    } finally {
-      setActionLoading(null);
-    }
+    deleteMutation.mutate(id);
   }
 
-  async function toggleLearning(id: string, isActive: boolean) {
-    setActionLoading(id);
-    try {
-      await authFetch(`/api/brain/learnings/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !isActive }),
-      });
-      await fetchData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update learning");
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  // Filter learnings
-  const filteredLearnings = learnings.filter((l) => {
-    if (learningFilter === "all") return true;
-    return l.type === learningFilter;
-  });
+  // Get the current error message
+  const errorMessage =
+    scoreQuery.error?.message ||
+    learningsQuery.error?.message ||
+    xpHistoryQuery.error?.message ||
+    createMutation.error?.message ||
+    toggleMutation.error?.message ||
+    deleteMutation.error?.message;
 
   // XP chart data
   const xpChartData = xpHistory
@@ -200,7 +115,9 @@ function BrainPage() {
       xp: e.xpAmount,
     }));
 
-  if (loading) {
+  const isLoading = scoreQuery.isPending || learningsQuery.isPending;
+
+  if (isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -240,9 +157,9 @@ function BrainPage() {
         </div>
 
         {/* Error */}
-        {error && (
+        {errorMessage && (
           <div className="mb-6 border border-destructive bg-destructive/10 p-4">
-            <p className="font-mono text-sm text-destructive">{error}</p>
+            <p className="font-mono text-sm text-destructive">{errorMessage}</p>
           </div>
         )}
 
@@ -365,7 +282,7 @@ function BrainPage() {
 
             {/* Learnings List */}
             <div className="space-y-3">
-              {filteredLearnings.length === 0 ? (
+              {learnings.length === 0 ? (
                 <div className="border border-border bg-background p-8 text-center">
                   <Sparkles className="mx-auto h-12 w-12 text-muted-foreground/30" />
                   <p className="mt-4 font-mono text-sm text-muted-foreground">
@@ -373,13 +290,13 @@ function BrainPage() {
                   </p>
                 </div>
               ) : (
-                filteredLearnings.map((learning) => (
+                learnings.map((learning) => (
                   <LearningCard
                     key={learning.id}
                     learning={learning}
                     actionLoading={actionLoading}
-                    onDelete={deleteLearning}
-                    onToggle={toggleLearning}
+                    onDelete={handleDeleteLearning}
+                    onToggle={handleToggleLearning}
                   />
                 ))
               )}
@@ -557,7 +474,7 @@ function BrainPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={createLearning}
+                  onClick={handleCreateLearning}
                   disabled={
                     !newLearning.trigger || !newLearning.response || actionLoading === "new"
                   }

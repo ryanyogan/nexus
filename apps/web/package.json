@@ -33,6 +33,7 @@
     "@nexus/logger": "workspace:*",
     "@nexus/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.94.5",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/react-start": "^1.132.0",

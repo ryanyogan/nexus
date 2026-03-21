@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import {
   CreditCard,
   Check,
@@ -9,18 +8,17 @@ import {
   Users,
   AlertCircle,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
+import {
+  useSubscription,
+  useCreateCheckout,
+  useOpenBillingPortal,
+} from "../../../hooks/use-dashboard-queries";
 
 export const Route = createFileRoute("/_authed/dashboard/billing")({
   component: BillingPage,
 });
-
-interface Subscription {
-  plan: "free" | "pro" | "team";
-  status: "active" | "canceled" | "past_due" | null;
-  currentPeriodEnd: string | null;
-  cancelAtPeriodEnd: boolean;
-}
 
 const plans = [
   {
@@ -76,66 +74,44 @@ const plans = [
 ];
 
 function BillingPage() {
-  const { session } = Route.useRouteContext();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [upgrading, setUpgrading] = useState(false);
+  // Queries
+  const { data: subscription, isPending, isError, error } = useSubscription();
 
-  useEffect(() => {
-    if (session?.user) {
-      // Mock subscription data for now
-      setSubscription({
-        plan: "free",
-        status: null,
-        currentPeriodEnd: null,
-        cancelAtPeriodEnd: false,
-      });
-      setLoading(false);
-    }
-  }, [session]);
+  // Mutations
+  const checkoutMutation = useCreateCheckout();
+  const portalMutation = useOpenBillingPortal();
 
-  async function handleUpgrade(planId: string) {
+  function handleUpgrade(planId: string) {
     if (planId === "team") {
       // Open contact form or email
       window.open("mailto:hello@nexus.yogan.dev?subject=Team Plan Inquiry", "_blank");
       return;
     }
 
-    setUpgrading(true);
-    try {
-      // TODO: Implement Stripe checkout
-      // const res = await authFetch("/api/billing/checkout", {
-      //   method: "POST",
-      //   body: JSON.stringify({ planId }),
-      // });
-      // const { url } = await res.json();
-      // window.location.href = url;
-
-      // For now, show a coming soon message
-      alert("Stripe integration coming soon! Pro plan will be $5/month.");
-    } catch (err) {
-      console.error("Failed to start checkout:", err);
-    } finally {
-      setUpgrading(false);
-    }
+    // TODO: When Stripe is integrated, this will redirect to checkout
+    checkoutMutation.mutate(planId, {
+      onError: (err) => {
+        alert(err.message);
+      },
+    });
   }
 
-  async function handleManageBilling() {
-    try {
-      // TODO: Implement Stripe portal
-      // const res = await authFetch("/api/billing/portal", { method: "POST" });
-      // const { url } = await res.json();
-      // window.location.href = url;
-      alert("Billing portal coming soon!");
-    } catch (err) {
-      console.error("Failed to open billing portal:", err);
-    }
+  function handleManageBilling() {
+    // TODO: When Stripe is integrated, this will redirect to billing portal
+    portalMutation.mutate(undefined, {
+      onError: (err) => {
+        alert(err.message);
+      },
+    });
   }
 
-  if (loading) {
+  // Get the current error message
+  const errorMessage = isError ? (error as Error)?.message : null;
+
+  if (isPending) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -154,6 +130,13 @@ function BillingPage() {
         <h1 className="text-2xl font-bold text-foreground">Billing</h1>
         <p className="mt-1 text-muted-foreground">Manage your subscription and billing</p>
       </div>
+
+      {/* Error */}
+      {errorMessage && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-900/20">
+          <p className="text-sm text-red-700 dark:text-red-300">{errorMessage}</p>
+        </div>
+      )}
 
       {/* Current Plan Status */}
       {subscription && subscription.plan !== "free" && (
@@ -178,10 +161,17 @@ function BillingPage() {
             </div>
             <button
               onClick={handleManageBilling}
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              disabled={portalMutation.isPending}
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
             >
-              Manage Billing
-              <ExternalLink className="h-4 w-4" />
+              {portalMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Manage Billing
+                  <ExternalLink className="h-4 w-4" />
+                </>
+              )}
             </button>
           </div>
 
@@ -242,16 +232,22 @@ function BillingPage() {
 
               <button
                 onClick={() => !isCurrentPlan && handleUpgrade(plan.id)}
-                disabled={isCurrentPlan || upgrading}
+                disabled={isCurrentPlan || checkoutMutation.isPending}
                 className={`w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   isCurrentPlan
                     ? "cursor-default border border-border bg-muted text-muted-foreground"
                     : plan.highlighted
                       ? "bg-primary text-primary-foreground hover:bg-primary/90"
                       : "border border-border text-foreground hover:bg-muted"
-                }`}
+                } disabled:opacity-50`}
               >
-                {isCurrentPlan ? "Current Plan" : plan.cta}
+                {checkoutMutation.isPending && checkoutMutation.variables === plan.id ? (
+                  <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                ) : isCurrentPlan ? (
+                  "Current Plan"
+                ) : (
+                  plan.cta
+                )}
               </button>
             </div>
           );

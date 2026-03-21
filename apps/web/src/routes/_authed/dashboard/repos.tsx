@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   GitBranch,
   Plus,
@@ -16,161 +16,76 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react";
-import { authFetch } from "../../../lib/api";
+import {
+  useRepos,
+  useAvailableRepos,
+  useConnectRepo,
+  useSyncRepo,
+  useDisconnectRepo,
+  type ConnectedRepo,
+  type AvailableRepo,
+} from "../../../hooks/use-dashboard-queries";
 
 export const Route = createFileRoute("/_authed/dashboard/repos")({
   component: ReposPage,
 });
 
-interface ConnectedRepo {
-  id: string;
-  githubId: number;
-  owner: string;
-  name: string;
-  fullName: string;
-  description: string | null;
-  htmlUrl: string;
-  defaultBranch: string;
-  isPrivate: boolean;
-  indexStatus: "pending" | "indexing" | "indexed" | "failed";
-  lastIndexedAt: string | null;
-  indexError: string | null;
-  totalFiles: number;
-  totalBytes: number;
-  indexedFiles: number;
-  lastCommitSha: string | null;
-  lastCommitAt: string | null;
-  autoSync: boolean;
-  createdAt: string;
-}
-
-interface AvailableRepo {
-  githubId: number;
-  owner: string;
-  name: string;
-  fullName: string;
-  description: string | null;
-  htmlUrl: string;
-  defaultBranch: string;
-  isPrivate: boolean;
-  language: string | null;
-  updatedAt: string;
-  isConnected: boolean;
-}
-
-interface TierLimits {
-  maxRepos: number;
-  maxBytesPerRepo: number;
-  privateRepos: boolean;
-  currentRepoCount: number;
-}
-
 function ReposPage() {
-  const { session } = Route.useRouteContext();
-  const [repos, setRepos] = useState<ConnectedRepo[]>([]);
-  const [availableRepos, setAvailableRepos] = useState<AvailableRepo[]>([]);
-  const [tier, setTier] = useState<string>("free");
-  const [limits, setLimits] = useState<TierLimits | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showConnect, setShowConnect] = useState(false);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [loadingAvailable, setLoadingAvailable] = useState(false);
 
-  useEffect(() => {
-    if (session?.user) {
-      void fetchRepos();
-    }
-  }, [session]);
+  // Queries
+  const { data, isPending, isError, error } = useRepos();
+  const availableQuery = useAvailableRepos();
 
-  async function fetchRepos() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await authFetch("/api/repos");
-      if (!res.ok) throw new Error("Failed to fetch repos");
-      const data = (await res.json()) as {
-        repos: ConnectedRepo[];
-        tier: string;
-        limits: TierLimits;
-      };
-      setRepos(data.repos || []);
-      setTier(data.tier);
-      setLimits(data.limits);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch repos");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const repos = data?.repos ?? [];
+  const tier = data?.tier ?? "free";
+  const limits = data?.limits ?? null;
 
-  async function fetchAvailableRepos() {
-    setLoadingAvailable(true);
-    try {
-      const res = await authFetch("/api/repos/available");
-      if (!res.ok) throw new Error("Failed to fetch available repos");
-      const data = (await res.json()) as { repos: AvailableRepo[] };
-      setAvailableRepos(data.repos || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch available repos");
-    } finally {
-      setLoadingAvailable(false);
-    }
-  }
+  // Mutations
+  const connectMutation = useConnectRepo();
+  const syncMutation = useSyncRepo();
+  const disconnectMutation = useDisconnectRepo();
 
-  async function connectRepo(repo: AvailableRepo) {
+  // Track which item is currently being acted upon
+  const actionLoading = connectMutation.isPending
+    ? `connect-${connectMutation.variables?.githubId}`
+    : syncMutation.isPending
+      ? `sync-${syncMutation.variables}`
+      : disconnectMutation.isPending
+        ? `disconnect-${disconnectMutation.variables}`
+        : null;
+
+  async function handleConnectRepo(repo: AvailableRepo) {
     if (limits && limits.currentRepoCount >= limits.maxRepos) {
-      setError(`You've reached your limit of ${limits.maxRepos} repos. Upgrade to connect more.`);
       return;
     }
 
     if (repo.isPrivate && limits && !limits.privateRepos) {
-      setError("Private repos require a Pro or Team plan. Upgrade to connect private repos.");
       return;
     }
 
-    setActionLoading(`connect-${repo.githubId}`);
     try {
-      const res = await authFetch("/api/repos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          githubId: repo.githubId,
-          owner: repo.owner,
-          name: repo.name,
-          fullName: repo.fullName,
-          description: repo.description,
-          htmlUrl: repo.htmlUrl,
-          defaultBranch: repo.defaultBranch,
-          isPrivate: repo.isPrivate,
-        }),
+      await connectMutation.mutateAsync({
+        githubId: repo.githubId,
+        owner: repo.owner,
+        name: repo.name,
+        fullName: repo.fullName,
+        description: repo.description,
+        htmlUrl: repo.htmlUrl,
+        defaultBranch: repo.defaultBranch,
+        isPrivate: repo.isPrivate,
       });
-
-      if (!res.ok) throw new Error("Failed to connect repo");
-
       setShowConnect(false);
-      await fetchRepos();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to connect repo");
-    } finally {
-      setActionLoading(null);
+    } catch {
+      // Error handled by mutation state
     }
   }
 
-  async function syncRepo(id: string) {
-    setActionLoading(`sync-${id}`);
-    try {
-      const res = await authFetch(`/api/repos/${id}/sync`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to sync repo");
-      await fetchRepos();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sync repo");
-    } finally {
-      setActionLoading(null);
-    }
+  function handleSyncRepo(id: string) {
+    syncMutation.mutate(id);
   }
 
-  async function disconnectRepo(id: string) {
+  function handleDisconnectRepo(id: string) {
     if (
       !confirm(
         "Are you sure you want to disconnect this repository? All indexed files will be removed."
@@ -178,17 +93,12 @@ function ReposPage() {
     ) {
       return;
     }
+    disconnectMutation.mutate(id);
+  }
 
-    setActionLoading(`disconnect-${id}`);
-    try {
-      const res = await authFetch(`/api/repos/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to disconnect repo");
-      await fetchRepos();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to disconnect repo");
-    } finally {
-      setActionLoading(null);
-    }
+  function openConnectModal() {
+    setShowConnect(true);
+    void availableQuery.refetch();
   }
 
   function formatBytes(bytes: number): string {
@@ -197,7 +107,18 @@ function ReposPage() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  if (loading) {
+  // Get the current error message
+  const errorMessage =
+    connectMutation.error?.message ||
+    syncMutation.error?.message ||
+    disconnectMutation.error?.message ||
+    availableQuery.error?.message ||
+    (isError ? (error as Error)?.message : null) ||
+    (limits && limits.currentRepoCount >= limits.maxRepos
+      ? `You've reached your limit of ${limits.maxRepos} repos. Upgrade to connect more.`
+      : null);
+
+  if (isPending) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -227,10 +148,7 @@ function ReposPage() {
               </p>
             </div>
             <button
-              onClick={() => {
-                setShowConnect(true);
-                void fetchAvailableRepos();
-              }}
+              onClick={openConnectModal}
               disabled={limits ? limits.currentRepoCount >= limits.maxRepos : false}
               className="flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-background transition-colors hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -241,9 +159,9 @@ function ReposPage() {
         </div>
 
         {/* Error */}
-        {error && (
+        {errorMessage && (
           <div className="mb-6 border border-destructive bg-destructive/10 p-4">
-            <p className="font-mono text-sm text-destructive">{error}</p>
+            <p className="font-mono text-sm text-destructive">{errorMessage}</p>
           </div>
         )}
 
@@ -297,10 +215,7 @@ function ReposPage() {
                 No repositories connected yet
               </p>
               <button
-                onClick={() => {
-                  setShowConnect(true);
-                  void fetchAvailableRepos();
-                }}
+                onClick={openConnectModal}
                 className="mt-4 inline-flex items-center gap-2 font-mono text-xs font-bold uppercase text-accent hover:underline"
               >
                 Connect your first repo
@@ -312,8 +227,8 @@ function ReposPage() {
                 key={repo.id}
                 repo={repo}
                 actionLoading={actionLoading}
-                onSync={syncRepo}
-                onDisconnect={disconnectRepo}
+                onSync={handleSyncRepo}
+                onDisconnect={handleDisconnectRepo}
                 formatBytes={formatBytes}
               />
             ))
@@ -380,11 +295,11 @@ function ReposPage() {
                 </button>
               </div>
 
-              {loadingAvailable ? (
+              {availableQuery.isPending || availableQuery.isFetching ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : availableRepos.length === 0 ? (
+              ) : (availableQuery.data?.repos ?? []).length === 0 ? (
                 <div className="py-12 text-center">
                   <p className="font-mono text-sm text-muted-foreground">
                     No repositories found. Make sure you have GitHub connected.
@@ -392,7 +307,7 @@ function ReposPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {availableRepos.map((repo) => (
+                  {(availableQuery.data?.repos ?? []).map((repo) => (
                     <div
                       key={repo.githubId}
                       className={`flex items-center justify-between border p-4 ${
@@ -428,7 +343,7 @@ function ReposPage() {
                           <span className="font-mono text-xs text-accent">Connected</span>
                         ) : (
                           <button
-                            onClick={() => connectRepo(repo)}
+                            onClick={() => handleConnectRepo(repo)}
                             disabled={
                               actionLoading === `connect-${repo.githubId}` ||
                               (repo.isPrivate && limits !== null && !limits.privateRepos)

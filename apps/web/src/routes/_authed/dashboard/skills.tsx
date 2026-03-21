@@ -1,25 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Zap, ArrowLeft, Search, ExternalLink, Trash2, Clock, Star } from "lucide-react";
-import { authFetch } from "../../../lib/api";
+import { useState } from "react";
+import { Zap, ArrowLeft, Search, ExternalLink, Trash2, Clock, Star, Loader2 } from "lucide-react";
+import {
+  useInstalledSkills,
+  useUninstallSkill,
+  type InstalledSkill,
+} from "../../../hooks/use-dashboard-queries";
 
 export const Route = createFileRoute("/_authed/dashboard/skills")({
   component: InstalledSkillsPage,
 });
-
-interface InstalledSkill {
-  id: string;
-  skill: {
-    id: string;
-    name: string;
-    description: string;
-    type: string;
-    category: string;
-  };
-  installedAt: string;
-  usageCount: number;
-  lastUsedAt: string | null;
-}
 
 const typeColors: Record<string, string> = {
   analysis: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
@@ -30,47 +20,18 @@ const typeColors: Record<string, string> = {
 };
 
 function InstalledSkillsPage() {
-  const { session } = Route.useRouteContext();
-  const [skills, setSkills] = useState<InstalledSkill[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (session?.user) {
-      void fetchInstalledSkills();
-    }
-  }, [session]);
+  // Queries
+  const { data, isPending, isError, error } = useInstalledSkills();
+  const skills = data?.skills ?? [];
 
-  async function fetchInstalledSkills() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await authFetch("/api/user/skills");
-      if (!res.ok) throw new Error("Failed to fetch installed skills");
-      const data = (await res.json()) as { skills: InstalledSkill[] };
-      setSkills(data.skills || []);
-    } catch (err) {
-      // For now, return empty - API endpoint doesn't exist yet
-      setSkills([]);
-      console.error("Failed to fetch skills:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Mutations
+  const uninstallMutation = useUninstallSkill();
 
-  async function uninstallSkill(skillId: string) {
+  function handleUninstall(skillId: string) {
     if (!confirm("Are you sure you want to uninstall this skill?")) return;
-
-    try {
-      const res = await authFetch(`/api/skills/${skillId}/uninstall`, {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error("Failed to uninstall skill");
-      setSkills((prev) => prev.filter((s) => s.skill.id !== skillId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to uninstall skill");
-    }
+    uninstallMutation.mutate(skillId);
   }
 
   const filteredSkills = skills.filter(
@@ -79,10 +40,14 @@ function InstalledSkillsPage() {
       s.skill.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
+  // Get the current error message
+  const errorMessage =
+    uninstallMutation.error?.message || (isError ? (error as Error)?.message : null);
+
+  if (isPending) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -129,9 +94,9 @@ function InstalledSkillsPage() {
         </div>
       )}
 
-      {error && (
+      {errorMessage && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-900/20">
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          <p className="text-sm text-red-700 dark:text-red-300">{errorMessage}</p>
         </div>
       )}
 
@@ -160,61 +125,12 @@ function InstalledSkillsPage() {
       ) : (
         <div className="space-y-4">
           {filteredSkills.map((installed) => (
-            <div key={installed.id} className="rounded-lg border border-border bg-card p-5">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                    <Zap className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-foreground">{installed.skill.name}</h3>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          typeColors[installed.skill.type] || typeColors.utility
-                        }`}
-                      >
-                        {installed.skill.type}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                      {installed.skill.description}
-                    </p>
-                    <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        Installed {new Date(installed.installedAt).toLocaleDateString()}
-                      </span>
-                      {installed.usageCount > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3" />
-                          Used {installed.usageCount} times
-                        </span>
-                      )}
-                      {installed.lastUsedAt && (
-                        <span>Last used {new Date(installed.lastUsedAt).toLocaleDateString()}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/"
-                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    title="View Details"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
-                  <button
-                    onClick={() => uninstallSkill(installed.skill.id)}
-                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20"
-                    title="Uninstall"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <SkillCard
+              key={installed.id}
+              installed={installed}
+              isUninstalling={uninstallMutation.variables === installed.skill.id}
+              onUninstall={handleUninstall}
+            />
           ))}
         </div>
       )}
@@ -243,6 +159,81 @@ function InstalledSkillsPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Skill Card Component
+// ============================================================================
+
+interface SkillCardProps {
+  installed: InstalledSkill;
+  isUninstalling: boolean;
+  onUninstall: (skillId: string) => void;
+}
+
+function SkillCard({ installed, isUninstalling, onUninstall }: SkillCardProps) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-5">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+            <Zap className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-foreground">{installed.skill.name}</h3>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  typeColors[installed.skill.type] || typeColors.utility
+                }`}
+              >
+                {installed.skill.type}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+              {installed.skill.description}
+            </p>
+            <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Installed {new Date(installed.installedAt).toLocaleDateString()}
+              </span>
+              {installed.usageCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <Star className="h-3 w-3" />
+                  Used {installed.usageCount} times
+                </span>
+              )}
+              {installed.lastUsedAt && (
+                <span>Last used {new Date(installed.lastUsedAt).toLocaleDateString()}</span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="View Details"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+          <button
+            onClick={() => onUninstall(installed.skill.id)}
+            disabled={isUninstalling}
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 disabled:opacity-50"
+            title="Uninstall"
+          >
+            {isUninstalling ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
