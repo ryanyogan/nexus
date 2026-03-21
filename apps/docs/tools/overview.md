@@ -8,6 +8,43 @@ import FeatureCard from '../.vitepress/theme/components/FeatureCard.vue'
 import Callout from '../.vitepress/theme/components/Callout.vue'
 </script>
 
+## How to Use These Tools
+
+These tools are designed to be used through natural conversation with your AI assistant. You don't need to know the exact tool names or parameters - just describe what you need.
+
+### Example Prompts
+
+**Documentation lookup:**
+> "How do I set up authentication in Next.js App Router?"
+
+> "Show me examples of React Server Components with data fetching"
+
+> "What's the correct way to use Drizzle ORM migrations?"
+
+**Memory and context:**
+> "Remember that this project uses pnpm and Tailwind CSS"
+
+> "What decisions have we made about the database schema?"
+
+> "Save this as a lesson learned: always use parameterized queries"
+
+**Server discovery:**
+> "I need to connect Claude to my PostgreSQL database - what MCP servers are available?"
+
+> "How do I install the GitHub MCP server?"
+
+### What Happens Behind the Scenes
+
+When you ask a question like "How do I use React Query?", your AI assistant:
+
+1. Uses `resolve-library` to find the library ID for React Query
+2. Uses `query-docs` to search the indexed documentation
+3. Returns relevant code examples and explanations
+
+You just ask naturally - the tools handle the rest.
+
+---
+
 ## Documentation Tools
 
 Search and explore indexed library documentation with semantic search.

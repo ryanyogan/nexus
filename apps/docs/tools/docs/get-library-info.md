@@ -2,6 +2,14 @@
 
 Get detailed information about a specific library including description, version, and documentation coverage.
 
+## Example Prompts
+
+> "What version of the Next.js docs are indexed?"
+
+> "How comprehensive is the Prisma documentation coverage?"
+
+> "Tell me about the indexed React documentation"
+
 ## Usage
 
 ```

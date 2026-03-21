@@ -2,6 +2,16 @@
 
 Update an existing memory. Can modify content, title, tags, importance, or summary.
 
+## Example Prompts
+
+> "Update the authentication decision - we switched to Clerk"
+
+> "Change the importance of the database schema memory to high"
+
+> "Add the 'security' tag to the API authentication memory"
+
+> "Update our project context to note we now use pnpm instead of npm"
+
 ## Usage
 
 ```

@@ -2,6 +2,22 @@
 
 Search indexed documentation using semantic search. Returns relevant code examples and explanations.
 
+## Example Prompts
+
+This is the most common tool - just ask any documentation question naturally:
+
+> "How do I set up middleware in Hono?"
+
+> "Show me examples of Drizzle ORM relations"
+
+> "What's the correct way to handle errors in TanStack Query?"
+
+> "How do I create a protected route in Next.js App Router?"
+
+> "Explain React Server Components data fetching patterns"
+
+The AI will automatically find the right library and search its documentation.
+
 ## Usage
 
 ```

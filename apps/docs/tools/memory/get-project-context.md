@@ -2,6 +2,18 @@
 
 Get all stored context for a specific project. Returns project architecture, conventions, recent decisions, and lessons learned.
 
+## Example Prompts
+
+Use this at the start of a new session to catch up on project context:
+
+> "Load the context for my-saas project"
+
+> "What do you know about the nexus project?"
+
+> "Get me up to speed on this codebase"
+
+> "Recall all project context and decisions"
+
 ## Usage
 
 ```

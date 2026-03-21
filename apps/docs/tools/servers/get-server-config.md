@@ -2,6 +2,16 @@
 
 Generate installation configuration for an MCP server. Returns ready-to-use config for various clients.
 
+## Example Prompts
+
+> "How do I install the PostgreSQL MCP server for Claude Desktop?"
+
+> "Give me the config to add the GitHub server to VS Code"
+
+> "Generate the installation config for the filesystem server"
+
+> "Set up the Slack MCP server for me"
+
 ## Usage
 
 ```

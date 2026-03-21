@@ -1,26 +1,26 @@
-# Flow MCP Tools
+# Prompt MCP Tools
 
-Nexus exposes flow management through MCP tools, allowing AI agents to work with flows programmatically.
+Nexus exposes prompt management through MCP tools, allowing AI agents to work with prompts programmatically.
 
 ## Available Tools
 
-### list-flows
+### list-prompts
 
-List all available flows with optional filtering.
+List all available prompts with optional filtering.
 
 **Parameters:**
 
 | Parameter       | Type    | Description                    |
 | --------------- | ------- | ------------------------------ |
-| `activeOnly`    | boolean | Only return active flows       |
-| `installedOnly` | boolean | Only return installed flows    |
-| `starterOnly`   | boolean | Only return starter pack flows |
+| `activeOnly`    | boolean | Only return active prompts       |
+| `installedOnly` | boolean | Only return installed prompts    |
+| `starterOnly`   | boolean | Only return starter pack prompts |
 
 **Example:**
 
 ```json
 {
-  "name": "list-flows",
+  "name": "list-prompts",
   "arguments": {
     "activeOnly": false,
     "installedOnly": true
@@ -28,100 +28,100 @@ List all available flows with optional filtering.
 }
 ```
 
-### get-flow
+### get-prompt
 
-Get detailed information about a specific flow.
+Get detailed information about a specific prompt.
 
 **Parameters:**
 
 | Parameter | Type    | Required | Description               |
 | --------- | ------- | -------- | ------------------------- |
-| `flowId`  | string  | Yes      | Flow ID or slug           |
+| `promptId`  | string  | Yes      | Prompt ID or slug           |
 | `resolve` | boolean | No       | Resolve inheritance chain |
 
 **Example:**
 
 ```json
 {
-  "name": "get-flow",
+  "name": "get-prompt",
   "arguments": {
-    "flowId": "react-typescript-expert",
+    "promptId": "react-typescript-expert",
     "resolve": true
   }
 }
 ```
 
-### get-active-flows
+### get-active-prompts
 
-Get all currently active flows for the user, ordered by priority.
+Get all currently active prompts for the user, ordered by priority.
 
 **Parameters:** None
 
-**Returns:** Array of active flows with their configurations merged.
+**Returns:** Array of active prompts with their configurations merged.
 
-### activate-flow
+### activate-prompt
 
-Activate a flow for the current user.
+Activate a prompt for the current user.
 
 **Parameters:**
 
 | Parameter  | Type   | Required | Description                              |
 | ---------- | ------ | -------- | ---------------------------------------- |
-| `flowId`   | string | Yes      | Flow ID or slug                          |
+| `promptId`   | string | Yes      | Prompt ID or slug                          |
 | `priority` | number | No       | Priority order (lower = higher priority) |
 
 **Example:**
 
 ```json
 {
-  "name": "activate-flow",
+  "name": "activate-prompt",
   "arguments": {
-    "flowId": "testing-qa-engineer",
+    "promptId": "testing-qa-engineer",
     "priority": 2
   }
 }
 ```
 
-### deactivate-flow
+### deactivate-prompt
 
-Deactivate a specific flow or all flows.
+Deactivate a specific prompt or all prompts.
 
 **Parameters:**
 
 | Parameter | Type    | Required | Description                   |
 | --------- | ------- | -------- | ----------------------------- |
-| `flowId`  | string  | No\*     | Flow ID or slug to deactivate |
-| `all`     | boolean | No\*     | Deactivate all flows          |
+| `promptId`  | string  | No\*     | Prompt ID or slug to deactivate |
+| `all`     | boolean | No\*     | Deactivate all prompts          |
 
-\*One of `flowId` or `all` is required.
+\*One of `promptId` or `all` is required.
 
 **Example:**
 
 ```json
 {
-  "name": "deactivate-flow",
+  "name": "deactivate-prompt",
   "arguments": {
-    "flowId": "react-typescript-expert"
+    "promptId": "react-typescript-expert"
   }
 }
 ```
 
-### download-flow
+### download-prompt
 
-Download a flow as markdown content.
+Download a prompt as markdown content.
 
 **Parameters:**
 
 | Parameter | Type    | Required | Description                     |
 | --------- | ------- | -------- | ------------------------------- |
-| `flowId`  | string  | Yes      | Flow ID or slug                 |
+| `promptId`  | string  | Yes      | Prompt ID or slug                 |
 | `resolve` | boolean | No       | Include resolved parent content |
 
-**Returns:** Markdown content of the flow suitable for FLOW.md files.
+**Returns:** Markdown content of the prompt suitable for FLOW.md files.
 
-### suggest-flows
+### suggest-prompts
 
-Get AI-powered flow suggestions based on project context.
+Get AI-powered prompt suggestions based on project context.
 
 **Parameters:**
 
@@ -136,7 +136,7 @@ Get AI-powered flow suggestions based on project context.
 
 ```json
 {
-  "name": "suggest-flows",
+  "name": "suggest-prompts",
   "arguments": {
     "dependencies": ["react", "typescript", "vitest"],
     "description": "React app with testing"
@@ -144,21 +144,21 @@ Get AI-powered flow suggestions based on project context.
 }
 ```
 
-**Returns:** Array of recommended flows with confidence scores.
+**Returns:** Array of recommended prompts with confidence scores.
 
-### create-flow
+### create-prompt
 
-Create a new custom flow.
+Create a new custom prompt.
 
 **Parameters:**
 
 | Parameter      | Type     | Required | Description            |
 | -------------- | -------- | -------- | ---------------------- |
-| `name`         | string   | Yes      | Flow name              |
+| `name`         | string   | Yes      | Prompt name              |
 | `slug`         | string   | Yes      | URL-friendly slug      |
-| `description`  | string   | No       | Flow description       |
+| `description`  | string   | No       | Prompt description       |
 | `systemPrompt` | string   | Yes      | System prompt content  |
-| `parentFlowId` | string   | No       | Parent flow to extend  |
+| `parentPromptId` | string   | No       | Parent prompt to extend  |
 | `libraries`    | string[] | No       | Library IDs to include |
 | `skills`       | string[] | No       | Skill IDs to include   |
 | `preferences`  | object   | No       | Response preferences   |
@@ -167,10 +167,10 @@ Create a new custom flow.
 
 ```json
 {
-  "name": "create-flow",
+  "name": "create-prompt",
   "arguments": {
-    "name": "My Custom Flow",
-    "slug": "my-custom-flow",
+    "name": "My Custom Prompt",
+    "slug": "my-custom-prompt",
     "systemPrompt": "You are a helpful assistant...",
     "libraries": ["react", "typescript"],
     "preferences": {
@@ -185,12 +185,12 @@ Create a new custom flow.
 
 ### Initial Context Loading
 
-At the start of a session, check for active flows:
+At the start of a session, check for active prompts:
 
 ```
-1. Call get-active-flows to see current configuration
-2. If no flows active, call suggest-flows with project context
-3. Offer to activate recommended flows
+1. Call get-active-prompts to see current configuration
+2. If no prompts active, call suggest-prompts with project context
+3. Offer to activate recommended prompts
 ```
 
 ### Project-Aware Activation
@@ -198,18 +198,18 @@ At the start of a session, check for active flows:
 When entering a new project directory:
 
 ```
-1. Check for .nexus/config.json with defaultFlow
-2. If found, call activate-flow with the default
-3. Otherwise, call suggest-flows for recommendations
+1. Check for .nexus/config.json with defaultPrompt
+2. If found, call activate-prompt with the default
+3. Otherwise, call suggest-prompts for recommendations
 ```
 
 ### Memory Association
 
-When saving memories while flows are active:
+When saving memories while prompts are active:
 
 ```
-1. Call get-active-flows to get current flow IDs
-2. Include flowId in save-memory call
+1. Call get-active-prompts to get current prompt IDs
+2. Include promptId in save-memory call
 3. Memories are automatically associated
 ```
 
@@ -219,8 +219,8 @@ All tools return standardized errors:
 
 | Error               | Code | Description                   |
 | ------------------- | ---- | ----------------------------- |
-| `FlowNotFound`      | 404  | Flow ID or slug doesn't exist |
+| `PromptNotFound`      | 404  | Prompt ID or slug doesn't exist |
 | `NotAuthenticated`  | 401  | API key required              |
-| `FlowAlreadyActive` | 409  | Flow is already activated     |
+| `PromptAlreadyActive` | 409  | Prompt is already activated     |
 | `MaxDepthExceeded`  | 400  | Inheritance chain too deep    |
-| `PermissionDenied`  | 403  | Cannot modify this flow       |
+| `PermissionDenied`  | 403  | Cannot modify this prompt       |

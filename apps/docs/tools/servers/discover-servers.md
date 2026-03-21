@@ -2,6 +2,18 @@
 
 Search for MCP servers by capability, category, or name. Returns matching servers with installation instructions.
 
+## Example Prompts
+
+> "I need to connect Claude to my PostgreSQL database - what MCP servers are available?"
+
+> "Find MCP servers for GitHub integration"
+
+> "What official MCP servers can access the filesystem?"
+
+> "Show me productivity MCP servers for Slack and Notion"
+
+> "Are there any AI/ML MCP servers?"
+
 ## Usage
 
 ```

@@ -1,15 +1,15 @@
-# Flow Best Practices
+# Prompt Best Practices
 
-Get the most out of Nexus Flows with these proven patterns and recommendations.
+Get the most out of Nexus Prompts with these proven patterns and recommendations.
 
-## Organizing Your Flows
+## Organizing Your Prompts
 
-### Create a Flow Hierarchy
+### Create a Prompt Hierarchy
 
-Build flows that progressively specialize:
+Build prompts that progressively specialize:
 
 ```
-Level 0: Base Flows
+Level 0: Base Prompts
 ├── typescript-fundamentals
 ├── testing-fundamentals
 └── devops-fundamentals
@@ -24,28 +24,28 @@ Level 2: Project-Specific
 └── my-saas-backend (extends node-typescript)
 ```
 
-### One Flow Per Concern
+### One Prompt Per Concern
 
-Rather than one large flow, use multiple focused flows:
+Rather than one large prompt, use multiple focused prompts:
 
 ```bash
-# Multiple active flows for a testing session
-nexus flow activate react-typescript-expert
-nexus flow activate testing-qa-engineer
+# Multiple active prompts for a testing session
+nexus prompt activate react-typescript-expert
+nexus prompt activate testing-qa-engineer
 
-# Flows are merged: React knowledge + Testing expertise
+# Prompts are merged: React knowledge + Testing expertise
 ```
 
 ### Priority Ordering
 
-When multiple flows are active, earlier flows take precedence for conflicts:
+When multiple prompts are active, earlier prompts take precedence for conflicts:
 
 ```bash
 # Priority 1 (highest)
-nexus flow activate react-typescript-expert --priority 1
+nexus prompt activate react-typescript-expert --priority 1
 
 # Priority 2
-nexus flow activate testing-qa-engineer --priority 2
+nexus prompt activate testing-qa-engineer --priority 2
 ```
 
 ## Writing Effective System Prompts
@@ -97,9 +97,9 @@ We use Zustand instead of Redux because:
 This context helps you make consistent recommendations.
 ```
 
-## Leveraging Flow Inheritance
+## Leveraging Prompt Inheritance
 
-### Create Reusable Base Flows
+### Create Reusable Base Prompts
 
 ```markdown
 # Base: typescript-strict
@@ -114,7 +114,7 @@ System Prompt:
 
 ### Override Only What Changes
 
-Child flows should add, not repeat:
+Child prompts should add, not repeat:
 
 ```markdown
 # Child: react-typescript (extends typescript-strict)
@@ -133,14 +133,14 @@ System Prompt:
 Add comments explaining the chain:
 
 ```markdown
-# Flow: react-testing
+# Prompt: react-testing
 
 # Extends: react-typescript -> typescript-strict
 
 # Purpose: React component testing with Vitest
 ```
 
-## Managing Flow Preferences
+## Managing Prompt Preferences
 
 ### Match Team Conventions
 
@@ -172,7 +172,7 @@ Create `.nexus/config.json` in your project root:
 
 ```json
 {
-  "defaultFlow": "my-project-flow",
+  "defaultPrompt": "my-project-prompt",
   "autoActivate": true
 }
 ```
@@ -186,44 +186,44 @@ my-monorepo/
 ├── .nexus/config.json          # Base config
 ├── packages/
 │   ├── frontend/
-│   │   └── .nexus/config.json  # Frontend-specific flow
+│   │   └── .nexus/config.json  # Frontend-specific prompt
 │   └── backend/
-│       └── .nexus/config.json  # Backend-specific flow
+│       └── .nexus/config.json  # Backend-specific prompt
 ```
 
 ## Memory Integration
 
-### Flow-Specific Learning
+### Prompt-Specific Learning
 
-When saving memories, associate them with flows:
+When saving memories, associate them with prompts:
 
 ```typescript
-// Memory is automatically tagged with active flows
+// Memory is automatically tagged with active prompts
 save -
   memory({
     title: "React Query caching pattern",
     content: "...",
-    // flowId is automatically added based on active flows
+    // promptId is automatically added based on active prompts
   });
 ```
 
-### Recall by Flow
+### Recall by Prompt
 
-Query memories in flow context:
+Query memories in prompt context:
 
 ```typescript
 recall -
   memories({
     query: "caching patterns",
-    // Automatically prioritizes memories from active flows
+    // Automatically prioritizes memories from active prompts
   });
 ```
 
 ## Performance Tips
 
-### Limit Active Flows
+### Limit Active Prompts
 
-Each active flow adds to context size. Aim for 2-3 active flows maximum.
+Each active prompt adds to context size. Aim for 2-3 active prompts maximum.
 
 ### Use Focused Libraries
 
@@ -238,18 +238,18 @@ Bad: react, vue, angular, svelte, solid... (everything)
 
 Keep prompts under 2000 tokens for optimal performance.
 
-## Troubleshooting Flows
+## Troubleshooting Prompts
 
 ### Unexpected Behavior
 
-1. Check active flows: `nexus flow active`
+1. Check active prompts: `nexus prompt active`
 2. Review merged configuration
 3. Verify priority order
 4. Check for conflicting instructions
 
 ### Prompt Not Taking Effect
 
-1. Ensure flow is activated
+1. Ensure prompt is activated
 2. Check inheritance chain
 3. Verify you're authenticated
 4. Try deactivating/reactivating
@@ -258,14 +258,14 @@ Keep prompts under 2000 tokens for optimal performance.
 
 If responses seem unfocused:
 
-1. Reduce number of active flows
+1. Reduce number of active prompts
 2. Trim system prompts
 3. Remove unnecessary libraries
-4. Use more specific flows
+4. Use more specific prompts
 
 ## Common Patterns
 
-### The "Project Onboarding" Flow
+### The "Project Onboarding" Prompt
 
 ```markdown
 # System Prompt
@@ -282,7 +282,7 @@ Key conventions:
 - [Project-specific rules here]
 ```
 
-### The "Code Review" Flow
+### The "Code Review" Prompt
 
 ```markdown
 # System Prompt
@@ -302,7 +302,7 @@ Output format:
 - Provide fix suggestions
 ```
 
-### The "Documentation" Flow
+### The "Documentation" Prompt
 
 ```markdown
 # System Prompt
@@ -324,6 +324,6 @@ Style:
 
 ## Next Steps
 
-- [Flow CLI Commands](./cli-commands) - Full CLI reference
-- [MCP Tools](./mcp-tools) - Programmatic flow management
-- [Creating Flows](./creating-flows) - Build custom flows
+- [Prompt CLI Commands](./cli-commands) - Full CLI reference
+- [MCP Tools](./mcp-tools) - Programmatic prompt management
+- [Creating Prompts](./creating-prompts) - Build custom prompts

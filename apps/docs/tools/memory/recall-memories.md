@@ -2,6 +2,18 @@
 
 Search for relevant memories using semantic search. Returns memories that match conceptually, not just by keywords.
 
+## Example Prompts
+
+> "What do you remember about our authentication setup?"
+
+> "Have we made any decisions about the database schema?"
+
+> "What lessons have we learned about error handling?"
+
+> "Recall any notes about the API design"
+
+> "What did we decide about state management?"
+
 ## Usage
 
 ```

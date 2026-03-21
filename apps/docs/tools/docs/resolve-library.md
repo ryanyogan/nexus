@@ -2,6 +2,16 @@
 
 Find library IDs for documentation queries by searching the library name.
 
+## Example Prompts
+
+You typically don't need to ask for this tool directly - it's called automatically when you ask documentation questions. But if you want to explore what's available:
+
+> "What documentation do you have indexed for TanStack?"
+
+> "Is Hono documentation available in Nexus?"
+
+> "Find the library ID for Drizzle ORM"
+
 ## Usage
 
 ```

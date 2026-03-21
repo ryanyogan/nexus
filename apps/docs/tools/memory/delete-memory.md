@@ -2,6 +2,14 @@
 
 Delete a memory permanently.
 
+## Example Prompts
+
+> "Delete the outdated authentication decision"
+
+> "Remove the memory about the old database setup"
+
+> "Clear the incorrect project context memory"
+
 ## Usage
 
 ```

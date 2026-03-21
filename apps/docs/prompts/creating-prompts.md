@@ -1,18 +1,18 @@
-# Creating Custom Flows
+# Creating Custom Prompts
 
-This guide walks you through creating your own custom flows in Nexus.
+This guide walks you through creating your own custom prompts in Nexus.
 
-## Flow Structure
+## Prompt Structure
 
-A flow consists of several components:
+A prompt consists of several components:
 
 ```typescript
-interface Flow {
+interface Prompt {
   name: string; // Display name
   slug: string; // URL-friendly identifier
-  description: string; // What this flow does
+  description: string; // What this prompt does
   systemPrompt: string; // AI instructions
-  parentFlowId?: string; // Optional parent to extend
+  parentPromptId?: string; // Optional parent to extend
   libraries: string[]; // Documentation to include
   skills: string[]; // Skills to enable
   mcpServers: string[]; // MCP servers to suggest
@@ -30,14 +30,14 @@ interface Flow {
 
 ## Creating via Dashboard
 
-1. Navigate to [Flows Dashboard](/dashboard/flows)
-2. Click "Create Flow"
+1. Navigate to [Prompts Dashboard](/dashboard/prompts)
+2. Click "Create Prompt"
 3. Fill in the form:
    - **Name**: Human-readable name
    - **Slug**: URL-safe identifier (auto-generated from name)
-   - **Description**: What the flow is for
+   - **Description**: What the prompt is for
    - **System Prompt**: Instructions for the AI
-   - **Parent Flow**: Optional flow to extend
+   - **Parent Prompt**: Optional prompt to extend
 4. Configure libraries, skills, and preferences
 5. Click "Create"
 
@@ -46,7 +46,7 @@ interface Flow {
 ### Interactive Mode
 
 ```bash
-nexus flow create --interactive
+nexus prompt create --interactive
 ```
 
 This guides you through each option with prompts.
@@ -54,7 +54,7 @@ This guides you through each option with prompts.
 ### Direct Creation
 
 ```bash
-nexus flow create \
+nexus prompt create \
   --name "React Testing Expert" \
   --slug "react-testing" \
   --description "Focused on React component and integration testing" \
@@ -106,14 +106,14 @@ You are an expert React and TypeScript developer with deep knowledge of:
 - Do not use `any` type; prefer `unknown` with type guards
 ```
 
-## Extending Existing Flows
+## Extending Existing Prompts
 
 ### Using Inheritance
 
-Extend a flow to add or override configuration:
+Extend a prompt to add or override configuration:
 
 ```bash
-nexus flow create \
+nexus prompt create \
   --name "React E2E Testing" \
   --parent react-testing \
   --libraries playwright \
@@ -166,14 +166,14 @@ base-developer (Level 0)
 
 ## Including Libraries
 
-Add documentation libraries to your flow:
+Add documentation libraries to your prompt:
 
 ```bash
 # Find available libraries
 nexus docs list
 
-# Add to flow
-nexus flow create \
+# Add to prompt
+nexus prompt create \
   --libraries react,typescript,tailwindcss,prisma
 ```
 
@@ -187,8 +187,8 @@ Add specialized skills:
 # Find available skills
 nexus skills list
 
-# Add to flow
-nexus flow create \
+# Add to prompt
+nexus prompt create \
   --skills code-review,security-audit,performance-optimization
 ```
 
@@ -196,7 +196,7 @@ nexus flow create \
 
 ### 1. Start Specific
 
-Create focused flows rather than trying to cover everything:
+Create focused prompts rather than trying to cover everything:
 
 ```
 Good: "React Form Validation Expert"
@@ -208,7 +208,7 @@ Bad: "Full-Stack Everything Expert"
 
 ### 2. Use Inheritance Wisely
 
-Build a hierarchy of flows:
+Build a hierarchy of prompts:
 
 ```
 frontend-base
@@ -219,39 +219,43 @@ frontend-base
       └── vue-composition
 ```
 
-### 3. Test Your Flows
+### 3. Test Your Prompts
 
-After creating a flow:
+After creating a prompt:
 
-1. Activate it: `nexus flow activate my-flow`
-2. Try various prompts
+1. Activate it: `nexus prompt activate my-prompt`
+2. Try various queries
 3. Verify the AI behavior matches expectations
 4. Refine the system prompt as needed
 
-### 4. Document Your Flows
+### 4. Document Your Prompts
 
 Add clear descriptions so others (or future you) understand:
 
 ```bash
-nexus flow create \
+nexus prompt create \
   --description "For greenfield React projects using TypeScript 5+,
                  React Query for data, and Tailwind for styling.
                  Assumes Vite as build tool."
 ```
 
-## Sharing Flows
+## Sharing Prompts
 
-Currently, flows are private to your account. Team sharing features are coming with the Pro tier.
+You can make prompts public for others to use:
 
-To share a flow configuration:
+1. Set `isPublic: true` when creating
+2. Others can search and fork your prompt
+3. Forked prompts can be customized
 
-1. Download the flow: `nexus flow download my-flow`
-2. Share the FLOW.md file
-3. Others can import or recreate the flow
+To share a prompt configuration:
+
+1. Download the prompt: `nexus prompt download my-prompt`
+2. Share the PROMPT.md file
+3. Others can import or recreate the prompt
 
 ## Troubleshooting
 
-### Flow Not Activating
+### Prompt Not Activating
 
 Check that you're authenticated:
 
@@ -261,10 +265,10 @@ nexus auth status
 
 ### Inheritance Not Working
 
-Verify parent flow exists:
+Verify parent prompt exists:
 
 ```bash
-nexus flow get parent-flow-slug
+nexus prompt get parent-prompt-slug
 ```
 
 ### System Prompt Too Long

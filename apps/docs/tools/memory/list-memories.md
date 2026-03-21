@@ -2,6 +2,16 @@
 
 Browse stored memories with filtering. Returns summaries without full content.
 
+## Example Prompts
+
+> "Show me all the memories for this project"
+
+> "List the architectural decisions we've saved"
+
+> "What memories do you have stored?"
+
+> "Show me recent session summaries"
+
 ## Usage
 
 ```

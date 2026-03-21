@@ -2,6 +2,16 @@
 
 Get detailed information about a specific MCP server including tools, resources, prompts, and documentation.
 
+## Example Prompts
+
+> "Tell me more about the PostgreSQL MCP server"
+
+> "What tools does the GitHub MCP server provide?"
+
+> "How does the filesystem MCP server work?"
+
+> "What can the Slack MCP server do?"
+
 ## Usage
 
 ```

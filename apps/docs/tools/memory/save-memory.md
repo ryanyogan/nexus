@@ -2,6 +2,18 @@
 
 Store a memory for later retrieval. Memories persist across sessions and can be searched semantically.
 
+## Example Prompts
+
+> "Remember that this project uses TypeScript strict mode and Tailwind CSS"
+
+> "Save this as a project decision: we're using Drizzle ORM because it has better TypeScript support than Prisma"
+
+> "Make a note that we should never use `any` types in this codebase"
+
+> "Remember this lesson: always add indexes for foreign keys in PostgreSQL"
+
+> "Save the current project context for my-saas project"
+
 ## Usage
 
 ```

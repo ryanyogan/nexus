@@ -2,6 +2,16 @@
 
 List all available indexed libraries. Optionally filter by category.
 
+## Example Prompts
+
+> "What documentation libraries are available?"
+
+> "Show me all the backend framework docs you have"
+
+> "List the database libraries with indexed documentation"
+
+> "What testing frameworks can you help me with?"
+
 ## Usage
 
 ```

@@ -1,64 +1,64 @@
-# Flow CLI Commands
+# Prompt CLI Commands
 
-The Nexus CLI provides comprehensive commands for managing flows.
+The Nexus CLI provides comprehensive commands for managing prompts.
 
-## nexus flow list
+## nexus prompt list
 
-List all available flows.
+List all available prompts.
 
 ```bash
-nexus flow list [options]
+nexus prompt list [options]
 ```
 
 ### Options
 
 | Option        | Description                  |
 | ------------- | ---------------------------- |
-| `--active`    | Only show active flows       |
-| `--installed` | Only show installed flows    |
-| `--starter`   | Only show starter pack flows |
+| `--active`    | Only show active prompts       |
+| `--installed` | Only show installed prompts    |
+| `--starter`   | Only show starter pack prompts |
 | `--json`      | Output as JSON               |
 
 ### Examples
 
 ```bash
-# List all flows
-nexus flow list
+# List all prompts
+nexus prompt list
 
-# List only active flows
-nexus flow list --active
+# List only active prompts
+nexus prompt list --active
 
 # List starter packs
-nexus flow list --starter
+nexus prompt list --starter
 
 # Get JSON output for scripting
-nexus flow list --json
+nexus prompt list --json
 ```
 
-## nexus flow get
+## nexus prompt get
 
-Get detailed information about a specific flow.
+Get detailed information about a specific prompt.
 
 ```bash
-nexus flow get <flow-id-or-slug>
+nexus prompt get <prompt-id-or-slug>
 ```
 
 ### Examples
 
 ```bash
-# Get flow by slug
-nexus flow get react-typescript-expert
+# Get prompt by slug
+nexus prompt get react-typescript-expert
 
-# Get flow by ID
-nexus flow get flw_abc123
+# Get prompt by ID
+nexus prompt get flw_abc123
 ```
 
-## nexus flow active
+## nexus prompt active
 
-Show currently active flows.
+Show currently active prompts.
 
 ```bash
-nexus flow active [options]
+nexus prompt active [options]
 ```
 
 ### Options
@@ -70,19 +70,19 @@ nexus flow active [options]
 ### Examples
 
 ```bash
-# Show active flows
-nexus flow active
+# Show active prompts
+nexus prompt active
 
 # Get JSON output
-nexus flow active --json
+nexus prompt active --json
 ```
 
-## nexus flow activate
+## nexus prompt activate
 
-Activate a flow.
+Activate a prompt.
 
 ```bash
-nexus flow activate <flow-id-or-slug> [options]
+nexus prompt activate <prompt-id-or-slug> [options]
 ```
 
 ### Options
@@ -94,37 +94,37 @@ nexus flow activate <flow-id-or-slug> [options]
 ### Examples
 
 ```bash
-# Activate a flow
-nexus flow activate react-typescript-expert
+# Activate a prompt
+nexus prompt activate react-typescript-expert
 
 # Activate with specific priority
-nexus flow activate testing-qa --priority 2
+nexus prompt activate testing-qa --priority 2
 ```
 
-## nexus flow deactivate
+## nexus prompt deactivate
 
-Deactivate a flow.
+Deactivate a prompt.
 
 ```bash
-nexus flow deactivate <flow-id-or-slug>
+nexus prompt deactivate <prompt-id-or-slug>
 ```
 
 ### Examples
 
 ```bash
-# Deactivate a specific flow
-nexus flow deactivate react-typescript-expert
+# Deactivate a specific prompt
+nexus prompt deactivate react-typescript-expert
 
-# Deactivate all flows
-nexus flow deactivate --all
+# Deactivate all prompts
+nexus prompt deactivate --all
 ```
 
-## nexus flow download
+## nexus prompt download
 
-Download a flow as a FLOW.md file.
+Download a prompt as a FLOW.md file.
 
 ```bash
-nexus flow download <flow-id-or-slug> [options]
+nexus prompt download <prompt-id-or-slug> [options]
 ```
 
 ### Options
@@ -132,38 +132,38 @@ nexus flow download <flow-id-or-slug> [options]
 | Option            | Description                          |
 | ----------------- | ------------------------------------ |
 | `--output <path>` | Output file path (default: FLOW.md)  |
-| `--resolve`       | Include resolved parent flow content |
+| `--resolve`       | Include resolved parent prompt content |
 
 ### Examples
 
 ```bash
 # Download to FLOW.md
-nexus flow download react-typescript-expert
+nexus prompt download react-typescript-expert
 
 # Download to specific file
-nexus flow download react-typescript-expert --output ./docs/react-flow.md
+nexus prompt download react-typescript-expert --output ./docs/react-prompt.md
 
 # Download with inheritance resolved
-nexus flow download my-custom-flow --resolve
+nexus prompt download my-custom-prompt --resolve
 ```
 
-## nexus flow create
+## nexus prompt create
 
-Create a new custom flow.
+Create a new custom prompt.
 
 ```bash
-nexus flow create [options]
+nexus prompt create [options]
 ```
 
 ### Options
 
 | Option                 | Description                          |
 | ---------------------- | ------------------------------------ |
-| `--name <name>`        | Flow name                            |
+| `--name <name>`        | Prompt name                            |
 | `--slug <slug>`        | URL-friendly slug                    |
-| `--description <desc>` | Flow description                     |
+| `--description <desc>` | Prompt description                     |
 | `--prompt <prompt>`    | System prompt                        |
-| `--parent <id>`        | Parent flow to extend                |
+| `--parent <id>`        | Parent prompt to extend                |
 | `--libraries <ids>`    | Comma-separated library IDs          |
 | `--skills <ids>`       | Comma-separated skill IDs            |
 | `--interactive`        | Interactive mode (prompts for input) |
@@ -172,12 +172,12 @@ nexus flow create [options]
 
 ```bash
 # Interactive creation
-nexus flow create --interactive
+nexus prompt create --interactive
 
 # Create with options
-nexus flow create \
-  --name "My React Flow" \
-  --slug "my-react-flow" \
+nexus prompt create \
+  --name "My React Prompt" \
+  --slug "my-react-prompt" \
   --description "Custom React setup" \
   --parent react-typescript-expert \
   --libraries react,typescript
@@ -188,7 +188,7 @@ nexus flow create \
 | Variable             | Description                |
 | -------------------- | -------------------------- |
 | `NEXUS_API_KEY`      | API key for authentication |
-| `NEXUS_DEFAULT_FLOW` | Default flow to activate   |
+| `NEXUS_DEFAULT_FLOW` | Default prompt to activate   |
 
 ## Exit Codes
 
@@ -197,5 +197,5 @@ nexus flow create \
 | 0    | Success                 |
 | 1    | General error           |
 | 2    | Authentication required |
-| 3    | Flow not found          |
+| 3    | Prompt not found          |
 | 4    | Permission denied       |

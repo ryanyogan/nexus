@@ -62,7 +62,7 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/getting-started/introduction" },
       { text: "Stacks", link: "/stacks/overview" },
-      { text: "Flows", link: "/flows/overview" },
+      { text: "Prompts", link: "/prompts/overview" },
       { text: "MCP Tools", link: "/tools/overview" },
       { text: "CLI", link: "/cli/overview" },
       { text: "API", link: "/api/overview" },
@@ -111,14 +111,14 @@ export default defineConfig({
           ],
         },
         {
-          text: "Flows",
+          text: "Prompts",
           collapsed: false,
           items: [
-            { text: "Overview", link: "/flows/overview" },
-            { text: "CLI Commands", link: "/flows/cli-commands" },
-            { text: "MCP Tools", link: "/flows/mcp-tools" },
-            { text: "Creating Flows", link: "/flows/creating-flows" },
-            { text: "Best Practices", link: "/flows/best-practices" },
+            { text: "Overview", link: "/prompts/overview" },
+            { text: "CLI Commands", link: "/prompts/cli-commands" },
+            { text: "MCP Tools", link: "/prompts/mcp-tools" },
+            { text: "Creating Prompts", link: "/prompts/creating-prompts" },
+            { text: "Best Practices", link: "/prompts/best-practices" },
           ],
         },
         {
@@ -169,7 +169,7 @@ export default defineConfig({
             { text: "nexus docs", link: "/cli/docs" },
             { text: "nexus servers", link: "/cli/servers" },
             { text: "nexus skills", link: "/cli/skills" },
-            { text: "nexus flow", link: "/cli/flow" },
+            { text: "nexus prompt", link: "/cli/prompt" },
             { text: "nexus serve", link: "/cli/serve" },
           ],
         },

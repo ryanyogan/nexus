@@ -1,71 +1,71 @@
-# nexus flow
+# nexus prompt
 
-Manage AI working environments (flows).
+Manage AI working environments (prompts).
 
 ## Usage
 
 ```bash
-nexus flow <command> [options]
+nexus prompt <command> [options]
 ```
 
 ## Commands
 
 ### list
 
-List available flows.
+List available prompts.
 
 ```bash
-nexus flow list [options]
+nexus prompt list [options]
 ```
 
 **Options:**
 
 | Option        | Description                  |
 | ------------- | ---------------------------- |
-| `--active`    | Only show active flows       |
-| `--installed` | Only show installed flows    |
-| `--starter`   | Only show starter pack flows |
+| `--active`    | Only show active prompts       |
+| `--installed` | Only show installed prompts    |
+| `--starter`   | Only show starter pack prompts |
 | `--json`      | Output as JSON               |
 
 **Examples:**
 
 ```bash
-# List all flows
-nexus flow list
+# List all prompts
+nexus prompt list
 
-# List active flows only
-nexus flow list --active
+# List active prompts only
+nexus prompt list --active
 
 # Get JSON for scripting
-nexus flow list --json
+nexus prompt list --json
 ```
 
 ### get
 
-Get details about a specific flow.
+Get details about a specific prompt.
 
 ```bash
-nexus flow get <flow-id>
+nexus prompt get <prompt-id>
 ```
 
 **Arguments:**
 
 | Argument  | Description     |
 | --------- | --------------- |
-| `flow-id` | Flow ID or slug |
+| `prompt-id` | Prompt ID or slug |
 
 **Examples:**
 
 ```bash
-nexus flow get react-typescript-expert
+nexus prompt get react-typescript-expert
 ```
 
 ### active
 
-Show currently active flows.
+Show currently active prompts.
 
 ```bash
-nexus flow active [options]
+nexus prompt active [options]
 ```
 
 **Options:**
@@ -76,17 +76,17 @@ nexus flow active [options]
 
 ### activate
 
-Activate a flow.
+Activate a prompt.
 
 ```bash
-nexus flow activate <flow-id> [options]
+nexus prompt activate <prompt-id> [options]
 ```
 
 **Arguments:**
 
 | Argument  | Description                 |
 | --------- | --------------------------- |
-| `flow-id` | Flow ID or slug to activate |
+| `prompt-id` | Prompt ID or slug to activate |
 
 **Options:**
 
@@ -97,47 +97,47 @@ nexus flow activate <flow-id> [options]
 **Examples:**
 
 ```bash
-# Activate a flow
-nexus flow activate react-typescript-expert
+# Activate a prompt
+nexus prompt activate react-typescript-expert
 
 # Activate with specific priority
-nexus flow activate testing-qa --priority 2
+nexus prompt activate testing-qa --priority 2
 ```
 
 ### deactivate
 
-Deactivate a flow.
+Deactivate a prompt.
 
 ```bash
-nexus flow deactivate <flow-id>
-nexus flow deactivate --all
+nexus prompt deactivate <prompt-id>
+nexus prompt deactivate --all
 ```
 
 **Arguments:**
 
 | Argument  | Description                   |
 | --------- | ----------------------------- |
-| `flow-id` | Flow ID or slug to deactivate |
+| `prompt-id` | Prompt ID or slug to deactivate |
 
 **Options:**
 
 | Option  | Description          |
 | ------- | -------------------- |
-| `--all` | Deactivate all flows |
+| `--all` | Deactivate all prompts |
 
 ### download
 
-Download a flow as FLOW.md.
+Download a prompt as FLOW.md.
 
 ```bash
-nexus flow download <flow-id> [options]
+nexus prompt download <prompt-id> [options]
 ```
 
 **Arguments:**
 
 | Argument  | Description                 |
 | --------- | --------------------------- |
-| `flow-id` | Flow ID or slug to download |
+| `prompt-id` | Prompt ID or slug to download |
 
 **Options:**
 
@@ -150,29 +150,29 @@ nexus flow download <flow-id> [options]
 
 ```bash
 # Download to FLOW.md
-nexus flow download react-typescript-expert
+nexus prompt download react-typescript-expert
 
 # Download to custom path
-nexus flow download my-flow --output ./docs/flow.md
+nexus prompt download my-prompt --output ./docs/prompt.md
 ```
 
 ### create
 
-Create a new custom flow.
+Create a new custom prompt.
 
 ```bash
-nexus flow create [options]
+nexus prompt create [options]
 ```
 
 **Options:**
 
 | Option                 | Description                 |
 | ---------------------- | --------------------------- |
-| `--name <name>`        | Flow name                   |
+| `--name <name>`        | Prompt name                   |
 | `--slug <slug>`        | URL-friendly slug           |
-| `--description <desc>` | Flow description            |
+| `--description <desc>` | Prompt description            |
 | `--prompt <prompt>`    | System prompt               |
-| `--parent <id>`        | Parent flow to extend       |
+| `--parent <id>`        | Parent prompt to extend       |
 | `--libraries <ids>`    | Comma-separated library IDs |
 | `--skills <ids>`       | Comma-separated skill IDs   |
 | `--interactive`        | Interactive mode            |
@@ -181,19 +181,19 @@ nexus flow create [options]
 
 ```bash
 # Interactive creation
-nexus flow create --interactive
+nexus prompt create --interactive
 
 # Direct creation
-nexus flow create \
-  --name "My Flow" \
-  --slug "my-flow" \
-  --description "Custom flow" \
+nexus prompt create \
+  --name "My Prompt" \
+  --slug "my-prompt" \
+  --description "Custom prompt" \
   --parent react-typescript-expert
 ```
 
-## Starter Pack Flows
+## Starter Pack Prompts
 
-Nexus includes these pre-configured flows:
+Nexus includes these pre-configured prompts:
 
 | Slug                      | Description                   |
 | ------------------------- | ----------------------------- |
@@ -206,6 +206,6 @@ Nexus includes these pre-configured flows:
 
 ## See Also
 
-- [Flows Overview](/flows/overview)
-- [Creating Flows](/flows/creating-flows)
-- [Flow MCP Tools](/flows/mcp-tools)
+- [Prompts Overview](/prompts/overview)
+- [Creating Prompts](/prompts/creating-prompts)
+- [Prompt MCP Tools](/prompts/mcp-tools)
