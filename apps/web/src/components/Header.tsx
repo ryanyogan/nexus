@@ -36,7 +36,10 @@ export default function Header({ session }: HeaderProps) {
   // IMPORTANT: Use 'nexus-theme' key to match __root.tsx initialization script
   useEffect(() => {
     const stored = localStorage.getItem("nexus-theme");
-    if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    if (
+      stored === "dark" ||
+      (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
       setIsDark(true);
       document.documentElement.classList.add("dark");
     } else if (stored === "light") {
@@ -62,10 +65,7 @@ export default function Header({ session }: HeaderProps) {
   // Close user menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target as Node)
-      ) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
     }
@@ -105,20 +105,15 @@ export default function Header({ session }: HeaderProps) {
             INSTALL
           </a>
           <span className="text-border">|</span>
-          <Link
-            to="/plans"
-            className="px-3 py-2 hover:bg-muted transition-colors"
-          >
+          <Link to="/plans" className="px-3 py-2 hover:bg-muted transition-colors">
             PLANS
           </Link>
           <span className="text-border">|</span>
-          
+
           {/* More Dropdown */}
           <div className="group relative">
-            <button className="px-3 py-2 hover:bg-muted transition-colors">
-              MORE...
-            </button>
-            
+            <button className="px-3 py-2 hover:bg-muted transition-colors">MORE...</button>
+
             <div className="pointer-events-none invisible absolute right-0 top-full z-50 w-56 opacity-0 transition-all duration-150 group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100">
               <div className="mt-1 border border-border bg-background shadow-sm">
                 {/* Links */}
@@ -135,7 +130,9 @@ export default function Header({ session }: HeaderProps) {
                   to="/"
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider">LIBRARIES</span>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                    LIBRARIES
+                  </span>
                   <BookOpen className="h-4 w-4" />
                 </Link>
                 <Link
@@ -143,7 +140,9 @@ export default function Header({ session }: HeaderProps) {
                   search={{ filter: "servers" }}
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider">MCP SERVERS</span>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                    MCP SERVERS
+                  </span>
                   <Server className="h-4 w-4" />
                 </Link>
                 <Link
@@ -151,28 +150,36 @@ export default function Header({ session }: HeaderProps) {
                   search={{ filter: "skills" }}
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider">SKILLS</span>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                    SKILLS
+                  </span>
                   <Zap className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/dashboard/stacks"
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider">STACKS</span>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                    STACKS
+                  </span>
                   <Layers className="h-4 w-4" />
                 </Link>
                 <Link
-                  to="/dashboard/flows"
+                  to="/dashboard/prompts"
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted border-b border-border transition-colors"
                 >
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider">FLOWS</span>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                    PROMPTS
+                  </span>
                   <Zap className="h-4 w-4" />
                 </Link>
                 <div className="flex items-center justify-between px-4 py-3 text-muted-foreground cursor-not-allowed border-b border-border">
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider">MEMORY</span>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                    MEMORY
+                  </span>
                   <Database className="h-4 w-4" />
                 </div>
-                
+
                 {/* Dark mode toggle */}
                 <button
                   onClick={toggleDarkMode}
@@ -183,14 +190,16 @@ export default function Header({ session }: HeaderProps) {
                   </span>
                   {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </button>
-                
+
                 {/* CTA */}
                 {isSignedIn ? (
                   <Link
                     to="/dashboard/keys"
                     className="flex items-center justify-between px-4 py-3 bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
                   >
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider">CREATE API KEY</span>
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                      CREATE API KEY
+                    </span>
                     <Plus className="h-4 w-4" />
                   </Link>
                 ) : (
@@ -198,16 +207,18 @@ export default function Header({ session }: HeaderProps) {
                     href="/sign-in"
                     className="flex items-center justify-between px-4 py-3 bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
                   >
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider">SIGN IN</span>
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                      SIGN IN
+                    </span>
                     <ArrowUpRight className="h-4 w-4" />
                   </a>
                 )}
               </div>
             </div>
           </div>
-          
+
           <span className="text-border">|</span>
-          
+
           {/* Submit CTA */}
           <Link
             to="/submit"
@@ -354,11 +365,11 @@ export default function Header({ session }: HeaderProps) {
                 STACKS
               </Link>
               <Link
-                to="/dashboard/flows"
+                to="/dashboard/prompts"
                 className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                FLOWS
+                PROMPTS
               </Link>
             </div>
             <button

@@ -7,12 +7,7 @@ import type { McpServer, ServerConfig } from "@nexus/sdk";
 /**
  * Supported editor identifiers
  */
-export type EditorType =
-  | "claude-code"
-  | "cursor"
-  | "vscode"
-  | "opencode"
-  | "zed";
+export type EditorType = "claude-code" | "cursor" | "vscode" | "opencode" | "zed";
 
 /**
  * Result of checking if an MCP server is installed

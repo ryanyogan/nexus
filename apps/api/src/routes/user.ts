@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import { eq, and, desc, sql, count } from "drizzle-orm";
-import { 
-  apiTokens, 
-  subscriptions, 
-  userSkills, 
-  skills, 
+import {
+  apiTokens,
+  subscriptions,
+  userSkills,
+  skills,
   userSecrets,
   memories,
   userPreferences,
+  users,
 } from "@nexus/db";
 import { createAuth } from "@nexus/auth";
 import type { AppContext, AuthUser, ResponseFormat } from "../types";
@@ -87,31 +88,38 @@ userRouter.get("/stats", async (c) => {
     .from(userSecrets)
     .where(and(eq(userSecrets.userId, user.id), eq(userSecrets.isActive, true)));
 
-  // Plan limits
+  // Get MCP query count from users table
+  const [userData] = await db
+    .select({ mcpQueryCount: users.mcpQueryCount })
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+
+  const mcpQueriesUsed = userData?.mcpQueryCount || 0;
+
+  // Plan limits (mcpQueries = MCP tool calls per month)
   const limits = {
-    free: { apiCalls: 2000, apiKeys: 1, memories: 5 },
-    pro: { apiCalls: null, apiKeys: 10, memories: null },
-    team: { apiCalls: null, apiKeys: 100, memories: null },
+    free: { mcpQueries: 2000, apiKeys: 1, memories: 5 },
+    pro: { mcpQueries: null, apiKeys: 10, memories: null },
+    team: { mcpQueries: null, apiKeys: 100, memories: null },
   };
 
   const planLimits = limits[plan as keyof typeof limits] || limits.free;
 
-  // TODO: Get actual API call usage from Analytics Engine
-  // For now, return mock data
-  const apiCallsUsed = 0;
-
   return c.json({
     plan,
-    subscription: subscription ? {
-      status: subscription.status,
-      currentPeriodEnd: subscription.currentPeriodEnd,
-      cancelAtPeriodEnd,
-    } : null,
-    apiCalls: {
-      used: apiCallsUsed,
-      limit: planLimits.apiCalls,
-      percentUsed: planLimits.apiCalls 
-        ? Math.round((apiCallsUsed / planLimits.apiCalls) * 100) 
+    subscription: subscription
+      ? {
+          status: subscription.status,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          cancelAtPeriodEnd,
+        }
+      : null,
+    mcpQueries: {
+      used: mcpQueriesUsed,
+      limit: planLimits.mcpQueries,
+      percentUsed: planLimits.mcpQueries
+        ? Math.round((mcpQueriesUsed / planLimits.mcpQueries) * 100)
         : 0,
     },
     apiKeys: {
@@ -186,22 +194,27 @@ userRouter.post("/tokens", async (c) => {
     .where(and(eq(apiTokens.userId, user.id), eq(apiTokens.isActive, true)));
 
   if ((existingCount?.count || 0) >= keyLimit) {
-    return c.json({ 
-      error: `API key limit reached. ${plan === "free" ? "Upgrade to Pro for more keys." : ""}`
-    }, 403);
+    return c.json(
+      {
+        error: `API key limit reached. ${plan === "free" ? "Upgrade to Pro for more keys." : ""}`,
+      },
+      403
+    );
   }
 
   // Generate token
   const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
-  const token = `nxs_${Array.from(tokenBytes).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+  const token = `nxs_${Array.from(tokenBytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")}`;
   const tokenPrefix = token.slice(0, 12);
 
   // Hash the token for storage
   const encoder = new TextEncoder();
   const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(token));
   const tokenHash = Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -219,16 +232,19 @@ userRouter.post("/tokens", async (c) => {
   });
 
   // Return the full token ONCE - it cannot be retrieved again
-  return c.json({ 
-    token,
-    tokenInfo: {
-      id,
-      name,
-      tokenPrefix,
-      scopes,
-      createdAt: now,
-    }
-  }, 201);
+  return c.json(
+    {
+      token,
+      tokenInfo: {
+        id,
+        name,
+        tokenPrefix,
+        scopes,
+        createdAt: now,
+      },
+    },
+    201
+  );
 });
 
 userRouter.delete("/tokens/:id", async (c) => {
@@ -277,7 +293,7 @@ userRouter.get("/skills", async (c) => {
     .orderBy(desc(userSkills.installedAt));
 
   // Calculate usage count (we'll track this differently in a real implementation)
-  const skillsWithUsage = installedSkills.map(s => ({
+  const skillsWithUsage = installedSkills.map((s) => ({
     ...s,
     usageCount: 0, // TODO: Track actual usage
   }));
@@ -291,10 +307,7 @@ userRouter.post("/skills/:skillId/install", async (c) => {
   const { skillId } = c.req.param();
 
   // Check if skill exists
-  const [skill] = await db
-    .select()
-    .from(skills)
-    .where(eq(skills.id, skillId));
+  const [skill] = await db.select().from(skills).where(eq(skills.id, skillId));
 
   if (!skill) {
     return c.json({ error: "Skill not found" }, 404);
@@ -348,7 +361,9 @@ userRouter.post("/skills/:skillId/uninstall", async (c) => {
   // Decrement install count
   await db
     .update(skills)
-    .set({ installCount: sql`CASE WHEN ${skills.installCount} > 0 THEN ${skills.installCount} - 1 ELSE 0 END` })
+    .set({
+      installCount: sql`CASE WHEN ${skills.installCount} > 0 THEN ${skills.installCount} - 1 ELSE 0 END`,
+    })
     .where(eq(skills.id, skillId));
 
   return c.json({ success: true });
@@ -439,7 +454,7 @@ userRouter.put("/preferences", async (c) => {
   const user = c.get("user") as AuthUser;
 
   const body = await c.req.json();
-  
+
   // Validate response format
   if (body.defaultResponseFormat && !VALID_RESPONSE_FORMATS.includes(body.defaultResponseFormat)) {
     return c.json({ error: "Invalid response format" }, 400);
@@ -474,10 +489,7 @@ userRouter.put("/preferences", async (c) => {
 
   if (existing) {
     // Update existing preferences
-    await db
-      .update(userPreferences)
-      .set(prefsData)
-      .where(eq(userPreferences.userId, user.id));
+    await db.update(userPreferences).set(prefsData).where(eq(userPreferences.userId, user.id));
   } else {
     // Create new preferences
     await db.insert(userPreferences).values({

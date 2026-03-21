@@ -13,6 +13,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "serverId": "postgres"
@@ -20,6 +21,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "id": "postgres",
@@ -31,9 +33,7 @@ Parameters:
     { "name": "query", "description": "Execute SQL queries" },
     { "name": "list_tables", "description": "List database tables" }
   ],
-  "resources": [
-    { "name": "schema", "description": "Database schema" }
-  ],
+  "resources": [{ "name": "schema", "description": "Database schema" }],
   "documentation": "https://github.com/modelcontextprotocol/servers/tree/main/postgres",
   "installCommand": "npx -y @modelcontextprotocol/server-postgres"
 }
@@ -41,9 +41,9 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `serverId` | string | Yes | Server ID from discover-servers |
+| Parameter  | Type   | Required | Description                     |
+| ---------- | ------ | -------- | ------------------------------- |
+| `serverId` | string | Yes      | Server ID from discover-servers |
 
 ## Returns
 

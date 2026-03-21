@@ -336,25 +336,19 @@ function StatsPage() {
             <p className="mt-4 font-mono text-2xl font-bold text-foreground">
               {Math.floor(stats.usage.totalQueries / 100)}+
             </p>
-            <p className="mt-1 font-mono text-xs uppercase text-muted-foreground">
-              Active Users
-            </p>
+            <p className="mt-1 font-mono text-xs uppercase text-muted-foreground">Active Users</p>
           </div>
           <div className="border border-border bg-background p-6 text-center">
             <Database className="mx-auto h-6 w-6 text-accent" />
             <p className="mt-4 font-mono text-2xl font-bold text-foreground">
               {(stats.documentation.totalTokens / 1_000_000_000).toFixed(2)}B
             </p>
-            <p className="mt-1 font-mono text-xs uppercase text-muted-foreground">
-              Tokens Indexed
-            </p>
+            <p className="mt-1 font-mono text-xs uppercase text-muted-foreground">Tokens Indexed</p>
           </div>
           <div className="border border-border bg-background p-6 text-center">
             <Activity className="mx-auto h-6 w-6 text-accent" />
             <p className="mt-4 font-mono text-2xl font-bold text-foreground">99.9%</p>
-            <p className="mt-1 font-mono text-xs uppercase text-muted-foreground">
-              Uptime
-            </p>
+            <p className="mt-1 font-mono text-xs uppercase text-muted-foreground">Uptime</p>
           </div>
         </div>
 
@@ -388,9 +382,7 @@ function StatCard({ icon, label, value, subtext }: StatCardProps) {
       </div>
       <p className="mt-4 font-mono text-2xl font-bold text-foreground">{value}</p>
       <p className="mt-1 font-mono text-xs uppercase text-muted-foreground">{label}</p>
-      {subtext && (
-        <p className="mt-2 font-mono text-[10px] text-muted-foreground/70">{subtext}</p>
-      )}
+      {subtext && <p className="mt-2 font-mono text-[10px] text-muted-foreground/70">{subtext}</p>}
     </div>
   );
 }

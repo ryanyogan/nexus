@@ -48,7 +48,7 @@ function SubmitServerPage() {
   // Auto-generate name from repository URL
   useEffect(() => {
     if (repositoryUrl && !name) {
-      const match = repositoryUrl.match(/github\.com\/[^\/]+\/([^\/]+)/);
+      const match = repositoryUrl.match(/github\.com\/[^/]+\/([^/]+)/);
       if (match) {
         setName(match[1].replace(/^server-|^mcp-server-|-mcp$|-server$/g, "").toLowerCase());
       }
@@ -80,7 +80,7 @@ function SubmitServerPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { message?: string; error?: string };
+        const errorData = (await response.json()) as { message?: string; error?: string };
         throw new Error(errorData.message || errorData.error || "Failed to submit server");
       }
 
@@ -113,8 +113,8 @@ function SubmitServerPage() {
           </div>
           <h1 className="mb-2 text-2xl font-bold text-foreground">Server Submission Received!</h1>
           <p className="mb-6 text-muted-foreground">
-            We'll review your MCP server submission and add it to the registry if it meets our criteria.
-            You'll receive an email notification when it's processed.
+            We'll review your MCP server submission and add it to the registry if it meets our
+            criteria. You'll receive an email notification when it's processed.
           </p>
           <div className="flex justify-center gap-4">
             <Link
@@ -175,9 +175,7 @@ function SubmitServerPage() {
                 className="h-11 w-full rounded-lg border border-border bg-background pl-10 pr-4 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              GitHub, GitLab, or npm package URL
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">GitHub, GitLab, or npm package URL</p>
           </div>
 
           {/* Server Name */}
@@ -200,9 +198,7 @@ function SubmitServerPage() {
 
           {/* Display Name */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-foreground">
-              Display Name
-            </label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Display Name</label>
             <input
               type="text"
               value={displayName}
@@ -210,16 +206,12 @@ function SubmitServerPage() {
               placeholder="My Awesome Server"
               className="h-11 w-full rounded-lg border border-border bg-background px-4 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Human-readable name (optional)
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">Human-readable name (optional)</p>
           </div>
 
           {/* Description */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-foreground">
-              Description
-            </label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -231,9 +223,7 @@ function SubmitServerPage() {
 
           {/* Package Name */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-foreground">
-              Package Name
-            </label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Package Name</label>
             <div className="relative">
               <Package className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -251,9 +241,7 @@ function SubmitServerPage() {
 
           {/* Package Type */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-foreground">
-              Package Type
-            </label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Package Type</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {PACKAGE_TYPES.map((type) => (
                 <button
@@ -275,9 +263,7 @@ function SubmitServerPage() {
 
           {/* Transport Type */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-foreground">
-              Transport Type
-            </label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Transport Type</label>
             <div className="grid grid-cols-3 gap-2">
               {TRANSPORT_TYPES.map((type) => (
                 <button
@@ -291,10 +277,14 @@ function SubmitServerPage() {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Plug className={`h-4 w-4 ${transportType === type.id ? "text-primary" : "text-muted-foreground"}`} />
+                    <Plug
+                      className={`h-4 w-4 ${transportType === type.id ? "text-primary" : "text-muted-foreground"}`}
+                    />
                     <span className="text-sm font-medium text-foreground">{type.label}</span>
                   </div>
-                  <span className="mt-1 block text-xs text-muted-foreground">{type.description}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    {type.description}
+                  </span>
                 </button>
               ))}
             </div>

@@ -10,11 +10,11 @@ List all available flows with optional filtering.
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `activeOnly` | boolean | Only return active flows |
-| `installedOnly` | boolean | Only return installed flows |
-| `starterOnly` | boolean | Only return starter pack flows |
+| Parameter       | Type    | Description                    |
+| --------------- | ------- | ------------------------------ |
+| `activeOnly`    | boolean | Only return active flows       |
+| `installedOnly` | boolean | Only return installed flows    |
+| `starterOnly`   | boolean | Only return starter pack flows |
 
 **Example:**
 
@@ -34,10 +34,10 @@ Get detailed information about a specific flow.
 
 **Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `flowId` | string | Yes | Flow ID or slug |
-| `resolve` | boolean | No | Resolve inheritance chain |
+| Parameter | Type    | Required | Description               |
+| --------- | ------- | -------- | ------------------------- |
+| `flowId`  | string  | Yes      | Flow ID or slug           |
+| `resolve` | boolean | No       | Resolve inheritance chain |
 
 **Example:**
 
@@ -65,10 +65,10 @@ Activate a flow for the current user.
 
 **Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `flowId` | string | Yes | Flow ID or slug |
-| `priority` | number | No | Priority order (lower = higher priority) |
+| Parameter  | Type   | Required | Description                              |
+| ---------- | ------ | -------- | ---------------------------------------- |
+| `flowId`   | string | Yes      | Flow ID or slug                          |
+| `priority` | number | No       | Priority order (lower = higher priority) |
 
 **Example:**
 
@@ -88,12 +88,12 @@ Deactivate a specific flow or all flows.
 
 **Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `flowId` | string | No* | Flow ID or slug to deactivate |
-| `all` | boolean | No* | Deactivate all flows |
+| Parameter | Type    | Required | Description                   |
+| --------- | ------- | -------- | ----------------------------- |
+| `flowId`  | string  | No\*     | Flow ID or slug to deactivate |
+| `all`     | boolean | No\*     | Deactivate all flows          |
 
-*One of `flowId` or `all` is required.
+\*One of `flowId` or `all` is required.
 
 **Example:**
 
@@ -112,10 +112,10 @@ Download a flow as markdown content.
 
 **Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `flowId` | string | Yes | Flow ID or slug |
-| `resolve` | boolean | No | Include resolved parent content |
+| Parameter | Type    | Required | Description                     |
+| --------- | ------- | -------- | ------------------------------- |
+| `flowId`  | string  | Yes      | Flow ID or slug                 |
+| `resolve` | boolean | No       | Include resolved parent content |
 
 **Returns:** Markdown content of the flow suitable for FLOW.md files.
 
@@ -125,12 +125,12 @@ Get AI-powered flow suggestions based on project context.
 
 **Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `projectPath` | string | No | Path to analyze |
-| `dependencies` | string[] | No | Package dependencies |
-| `files` | string[] | No | File patterns in project |
-| `description` | string | No | Project description |
+| Parameter      | Type     | Required | Description              |
+| -------------- | -------- | -------- | ------------------------ |
+| `projectPath`  | string   | No       | Path to analyze          |
+| `dependencies` | string[] | No       | Package dependencies     |
+| `files`        | string[] | No       | File patterns in project |
+| `description`  | string   | No       | Project description      |
 
 **Example:**
 
@@ -152,16 +152,16 @@ Create a new custom flow.
 
 **Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | Yes | Flow name |
-| `slug` | string | Yes | URL-friendly slug |
-| `description` | string | No | Flow description |
-| `systemPrompt` | string | Yes | System prompt content |
-| `parentFlowId` | string | No | Parent flow to extend |
-| `libraries` | string[] | No | Library IDs to include |
-| `skills` | string[] | No | Skill IDs to include |
-| `preferences` | object | No | Response preferences |
+| Parameter      | Type     | Required | Description            |
+| -------------- | -------- | -------- | ---------------------- |
+| `name`         | string   | Yes      | Flow name              |
+| `slug`         | string   | Yes      | URL-friendly slug      |
+| `description`  | string   | No       | Flow description       |
+| `systemPrompt` | string   | Yes      | System prompt content  |
+| `parentFlowId` | string   | No       | Parent flow to extend  |
+| `libraries`    | string[] | No       | Library IDs to include |
+| `skills`       | string[] | No       | Skill IDs to include   |
+| `preferences`  | object   | No       | Response preferences   |
 
 **Example:**
 
@@ -217,10 +217,10 @@ When saving memories while flows are active:
 
 All tools return standardized errors:
 
-| Error | Code | Description |
-|-------|------|-------------|
-| `FlowNotFound` | 404 | Flow ID or slug doesn't exist |
-| `NotAuthenticated` | 401 | API key required |
-| `FlowAlreadyActive` | 409 | Flow is already activated |
-| `MaxDepthExceeded` | 400 | Inheritance chain too deep |
-| `PermissionDenied` | 403 | Cannot modify this flow |
+| Error               | Code | Description                   |
+| ------------------- | ---- | ----------------------------- |
+| `FlowNotFound`      | 404  | Flow ID or slug doesn't exist |
+| `NotAuthenticated`  | 401  | API key required              |
+| `FlowAlreadyActive` | 409  | Flow is already activated     |
+| `MaxDepthExceeded`  | 400  | Inheritance chain too deep    |
+| `PermissionDenied`  | 403  | Cannot modify this flow       |

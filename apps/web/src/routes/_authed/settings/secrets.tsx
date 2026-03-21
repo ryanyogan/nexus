@@ -74,7 +74,7 @@ function SecretsPage() {
     try {
       const res = await authFetch("/api/secrets");
       if (!res.ok) throw new Error("Failed to fetch secrets");
-      const data = await res.json() as { secrets: UserSecret[] };
+      const data = (await res.json()) as { secrets: UserSecret[] };
       setSecrets(data.secrets);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch secrets");
@@ -87,7 +87,7 @@ function SecretsPage() {
     try {
       const res = await authFetch(`/api/secrets/${id}?decrypt=true`);
       if (!res.ok) throw new Error("Failed to reveal secret");
-      const data = await res.json() as { secret: { value: string } };
+      const data = (await res.json()) as { secret: { value: string } };
       setRevealedSecrets((prev) => ({ ...prev, [id]: data.secret.value }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to reveal secret");
@@ -154,9 +154,7 @@ function SecretsPage() {
         <div className="flex items-start gap-3">
           <Shield className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
           <div>
-            <h3 className="font-medium text-blue-900 dark:text-blue-100">
-              End-to-End Encryption
-            </h3>
+            <h3 className="font-medium text-blue-900 dark:text-blue-100">End-to-End Encryption</h3>
             <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
               Your secrets are encrypted with AES-256-GCM before storage. Only you can decrypt them.
             </p>
@@ -178,9 +176,7 @@ function SecretsPage() {
         <div className="rounded-lg border border-dashed border-border p-12 text-center">
           <Key className="mx-auto h-12 w-12 text-muted-foreground" />
           <h3 className="mt-4 text-lg font-medium text-foreground">No secrets yet</h3>
-          <p className="mt-1 text-muted-foreground">
-            Add your first API key to get started
-          </p>
+          <p className="mt-1 text-muted-foreground">Add your first API key to get started</p>
           <button
             onClick={() => setShowAddModal(true)}
             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
@@ -192,10 +188,7 @@ function SecretsPage() {
       ) : (
         <div className="space-y-4">
           {secrets.map((secret) => (
-            <div
-              key={secret.id}
-              className="rounded-lg border border-border bg-card p-4"
-            >
+            <div key={secret.id} className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -216,17 +209,13 @@ function SecretsPage() {
                       )}
                     </div>
                     {secret.description && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">
-                        {secret.description}
-                      </p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{secret.description}</p>
                     )}
                     <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="font-mono">{secret.keyPrefix}</span>
                       <span>Used {secret.usageCount} times</span>
                       {secret.lastUsedAt && (
-                        <span>
-                          Last used {new Date(secret.lastUsedAt).toLocaleDateString()}
-                        </span>
+                        <span>Last used {new Date(secret.lastUsedAt).toLocaleDateString()}</span>
                       )}
                     </div>
                   </div>
@@ -303,13 +292,7 @@ function SecretsPage() {
 // Add Secret Modal
 // ============================================================================
 
-function AddSecretModal({
-  onClose,
-  onSuccess,
-}: {
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
+function AddSecretModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const [name, setName] = useState("");
   const [provider, setProvider] = useState<SecretProvider>("openai");
   const [value, setValue] = useState("");
@@ -329,7 +312,7 @@ function AddSecretModal({
       });
 
       if (!res.ok) {
-        const data = await res.json() as { error?: string };
+        const data = (await res.json()) as { error?: string };
         throw new Error(data.error || "Failed to add secret");
       }
 
@@ -351,9 +334,7 @@ function AddSecretModal({
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground">
-              Name
-            </label>
+            <label className="block text-sm font-medium text-foreground">Name</label>
             <input
               type="text"
               value={name}
@@ -365,9 +346,7 @@ function AddSecretModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground">
-              Provider
-            </label>
+            <label className="block text-sm font-medium text-foreground">Provider</label>
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value as SecretProvider)}
@@ -382,9 +361,7 @@ function AddSecretModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground">
-              API Key / Secret
-            </label>
+            <label className="block text-sm font-medium text-foreground">API Key / Secret</label>
             <input
               type="password"
               value={value}
@@ -427,9 +404,7 @@ function AddSecretModal({
               disabled={loading}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading && (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              )}
+              {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
               Add Secret
             </button>
           </div>

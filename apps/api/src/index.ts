@@ -12,7 +12,7 @@ import { analyzeRouter } from "./routes/analyze";
 import { serversRouter } from "./routes/servers";
 import { secretsRouter } from "./routes/secrets";
 import { skillsRouter } from "./routes/skills";
-import flowsRouter from "./routes/flows";
+import promptsRouter from "./routes/prompts";
 import brainRouter from "./routes/brain";
 import reposRouter from "./routes/repos";
 import stacksRouter from "./routes/stacks";
@@ -31,11 +31,7 @@ app.use("*", structuredLogger);
 app.use(
   "*",
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://nexus.yogan.dev",
-      "https://code.nexus.yogan.dev",
-    ],
+    origin: ["http://localhost:3000", "https://nexus.yogan.dev", "https://code.nexus.yogan.dev"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "X-Admin-Key"],
     credentials: true,
@@ -69,7 +65,7 @@ app.use("/api/skills/*", usageMiddleware);
 app.route("/api/libraries", librariesRouter);
 app.route("/api/servers", serversRouter);
 app.route("/api/skills", skillsRouter);
-app.route("/api/flows", flowsRouter);
+app.route("/api/prompts", promptsRouter);
 app.route("/api/stacks", stacksRouter);
 app.route("/api/submissions", submissionsRouter);
 app.route("/api/server-submissions", serverSubmissionsRouter);
@@ -104,13 +100,13 @@ app.use("/sse", mcpRateLimitMiddleware);
 app.post("/sse", async (c) => {
   // Import the MCP handler logic
   const { handleMCPRequestWithContext } = await import("./routes/mcp");
-  
+
   const body = await c.req.json();
   const response = await handleMCPRequestWithContext(body, c);
-  
+
   // Wrap response in SSE format
   const sseResponse = `event: message\ndata: ${JSON.stringify(response.body)}\n\n`;
-  
+
   const headers: Record<string, string> = {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
@@ -118,12 +114,12 @@ app.post("/sse", async (c) => {
     "Access-Control-Allow-Headers": "Content-Type, Authorization, NEXUS_API_KEY, Mcp-Session-Id",
     "Access-Control-Expose-Headers": "Mcp-Session-Id",
   };
-  
+
   if (response.sessionId) {
     headers["Mcp-Session-Id"] = response.sessionId;
   }
-  
-  return new Response(sseResponse, { 
+
+  return new Response(sseResponse, {
     headers,
     status: response.status,
   });
@@ -133,7 +129,7 @@ app.post("/sse", async (c) => {
 app.get("/sse", async (c) => {
   // Generate a unique session ID for this SSE connection
   const sessionId = crypto.randomUUID();
-  
+
   // Create SSE response with MCP endpoint event
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -141,15 +137,15 @@ app.get("/sse", async (c) => {
       // Send the endpoint event - tells client where to POST requests
       const endpointEvent = `event: endpoint\ndata: /mcp?sessionId=${sessionId}\n\n`;
       controller.enqueue(encoder.encode(endpointEvent));
-      
+
       // Send initial message event
       const messageEvent = `event: message\ndata: ${JSON.stringify({
         jsonrpc: "2.0",
         method: "notifications/initialized",
-        params: {}
+        params: {},
       })}\n\n`;
       controller.enqueue(encoder.encode(messageEvent));
-      
+
       // Keep connection alive with periodic pings
       const pingInterval = setInterval(() => {
         try {
@@ -158,17 +154,17 @@ app.get("/sse", async (c) => {
           clearInterval(pingInterval);
         }
       }, 30000);
-      
+
       // Clean up on close - but we can't easily detect close in Cloudflare Workers
       // The client will reconnect if needed
-    }
+    },
   });
-  
+
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, NEXUS_API_KEY",
     },
@@ -194,11 +190,7 @@ export default {
   fetch: app.fetch,
 
   // Scheduled handler for cron triggers
-  async scheduled(
-    event: ScheduledEvent,
-    env: Env,
-    ctx: ExecutionContext
-  ): Promise<void> {
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     switch (event.cron) {
       case "0 2 * * 0": {
         // Weekly Context7 sync - runs every Sunday at 2am UTC
@@ -209,20 +201,22 @@ export default {
 
         try {
           const { syncAllLibraries } = await import("./services/context7-sync");
-          
+
           // Use waitUntil to ensure the sync completes even after response
           ctx.waitUntil(
-            syncAllLibraries(env, "cron").then((result) => {
-              logger.info("Weekly Context7 sync completed", {
-                jobId: result.jobId,
-                status: result.status,
-                successful: result.successfulItems,
-                failed: result.failedItems,
-                durationMs: result.durationMs,
-              });
-            }).catch((error) => {
-              logger.error("Weekly Context7 sync failed", {}, error as Error);
-            })
+            syncAllLibraries(env, "cron")
+              .then((result) => {
+                logger.info("Weekly Context7 sync completed", {
+                  jobId: result.jobId,
+                  status: result.status,
+                  successful: result.successfulItems,
+                  failed: result.failedItems,
+                  durationMs: result.durationMs,
+                });
+              })
+              .catch((error) => {
+                logger.error("Weekly Context7 sync failed", {}, error as Error);
+              })
           );
         } catch (error) {
           logger.error("Failed to start Context7 sync", {}, error as Error);
@@ -261,7 +255,10 @@ async function processIngestionBatch(
 ): Promise<void> {
   for (const message of batch.messages) {
     const job = message.body;
-    logger.info("Processing ingestion job", { libraryId: job.libraryId, attempt: message.attempts });
+    logger.info("Processing ingestion job", {
+      libraryId: job.libraryId,
+      attempt: message.attempts,
+    });
 
     try {
       // Import dynamically to avoid circular deps
@@ -271,8 +268,12 @@ async function processIngestionBatch(
       message.ack();
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      logger.error("Ingestion job failed", { libraryId: job.libraryId, attempt: message.attempts }, err);
-      
+      logger.error(
+        "Ingestion job failed",
+        { libraryId: job.libraryId, attempt: message.attempts },
+        err
+      );
+
       // Retry up to 3 times
       if (message.attempts < 3) {
         message.retry();
@@ -288,7 +289,11 @@ async function processIngestionBatch(
             updatedAt: new Date().toISOString(),
           })
           .where(eq(libraries.id, job.libraryId));
-        logger.error("Ingestion job permanently failed", { libraryId: job.libraryId, maxAttemptsReached: true }, err);
+        logger.error(
+          "Ingestion job permanently failed",
+          { libraryId: job.libraryId, maxAttemptsReached: true },
+          err
+        );
         message.ack();
       }
     }
@@ -303,10 +308,10 @@ async function processStackLearningBatch(
 ): Promise<void> {
   for (const message of batch.messages) {
     const job = message.body;
-    logger.info("Processing stack learning job", { 
-      stackId: job.stackId, 
+    logger.info("Processing stack learning job", {
+      stackId: job.stackId,
       taskType: job.taskType,
-      attempt: message.attempts 
+      attempt: message.attempts,
     });
 
     try {
@@ -317,12 +322,16 @@ async function processStackLearningBatch(
       message.ack();
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      logger.error("Stack learning job failed", { 
-        stackId: job.stackId, 
-        taskType: job.taskType,
-        attempt: message.attempts 
-      }, err);
-      
+      logger.error(
+        "Stack learning job failed",
+        {
+          stackId: job.stackId,
+          taskType: job.taskType,
+          attempt: message.attempts,
+        },
+        err
+      );
+
       // Retry up to 3 times
       if (message.attempts < 3) {
         message.retry();
@@ -338,11 +347,15 @@ async function processStackLearningBatch(
             updatedAt: new Date().toISOString(),
           })
           .where(eq(stacks.id, job.stackId));
-        logger.error("Stack learning job permanently failed", { 
-          stackId: job.stackId, 
-          taskType: job.taskType,
-          maxAttemptsReached: true 
-        }, err);
+        logger.error(
+          "Stack learning job permanently failed",
+          {
+            stackId: job.stackId,
+            taskType: job.taskType,
+            maxAttemptsReached: true,
+          },
+          err
+        );
         message.ack();
       }
     }

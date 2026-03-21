@@ -4,12 +4,12 @@ Best practices for using Nexus memory to maintain context across sessions.
 
 ## Memory Types
 
-| Type | When to Use |
-|------|-------------|
-| `project_context` | Tech stack, architecture, conventions |
-| `session_summary` | End of session summaries |
-| `decision` | Architectural decisions with rationale |
-| `correction` | Lessons learned, mistakes to avoid |
+| Type              | When to Use                            |
+| ----------------- | -------------------------------------- |
+| `project_context` | Tech stack, architecture, conventions  |
+| `session_summary` | End of session summaries               |
+| `decision`        | Architectural decisions with rationale |
+| `correction`      | Lessons learned, mistakes to avoid     |
 
 ## Setting Up a New Project
 
@@ -41,11 +41,13 @@ Rationale: Team familiarity, better docs, stable migrations"
 ### Starting a Session
 
 Ask your AI to:
+
 > "Load the context for [project-name] project"
 
 ### During the Session
 
 Save important information as you work:
+
 - New architectural decisions
 - Lessons learned
 - Configuration details
@@ -53,6 +55,7 @@ Save important information as you work:
 ### Ending a Session
 
 Ask your AI to:
+
 > "Summarize what we accomplished and save it as a session summary"
 
 ## Memory Importance

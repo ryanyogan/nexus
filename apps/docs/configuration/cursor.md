@@ -19,10 +19,10 @@ Or create one at [nexus.yogan.dev/dashboard/keys](https://nexus.yogan.dev/dashbo
 
 ## Configuration File Location
 
-| Platform | Path |
-|----------|------|
-| macOS/Linux | `~/.cursor/mcp.json` |
-| Windows | `%USERPROFILE%\.cursor\mcp.json` |
+| Platform    | Path                             |
+| ----------- | -------------------------------- |
+| macOS/Linux | `~/.cursor/mcp.json`             |
+| Windows     | `%USERPROFILE%\.cursor\mcp.json` |
 
 ## Remote Mode (Recommended)
 
@@ -86,6 +86,7 @@ If you authenticated with `npx @nexus/cli auth login`, the CLI automatically use
 ### "API key required" Error
 
 Make sure your API key is configured:
+
 - **Remote mode**: Check the `--header` argument and `NEXUS_API_KEY` env var
 - **Local mode**: Set `NEXUS_API_KEY` env var, or use CLI login
 

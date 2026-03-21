@@ -16,7 +16,7 @@ export type RepoNodeType = Node<RepoNodeData, "repo">;
 
 function RepoNode({ data, selected }: NodeProps<RepoNodeType>) {
   // Extract owner/repo from URL
-  const match = data.githubUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+  const match = data.githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
   const repoPath = match ? `${match[1]}/${match[2].replace(/\.git$/, "")}` : data.githubUrl;
 
   return (
@@ -111,10 +111,10 @@ function RepoNode({ data, selected }: NodeProps<RepoNodeType>) {
                   data.status === "analyzing"
                     ? "animate-pulse bg-amber-500"
                     : data.status === "complete"
-                    ? "bg-green-500"
-                    : data.status === "failed"
-                    ? "bg-destructive"
-                    : "bg-muted-foreground"
+                      ? "bg-green-500"
+                      : data.status === "failed"
+                        ? "bg-destructive"
+                        : "bg-muted-foreground"
                 }`}
               />
               <span className="font-mono text-[10px] uppercase text-muted-foreground">

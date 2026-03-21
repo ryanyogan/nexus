@@ -1,6 +1,6 @@
 /**
  * GitHub Repository Analyzer
- * 
+ *
  * Analyzes a GitHub repository to extract:
  * - Directory structure
  * - Detected patterns and paradigms
@@ -63,7 +63,7 @@ export async function analyzeGitHubRepo(
 
   const { owner, repo } = parsed;
   const headers: Record<string, string> = {
-    "Accept": "application/vnd.github.v3+json",
+    Accept: "application/vnd.github.v3+json",
     "User-Agent": "Nexus-Stack-Analyzer",
   };
 
@@ -79,7 +79,7 @@ export async function analyzeGitHubRepo(
     throw new Error(`Failed to fetch repo tree: ${treeResponse.status}`);
   }
 
-  const treeData = await treeResponse.json() as { tree: Array<{ path: string; type: string }> };
+  const treeData = (await treeResponse.json()) as { tree: Array<{ path: string; type: string }> };
 
   // Build directory structure
   const directoryStructure = buildDirectoryTree(treeData.tree);
@@ -118,10 +118,7 @@ export async function analyzeGitHubRepo(
  */
 function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
   // Handle various GitHub URL formats
-  const patterns = [
-    /github\.com\/([^\/]+)\/([^\/]+)/,
-    /github\.com:([^\/]+)\/([^\/]+)/,
-  ];
+  const patterns = [/github\.com\/([^/]+)\/([^/]+)/, /github\.com:([^/]+)\/([^/]+)/];
 
   for (const pattern of patterns) {
     const match = url.match(pattern);
@@ -261,9 +258,9 @@ async function analyzePackageManifest(
         const response = await fetch(contentUrl, { headers });
 
         if (response.ok) {
-          const data = await response.json() as { content: string };
+          const data = (await response.json()) as { content: string };
           const content = atob(data.content.replace(/\n/g, ""));
-          
+
           return parseManifest(content, registry, language);
         }
       } catch (e) {

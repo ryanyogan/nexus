@@ -11,6 +11,7 @@ Visit [nexus.yogan.dev](https://nexus.yogan.dev) and click the **STACKS** tab to
 ### Filtering
 
 Filter stacks by:
+
 - **Category** - infrastructure, database, backend, fullstack, frontend, styling, tui, tooling
 - **Sort** - Popular, Trending, Recent
 - **Search** - Find by name or description
@@ -18,6 +19,7 @@ Filter stacks by:
 ### Stack Detail Pages
 
 Click any stack to view:
+
 - Full description and instructions
 - Token budget and compiled size
 - Author information
@@ -44,12 +46,14 @@ Your stack will be immediately available in the marketplace.
 ### Guidelines
 
 **Do:**
+
 - Write clear, actionable instructions
 - Include best practices and conventions
 - Test your stack before publishing
 - Keep token usage reasonable
 
 **Don't:**
+
 - Include sensitive information
 - Copy others' stacks without attribution
 - Publish incomplete or broken stacks
@@ -65,6 +69,7 @@ Fork a stack to create your own copy:
 4. Customize as needed
 
 Forked stacks:
+
 - Start as private
 - Can be modified freely
 - Track their original source
@@ -73,6 +78,7 @@ Forked stacks:
 ## Featured Stacks
 
 Featured stacks appear prominently in the marketplace. Stacks may be featured for:
+
 - High quality instructions
 - Active maintenance
 - Community popularity
@@ -83,20 +89,24 @@ Featured stacks appear prominently in the marketplace. Stacks may be featured fo
 Nexus provides 25+ starter stacks covering common technologies:
 
 ### Infrastructure (Layer 0)
+
 - Cloudflare Workers
 - Vercel Edge
 
 ### Database (Layer 0)
+
 - Supabase Backend
 - Turso SQLite
 - Drizzle ORM
 
 ### Backend (Layer 1)
+
 - Hono API
 - tRPC
 - Rust + Axum
 
 ### Fullstack (Layer 1)
+
 - TanStack Start
 - Next.js App Router
 - Rails 8 Trifecta
@@ -104,25 +114,30 @@ Nexus provides 25+ starter stacks covering common technologies:
 - Leptos Fullstack
 
 ### Frontend (Layer 2)
+
 - Vite + React
 - Svelte 5 + SvelteKit
 - Vue 3 + Nuxt
 - Rust + WASM
 
 ### Desktop (Layer 2)
+
 - Rust + Tauri v2
 - Omarchy Desktop
 
 ### Styling (Layer 2)
+
 - TailwindCSS v4
 - shadcn/ui
 
 ### TUI (Layer 3)
+
 - Ratatui TUI (Rust)
 - Bubbletea TUI (Go)
 - Ink React CLI
 
 ### Tooling (Layer 3)
+
 - Vitest + Testing Library
 
 ## Moderation
@@ -137,6 +152,7 @@ The marketplace uses flag-based moderation:
 ### Reporting Issues
 
 To report a stack:
+
 1. Open the stack detail page
 2. Click the **Report** button
 3. Select the reason
@@ -170,6 +186,7 @@ nexus stack fork drizzle-orm
 ## Pro Features
 
 Pro plan includes:
+
 - Unlimited public stacks
 - Private stacks
 - GitHub private repo analysis
@@ -177,6 +194,7 @@ Pro plan includes:
 - Analytics (coming soon)
 
 Free tier includes:
+
 - 3 private stacks
 - Unlimited public stack usage
 - Public repo analysis only

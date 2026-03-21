@@ -14,6 +14,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "category": "frontend",
@@ -22,6 +23,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "libraries": [
@@ -35,10 +37,10 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `category` | string | No | Filter by category |
-| `limit` | number | No | Max results 1-50, default 20 |
+| Parameter  | Type   | Required | Description                  |
+| ---------- | ------ | -------- | ---------------------------- |
+| `category` | string | No       | Filter by category           |
+| `limit`    | number | No       | Max results 1-50, default 20 |
 
 ## Categories
 

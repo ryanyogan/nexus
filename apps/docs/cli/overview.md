@@ -16,14 +16,14 @@ npx @nexus/cli <command>
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| [`nexus init`](/cli/init) | Configure AI clients automatically |
-| [`nexus auth`](/cli/auth) | Authentication management |
-| [`nexus docs`](/cli/docs) | Search documentation from CLI |
-| [`nexus servers`](/cli/servers) | Browse MCP server registry |
-| [`nexus skills`](/cli/skills) | Browse skill templates |
-| [`nexus serve`](/cli/serve) | Run Nexus locally |
+| Command                         | Description                        |
+| ------------------------------- | ---------------------------------- |
+| [`nexus init`](/cli/init)       | Configure AI clients automatically |
+| [`nexus auth`](/cli/auth)       | Authentication management          |
+| [`nexus docs`](/cli/docs)       | Search documentation from CLI      |
+| [`nexus servers`](/cli/servers) | Browse MCP server registry         |
+| [`nexus skills`](/cli/skills)   | Browse skill templates             |
+| [`nexus serve`](/cli/serve)     | Run Nexus locally                  |
 
 ## Quick Reference
 
@@ -46,8 +46,8 @@ nexus serve
 
 ## Global Options
 
-| Option | Description |
-|--------|-------------|
-| `--help`, `-h` | Show help |
-| `--version`, `-v` | Show version |
-| `--verbose` | Verbose output |
+| Option            | Description    |
+| ----------------- | -------------- |
+| `--help`, `-h`    | Show help      |
+| `--version`, `-v` | Show version   |
+| `--verbose`       | Verbose output |

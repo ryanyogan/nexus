@@ -36,14 +36,14 @@ Inheritance is limited to 3 levels deep to prevent complexity.
 
 Nexus includes 6 pre-configured starter flows:
 
-| Flow | Description |
-|------|-------------|
-| **React + TypeScript Expert** | Modern React development with TypeScript, hooks, and best practices |
-| **Full-Stack Developer** | End-to-end web development across frontend and backend |
-| **Testing & QA Engineer** | Comprehensive testing strategies and quality assurance |
-| **UI/UX Designer** | Design systems, accessibility, and user experience |
-| **API Developer** | REST and GraphQL API design and implementation |
-| **TanStack Start + Cloudflare** | Full-stack with TanStack Router, Start, and Cloudflare Workers |
+| Flow                            | Description                                                         |
+| ------------------------------- | ------------------------------------------------------------------- |
+| **React + TypeScript Expert**   | Modern React development with TypeScript, hooks, and best practices |
+| **Full-Stack Developer**        | End-to-end web development across frontend and backend              |
+| **Testing & QA Engineer**       | Comprehensive testing strategies and quality assurance              |
+| **UI/UX Designer**              | Design systems, accessibility, and user experience                  |
+| **API Developer**               | REST and GraphQL API design and implementation                      |
+| **TanStack Start + Cloudflare** | Full-stack with TanStack Router, Start, and Cloudflare Workers      |
 
 ## Getting Started
 

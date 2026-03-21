@@ -100,7 +100,7 @@ export const useEditorStore = create<EditorState>()(
 
         try {
           const client = createOpenCodeClient(url, password);
-          
+
           // Test connection
           const health = await client.health();
           if (!health.healthy) {
@@ -155,13 +155,13 @@ export const useEditorStore = create<EditorState>()(
 
       saveConnection: async (conn: SavedConnection) => {
         const { recentConnections } = get();
-        
+
         // Remove existing entry for same URL
         const filtered = recentConnections.filter((c) => c.url !== conn.url);
-        
+
         // Add new connection at the start, limit to 10
         const updated = [conn, ...filtered].slice(0, 10);
-        
+
         set({ recentConnections: updated });
       },
 
@@ -179,10 +179,10 @@ export const useEditorStore = create<EditorState>()(
         if (!client) return;
 
         set({ activeSessionId: sessionId, messages: [], todos: [] });
-        
+
         // Load messages and todos
         await get().loadMessages(sessionId);
-        
+
         // Load file tree
         await get().loadFileTree();
       },
@@ -192,7 +192,7 @@ export const useEditorStore = create<EditorState>()(
         if (!client) throw new Error("Not connected");
 
         const session = await client.session.create({ title });
-        
+
         // Add to sessions list
         set((state) => ({
           sessions: [session, ...state.sessions],
@@ -207,7 +207,7 @@ export const useEditorStore = create<EditorState>()(
 
         const result = await client.session.messages(sessionId);
         const todos = await client.session.todos(sessionId);
-        
+
         set({ messages: result, todos });
       },
 
@@ -286,14 +286,14 @@ export const useEditorStore = create<EditorState>()(
         set((state) => {
           const newOpenFiles = new Map(state.openFiles);
           newOpenFiles.delete(path);
-          
+
           // If closing active file, switch to another or to chat
           let newActivePath = state.activeFilePath;
           if (state.activeFilePath === path) {
             const paths = Array.from(newOpenFiles.keys());
             newActivePath = paths.length > 0 ? paths[0] : null;
           }
-          
+
           return {
             openFiles: newOpenFiles,
             activeFilePath: newActivePath,
@@ -304,24 +304,21 @@ export const useEditorStore = create<EditorState>()(
 
       // UI actions
       setActiveView: (view) => set({ activeView: view }),
-      
+
       setStreamingContent: (content) => set({ streamingContent: content }),
-      
+
       appendStreamingContent: (delta) =>
         set((state) => ({ streamingContent: state.streamingContent + delta })),
-      
+
       setIsStreaming: (streaming) => set({ isStreaming: streaming }),
-      
+
       updateTodos: (todos) => set({ todos }),
-      
-      addMessage: (message) =>
-        set((state) => ({ messages: [...state.messages, message] })),
-      
+
+      addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
+
       updateMessage: (message) =>
         set((state) => ({
-          messages: state.messages.map((m) =>
-            m.id === message.id ? message : m
-          ),
+          messages: state.messages.map((m) => (m.id === message.id ? message : m)),
         })),
     }),
     {
@@ -336,7 +333,7 @@ export const useEditorStore = create<EditorState>()(
 // Helper to detect language from file path
 function getLanguageFromPath(path: string): string {
   const ext = path.split(".").pop()?.toLowerCase();
-  
+
   const langMap: Record<string, string> = {
     ts: "typescript",
     tsx: "typescript",
@@ -358,6 +355,6 @@ function getLanguageFromPath(path: string): string {
     bash: "shell",
     zsh: "shell",
   };
-  
+
   return langMap[ext || ""] || "text";
 }

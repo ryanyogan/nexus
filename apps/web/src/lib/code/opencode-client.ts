@@ -24,10 +24,7 @@ interface ClientOptions {
   password?: string;
 }
 
-export function createOpenCodeClient(
-  baseUrl: string,
-  password?: string
-): OpenCodeClient {
+export function createOpenCodeClient(baseUrl: string, password?: string): OpenCodeClient {
   const opts: ClientOptions = {
     baseUrl: baseUrl.replace(/\/$/, ""), // Remove trailing slash
     username: "opencode",
@@ -44,12 +41,9 @@ export function createOpenCodeClient(
     headers["Authorization"] = `Basic ${auth}`;
   }
 
-  async function request<T>(
-    path: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = `${opts.baseUrl}${path}`;
-    
+
     const response = await fetch(url, {
       ...options,
       headers: {

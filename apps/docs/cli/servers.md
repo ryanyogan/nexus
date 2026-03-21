@@ -10,12 +10,12 @@ nexus servers <command> [options]
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `search <query>` | Search for servers |
-| `list` | List available servers |
-| `info <id>` | Get server details |
-| `config <id>` | Generate config |
+| Command          | Description            |
+| ---------------- | ---------------------- |
+| `search <query>` | Search for servers     |
+| `list`           | List available servers |
+| `info <id>`      | Get server details     |
+| `config <id>`    | Generate config        |
 
 ## Examples
 
@@ -35,8 +35,8 @@ nexus servers config postgres --format claude-desktop
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `--category <cat>` | Filter by category |
-| `--official` | Only official servers |
-| `--format <fmt>` | Config format |
+| Option             | Description           |
+| ------------------ | --------------------- |
+| `--category <cat>` | Filter by category    |
+| `--official`       | Only official servers |
+| `--format <fmt>`   | Config format         |

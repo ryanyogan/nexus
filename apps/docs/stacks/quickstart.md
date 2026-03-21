@@ -26,12 +26,14 @@ Switch to the **Instructions** tab and add your rules:
 # My React Stack
 
 ## Core Technologies
+
 - React 19 with TypeScript strict mode
 - Vite for bundling
 - TanStack Query for data fetching
 - Tailwind CSS for styling
 
 ## Best Practices
+
 - Use functional components with hooks
 - Prefer composition over inheritance
 - Keep components small and focused
@@ -39,12 +41,14 @@ Switch to the **Instructions** tab and add your rules:
 
 ## File Structure
 ```
+
 src/
-  components/     # Reusable UI components
-  features/       # Feature-specific code
-  hooks/          # Custom React hooks
-  lib/            # Utilities and helpers
-  routes/         # Page components
+components/ # Reusable UI components
+features/ # Feature-specific code
+hooks/ # Custom React hooks
+lib/ # Utilities and helpers
+routes/ # Page components
+
 ```
 
 ## Naming Conventions
@@ -57,11 +61,11 @@ src/
 
 Choose your token budget in the **Options** panel:
 
-| Budget | Tokens | Best For |
-|--------|--------|----------|
-| Minimal | ~2K | Quick prompts, specific questions |
-| Standard | ~5K | General development (recommended) |
-| Comprehensive | ~10K | Complex projects, full documentation |
+| Budget        | Tokens | Best For                             |
+| ------------- | ------ | ------------------------------------ |
+| Minimal       | ~2K    | Quick prompts, specific questions    |
+| Standard      | ~5K    | General development (recommended)    |
+| Comprehensive | ~10K   | Complex projects, full documentation |
 
 ## Step 4: Save and Test
 

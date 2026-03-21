@@ -54,30 +54,30 @@ Configure your MCP client with the Nexus CLI:
 
 ### Documentation
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/libraries` | List libraries |
-| GET | `/libraries/:id` | Get library info |
-| POST | `/libraries/:id/query` | Search documentation |
+| Method | Endpoint               | Description          |
+| ------ | ---------------------- | -------------------- |
+| GET    | `/libraries`           | List libraries       |
+| GET    | `/libraries/:id`       | Get library info     |
+| POST   | `/libraries/:id/query` | Search documentation |
 
 ### Memory
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/memories` | List memories |
-| POST | `/memories` | Create memory |
-| GET | `/memories/:id` | Get memory |
-| PATCH | `/memories/:id` | Update memory |
-| DELETE | `/memories/:id` | Delete memory |
-| POST | `/memories/search` | Search memories |
+| Method | Endpoint           | Description     |
+| ------ | ------------------ | --------------- |
+| GET    | `/memories`        | List memories   |
+| POST   | `/memories`        | Create memory   |
+| GET    | `/memories/:id`    | Get memory      |
+| PATCH  | `/memories/:id`    | Update memory   |
+| DELETE | `/memories/:id`    | Delete memory   |
+| POST   | `/memories/search` | Search memories |
 
 ### Servers
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/servers` | List servers |
-| GET | `/servers/:id` | Get server info |
-| GET | `/servers/:id/config` | Get install config |
+| Method | Endpoint              | Description        |
+| ------ | --------------------- | ------------------ |
+| GET    | `/servers`            | List servers       |
+| GET    | `/servers/:id`        | Get server info    |
+| GET    | `/servers/:id/config` | Get install config |
 
 ## Response Format
 
@@ -117,9 +117,9 @@ All responses are JSON:
 ## Rate Limits
 
 | Plan | Requests/Month |
-|------|----------------|
-| Free | 2,000 |
-| Pro | Unlimited |
-| Team | Unlimited |
+| ---- | -------------- |
+| Free | 2,000          |
+| Pro  | Unlimited      |
+| Team | Unlimited      |
 
 See [Rate Limits](/api/rate-limits) for details.

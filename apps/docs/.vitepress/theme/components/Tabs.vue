@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, provide, onMounted } from 'vue'
+import { ref, provide, onMounted } from "vue";
 
 const props = defineProps<{
-  labels: string[]
-  defaultTab?: number
-}>()
+  labels: string[];
+  defaultTab?: number;
+}>();
 
-const activeTab = ref(props.defaultTab ?? 0)
+const activeTab = ref(props.defaultTab ?? 0);
 
-provide('activeTab', activeTab)
+provide("activeTab", activeTab);
 
 function selectTab(index: number) {
-  activeTab.value = index
+  activeTab.value = index;
 }
 </script>
 

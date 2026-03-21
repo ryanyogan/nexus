@@ -41,12 +41,12 @@ Search and explore indexed library documentation with semantic search.
 
 ### Quick Reference
 
-| Tool | Parameters | Description |
-|------|------------|-------------|
-| `resolve-library` | `libraryName`, `query?` | Find library ID by name |
-| `query-docs` | `libraryId`, `query`, `limit?`, `tokens?` | Search documentation |
-| `get-library-info` | `libraryId` | Get library metadata |
-| `list-libraries` | `category?`, `limit?` | List indexed libraries |
+| Tool               | Parameters                                | Description             |
+| ------------------ | ----------------------------------------- | ----------------------- |
+| `resolve-library`  | `libraryName`, `query?`                   | Find library ID by name |
+| `query-docs`       | `libraryId`, `query`, `limit?`, `tokens?` | Search documentation    |
+| `get-library-info` | `libraryId`                               | Get library metadata    |
+| `list-libraries`   | `category?`, `limit?`                     | List indexed libraries  |
 
 ## Memory Tools
 
@@ -81,23 +81,23 @@ Store and retrieve persistent context across AI sessions.
 
 ### Quick Reference
 
-| Tool | Parameters | Description |
-|------|------------|-------------|
-| `save-memory` | `title`, `content`, `type`, `project?`, `tags?`, `importance?` | Store a memory |
-| `recall-memories` | `query`, `project?`, `type?`, `tags?`, `limit?` | Search memories |
-| `get-project-context` | `project`, `includeTypes?`, `limit?` | Get all project context |
-| `list-memories` | `project?`, `type?`, `limit?`, `offset?` | Browse memories |
-| `update-memory` | `memoryId`, `title?`, `content?`, `tags?`, `importance?` | Update a memory |
-| `delete-memory` | `memoryId` | Delete a memory |
+| Tool                  | Parameters                                                     | Description             |
+| --------------------- | -------------------------------------------------------------- | ----------------------- |
+| `save-memory`         | `title`, `content`, `type`, `project?`, `tags?`, `importance?` | Store a memory          |
+| `recall-memories`     | `query`, `project?`, `type?`, `tags?`, `limit?`                | Search memories         |
+| `get-project-context` | `project`, `includeTypes?`, `limit?`                           | Get all project context |
+| `list-memories`       | `project?`, `type?`, `limit?`, `offset?`                       | Browse memories         |
+| `update-memory`       | `memoryId`, `title?`, `content?`, `tags?`, `importance?`       | Update a memory         |
+| `delete-memory`       | `memoryId`                                                     | Delete a memory         |
 
 ### Memory Types
 
-| Type | Description | Example |
-|------|-------------|---------|
-| `project_context` | Architecture, tech stack, conventions | "Next.js 14 with App Router" |
-| `session_summary` | What was accomplished | "Added authentication flow" |
-| `decision` | Architectural decisions with rationale | "Chose Prisma over Drizzle because..." |
-| `correction` | Lessons learned, things to avoid | "Don't use library X, it has issue Y" |
+| Type              | Description                            | Example                                |
+| ----------------- | -------------------------------------- | -------------------------------------- |
+| `project_context` | Architecture, tech stack, conventions  | "Next.js 14 with App Router"           |
+| `session_summary` | What was accomplished                  | "Added authentication flow"            |
+| `decision`        | Architectural decisions with rationale | "Chose Prisma over Drizzle because..." |
+| `correction`      | Lessons learned, things to avoid       | "Don't use library X, it has issue Y"  |
 
 ## Server Registry Tools
 
@@ -126,11 +126,11 @@ Discover and configure MCP servers for additional AI capabilities.
 
 ### Quick Reference
 
-| Tool | Parameters | Description |
-|------|------------|-------------|
-| `discover-servers` | `query?`, `category?`, `capabilities?`, `official?`, `limit?` | Search servers |
-| `get-server-info` | `serverId` | Get server documentation |
-| `get-server-config` | `serverId`, `format?` | Generate config |
+| Tool                | Parameters                                                    | Description              |
+| ------------------- | ------------------------------------------------------------- | ------------------------ |
+| `discover-servers`  | `query?`, `category?`, `capabilities?`, `official?`, `limit?` | Search servers           |
+| `get-server-info`   | `serverId`                                                    | Get server documentation |
+| `get-server-config` | `serverId`, `format?`                                         | Generate config          |
 
 ### Server Categories
 
@@ -155,11 +155,11 @@ Documentation and server registry tools work without authentication.
 
 ## Rate Limits
 
-| Plan | Requests/minute | Requests/day |
-|------|-----------------|--------------|
-| Free | 20 | 1,000 |
-| Pro | 100 | 10,000 |
-| Enterprise | Unlimited | Unlimited |
+| Plan       | Requests/minute | Requests/day |
+| ---------- | --------------- | ------------ |
+| Free       | 20              | 1,000        |
+| Pro        | 100             | 10,000       |
+| Enterprise | Unlimited       | Unlimited    |
 
 ## Next Steps
 

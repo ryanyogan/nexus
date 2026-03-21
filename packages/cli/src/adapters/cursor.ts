@@ -45,9 +45,7 @@ export class CursorAdapter extends BaseAdapter {
     config.mcpServers = servers;
   }
 
-  protected formatServerConfig(
-    config: McpServerConfig
-  ): Record<string, unknown> {
+  protected formatServerConfig(config: McpServerConfig): Record<string, unknown> {
     if (config.transport === "stdio") {
       const serverConfig: Record<string, unknown> = {
         command: config.command,

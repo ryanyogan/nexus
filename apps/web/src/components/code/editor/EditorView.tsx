@@ -7,29 +7,26 @@ const CodeMirrorEditor = lazy(() => import("./CodeMirrorEditor"));
 
 export function EditorView() {
   const [isDark, setIsDark] = useState(false);
-  
-  const {
-    activeFilePath,
-    openFiles,
-  } = useEditorStore();
+
+  const { activeFilePath, openFiles } = useEditorStore();
 
   // Detect dark mode
   useEffect(() => {
     if (typeof window === "undefined") return;
-    
+
     const checkDarkMode = () => {
       setIsDark(document.documentElement.classList.contains("dark"));
     };
-    
+
     checkDarkMode();
-    
+
     // Watch for theme changes
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
-    
+
     return () => observer.disconnect();
   }, []);
 
@@ -42,7 +39,7 @@ export function EditorView() {
   }
 
   const file = openFiles.get(activeFilePath);
-  
+
   if (!file) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -60,11 +57,7 @@ export function EditorView() {
           </div>
         }
       >
-        <CodeMirrorEditor
-          content={file.content}
-          language={file.language}
-          isDark={isDark}
-        />
+        <CodeMirrorEditor content={file.content} language={file.language} isDark={isDark} />
       </Suspense>
     </div>
   );

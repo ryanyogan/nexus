@@ -74,9 +74,7 @@ export abstract class BaseAdapter implements EditorAdapter {
   /**
    * Format a server config for this editor's format
    */
-  protected abstract formatServerConfig(
-    config: McpServerConfig
-  ): Record<string, unknown>;
+  protected abstract formatServerConfig(config: McpServerConfig): Record<string, unknown>;
 
   async isServerInstalled(serverId: string): Promise<InstallStatus> {
     const config = this.readConfig();

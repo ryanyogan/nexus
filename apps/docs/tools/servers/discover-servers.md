@@ -17,6 +17,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "query": "postgresql database",
@@ -25,6 +26,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "servers": [
@@ -42,13 +44,13 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `query` | string | No | Natural language search |
-| `category` | string | No | Filter by category |
-| `capabilities` | string[] | No | Filter: `tools`, `resources`, `prompts` |
-| `official` | boolean | No | Only official MCP servers |
-| `limit` | number | No | Max results 1-20, default 10 |
+| Parameter      | Type     | Required | Description                             |
+| -------------- | -------- | -------- | --------------------------------------- |
+| `query`        | string   | No       | Natural language search                 |
+| `category`     | string   | No       | Filter by category                      |
+| `capabilities` | string[] | No       | Filter: `tools`, `resources`, `prompts` |
+| `official`     | boolean  | No       | Only official MCP servers               |
+| `limit`        | number   | No       | Max results 1-20, default 10            |
 
 ## Categories
 

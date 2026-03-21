@@ -340,7 +340,9 @@ function createInfoCommand(): Command {
           logger.log(`  Version: ${server.version}`);
         }
         logger.log(`  Transport: ${server.transportType}`);
-        logger.log(`  Package: ${server.packageType}${server.packageName ? ` (${server.packageName})` : ""}`);
+        logger.log(
+          `  Package: ${server.packageType}${server.packageName ? ` (${server.packageName})` : ""}`
+        );
 
         // Badges
         const badges: string[] = [];

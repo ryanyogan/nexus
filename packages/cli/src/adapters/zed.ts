@@ -66,9 +66,7 @@ export class ZedAdapter extends BaseAdapter {
     config.context_servers = servers;
   }
 
-  protected formatServerConfig(
-    config: McpServerConfig
-  ): Record<string, unknown> {
+  protected formatServerConfig(config: McpServerConfig): Record<string, unknown> {
     if (config.transport === "stdio") {
       const settings: Record<string, unknown> = {
         command: config.command,

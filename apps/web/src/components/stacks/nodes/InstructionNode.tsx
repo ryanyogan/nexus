@@ -34,11 +34,7 @@ function InstructionNode({ data, selected }: NodeProps<InstructionNodeType>) {
           className="flex h-7 w-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           title={expanded ? "Collapse" : "Expand"}
         >
-          {expanded ? (
-            <Minimize2 className="h-3.5 w-3.5" />
-          ) : (
-            <Maximize2 className="h-3.5 w-3.5" />
-          )}
+          {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
         </button>
         <button
           className="flex h-7 w-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"

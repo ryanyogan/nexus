@@ -75,7 +75,7 @@ export const Route = createFileRoute("/explore/docs/$libraryId")({
 function LibraryDetailPage() {
   const { library } = Route.useLoaderData();
   const category = library.categories?.[0];
-  
+
   const [copiedQuery, setCopiedQuery] = useState(false);
 
   const copyQueryExample = async () => {
@@ -150,7 +150,7 @@ function LibraryDetailPage() {
                   </span>
                 )}
               </div>
-              
+
               {library.description && (
                 <p className="mt-2 font-mono text-sm text-muted-foreground">
                   {library.description}
@@ -159,9 +159,7 @@ function LibraryDetailPage() {
 
               {/* Meta */}
               <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
-                {category && (
-                  <span className="uppercase">{category}</span>
-                )}
+                {category && <span className="uppercase">{category}</span>}
                 {library.version && (
                   <>
                     <span className="text-border">|</span>
@@ -240,12 +238,13 @@ function LibraryDetailPage() {
                 Query This Library
               </h2>
               <p className="mb-4 font-mono text-xs text-muted-foreground">
-                Use the Nexus MCP server to search this library's documentation with semantic search.
+                Use the Nexus MCP server to search this library's documentation with semantic
+                search.
               </p>
               <div className="relative">
                 <pre className="overflow-x-auto border border-border bg-muted p-4 pr-12 font-mono text-xs">
                   <code className="text-foreground">
-{`// In your AI assistant
+                    {`// In your AI assistant
 nexus.queryDocs({
   libraryId: "${library.id}",
   query: "How do I get started?"
@@ -304,9 +303,7 @@ nexus.queryDocs({
               <dl className="space-y-3 font-mono text-xs">
                 <div className="flex items-start justify-between">
                   <dt className="uppercase text-muted-foreground">Source Type</dt>
-                  <dd className="font-bold uppercase text-foreground">
-                    {library.sourceType}
-                  </dd>
+                  <dd className="font-bold uppercase text-foreground">{library.sourceType}</dd>
                 </div>
                 {library.sourceUrl && (
                   <div className="flex items-start justify-between gap-4">
@@ -324,7 +321,6 @@ nexus.queryDocs({
                     </dd>
                   </div>
                 )}
-
               </dl>
             </div>
           </div>
@@ -341,9 +337,7 @@ nexus.queryDocs({
                 Query this library through your AI assistant:
               </p>
               <pre className="mt-3 overflow-x-auto border border-border bg-background p-3 font-mono text-[10px]">
-                <code className="text-foreground">
-                  "How do I use {library.name}?"
-                </code>
+                <code className="text-foreground">"How do I use {library.name}?"</code>
               </pre>
             </div>
 
@@ -356,31 +350,33 @@ nexus.queryDocs({
                 {category && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Category</dt>
-                    <dd className="font-bold uppercase text-foreground">
-                      {category}
-                    </dd>
+                    <dd className="font-bold uppercase text-foreground">{category}</dd>
                   </div>
                 )}
                 {library.version && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Version</dt>
-                    <dd className="text-foreground">
-                      {library.version}
-                    </dd>
+                    <dd className="text-foreground">{library.version}</dd>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <dt className="uppercase text-muted-foreground">Status</dt>
-                  <dd className={`font-bold uppercase ${
-                    library.indexStatus === "indexed" 
-                      ? "text-accent" 
+                  <dd
+                    className={`font-bold uppercase ${
+                      library.indexStatus === "indexed"
+                        ? "text-accent"
+                        : library.indexStatus === "indexing"
+                          ? "text-yellow-500"
+                          : "text-muted-foreground"
+                    }`}
+                  >
+                    {library.indexStatus === "indexed"
+                      ? "Ready"
                       : library.indexStatus === "indexing"
-                      ? "text-yellow-500"
-                      : "text-muted-foreground"
-                  }`}>
-                    {library.indexStatus === "indexed" ? "Ready" : 
-                     library.indexStatus === "indexing" ? "Indexing" :
-                     library.indexStatus === "failed" ? "Failed" : "Pending"}
+                        ? "Indexing"
+                        : library.indexStatus === "failed"
+                          ? "Failed"
+                          : "Pending"}
                   </dd>
                 </div>
                 {library.trustScore && (
@@ -397,9 +393,7 @@ nexus.queryDocs({
                 {library.benchmarkScore && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Quality</dt>
-                    <dd className="font-bold text-foreground">
-                      {library.benchmarkScore}%
-                    </dd>
+                    <dd className="font-bold text-foreground">{library.benchmarkScore}%</dd>
                   </div>
                 )}
               </dl>

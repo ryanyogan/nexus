@@ -12,16 +12,9 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  
-  const {
-    messages,
-    todos,
-    isStreaming,
-    streamingContent,
-    sendMessage,
-    abortSession,
-    openFile,
-  } = useEditorStore();
+
+  const { messages, todos, isStreaming, streamingContent, sendMessage, abortSession, openFile } =
+    useEditorStore();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -42,7 +35,7 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
 
     const text = input.trim();
     setInput("");
-    
+
     try {
       await sendMessage(text);
     } catch (error) {
@@ -62,13 +55,9 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.map((message) => (
-          <MessageBubble 
-            key={message.id} 
-            message={message} 
-            onFileClick={openFile}
-          />
+          <MessageBubble key={message.id} message={message} onFileClick={openFile} />
         ))}
-        
+
         {/* Streaming message */}
         {isStreaming && streamingContent && (
           <div className="flex gap-3">
@@ -83,7 +72,7 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
             </div>
           </div>
         )}
-        
+
         {/* Loading indicator */}
         {isStreaming && !streamingContent && (
           <div className="flex gap-3">
@@ -97,7 +86,7 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -110,9 +99,7 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
               <TodoItem key={todo.id} todo={todo} />
             ))}
             {todos.length > 3 && (
-              <div className="text-xs text-muted-foreground">
-                +{todos.length - 3} more
-              </div>
+              <div className="text-xs text-muted-foreground">+{todos.length - 3} more</div>
             )}
           </div>
         </div>
@@ -134,7 +121,7 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
               style={{ minHeight: "44px", maxHeight: "120px" }}
             />
           </div>
-          
+
           {isStreaming ? (
             <Button
               type="button"
@@ -161,33 +148,39 @@ export function ChatView({ sessionId: _sessionId }: ChatViewProps) {
   );
 }
 
-function MessageBubble({ 
-  message, 
-  onFileClick 
-}: { 
-  message: Message; 
+function MessageBubble({
+  message,
+  onFileClick,
+}: {
+  message: Message;
   onFileClick: (path: string) => void;
 }) {
   const isUser = message.role === "user";
-  
+
   // Extract text content
-  const textParts = message.parts.filter((p): p is { type: "text"; text: string } => p.type === "text");
+  const textParts = message.parts.filter(
+    (p): p is { type: "text"; text: string } => p.type === "text"
+  );
   const text = textParts.map((p) => p.text).join("\n");
-  
+
   // Extract file references from tool calls
   const fileParts = message.parts.filter(
-    (p) => 
-      (p.type === "tool-call" || p.type === "tool-result") && 
-      ((p as { name?: string }).name?.includes("file") || (p as { name?: string }).name?.includes("edit") || (p as { name?: string }).name?.includes("read"))
+    (p) =>
+      (p.type === "tool-call" || p.type === "tool-result") &&
+      ((p as { name?: string }).name?.includes("file") ||
+        (p as { name?: string }).name?.includes("edit") ||
+        (p as { name?: string }).name?.includes("read"))
   );
-  
+
   // Extract unique file paths mentioned
   const filePaths = new Set<string>();
   fileParts.forEach((p) => {
     if (p.type === "tool-call") {
       const toolCall = p as { type: "tool-call"; args?: Record<string, unknown> };
       if (toolCall.args) {
-        const path = (toolCall.args as Record<string, unknown>).path || (toolCall.args as Record<string, unknown>).filePath;
+        const path =
+          (toolCall.args as Record<string, unknown>).path ||
+          (toolCall.args as Record<string, unknown>).filePath;
         if (typeof path === "string") filePaths.add(path);
       }
     }
@@ -195,22 +188,22 @@ function MessageBubble({
 
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-        isUser ? "bg-primary text-primary-foreground" : "bg-primary/10"
-      }`}>
-        <span className="text-xs font-medium">
-          {isUser ? "You" : "AI"}
-        </span>
+      <div
+        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+          isUser ? "bg-primary text-primary-foreground" : "bg-primary/10"
+        }`}
+      >
+        <span className="text-xs font-medium">{isUser ? "You" : "AI"}</span>
       </div>
-      
+
       <div className={`flex-1 min-w-0 ${isUser ? "text-right" : ""}`}>
-        <div className={`inline-block rounded-lg px-4 py-3 max-w-full ${
-          isUser ? "bg-primary text-primary-foreground" : "bg-muted"
-        }`}>
-          {text && (
-            <p className="whitespace-pre-wrap break-words text-left">{text}</p>
-          )}
-          
+        <div
+          className={`inline-block rounded-lg px-4 py-3 max-w-full ${
+            isUser ? "bg-primary text-primary-foreground" : "bg-muted"
+          }`}
+        >
+          {text && <p className="whitespace-pre-wrap break-words text-left">{text}</p>}
+
           {/* File pills */}
           {filePaths.size > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
@@ -219,15 +212,13 @@ function MessageBubble({
                   key={path}
                   onClick={() => onFileClick(path)}
                   className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono ${
-                    isUser 
-                      ? "bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground" 
+                    isUser
+                      ? "bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground"
                       : "bg-background hover:bg-background/80 text-foreground border border-border"
                   } transition-colors`}
                 >
                   <FileCode className="h-3 w-3" />
-                  <span className="truncate max-w-[150px]">
-                    {path.split("/").pop()}
-                  </span>
+                  <span className="truncate max-w-[150px]">{path.split("/").pop()}</span>
                 </button>
               ))}
             </div>

@@ -1,18 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Drawer } from "vaul";
-import { 
-  FolderOpen, 
-  MessageSquare, 
-  MoreVertical,
-  ArrowLeft,
-  X
-} from "lucide-react";
+import { FolderOpen, MessageSquare, MoreVertical, ArrowLeft, X } from "lucide-react";
 import { useEditorStore } from "@/stores/editor-store";
 import { ChatView } from "@/components/code/chat/ChatView";
 import { EditorView } from "@/components/code/editor/EditorView";
 import { FileExplorer } from "@/components/code/files/FileExplorer";
-
 
 interface MobileLayoutProps {
   sessionId: string;
@@ -22,7 +15,7 @@ export function MobileLayout({ sessionId }: MobileLayoutProps) {
   const navigate = useNavigate();
   const [isFilesOpen, setIsFilesOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+
   const {
     activeView,
     activeFilePath,
@@ -64,15 +57,11 @@ export function MobileLayout({ sessionId }: MobileLayoutProps) {
 
         <div className="flex-1 min-w-0">
           {activeView === "editor" && activeFilePath ? (
-            <div className="font-mono text-sm truncate">
-              {activeFilePath.split("/").pop()}
-            </div>
+            <div className="font-mono text-sm truncate">{activeFilePath.split("/").pop()}</div>
           ) : (
             <>
               <div className="font-medium text-sm truncate">{sessionTitle}</div>
-              <div className="text-xs text-muted-foreground truncate">
-                {projectName}
-              </div>
+              <div className="text-xs text-muted-foreground truncate">{projectName}</div>
             </>
           )}
         </div>
@@ -111,11 +100,7 @@ export function MobileLayout({ sessionId }: MobileLayoutProps) {
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden relative">
-        {activeView === "chat" ? (
-          <ChatView sessionId={sessionId} />
-        ) : (
-          <EditorView />
-        )}
+        {activeView === "chat" ? <ChatView sessionId={sessionId} /> : <EditorView />}
       </div>
 
       {/* Files Drawer */}
@@ -143,10 +128,7 @@ export function MobileLayout({ sessionId }: MobileLayoutProps) {
       {/* Menu Dropdown */}
       {isMenuOpen && (
         <>
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setIsMenuOpen(false)} 
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
           <div className="absolute top-14 right-3 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[160px]">
             <button
               onClick={() => {

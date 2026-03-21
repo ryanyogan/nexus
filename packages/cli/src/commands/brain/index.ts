@@ -89,14 +89,19 @@ function createScoreCommand(): Command {
 
           // Level and XP
           const progress = Math.round((score.currentLevelXp / score.xpToNextLevel) * 20);
-          const progressBar = chalk.cyan("█".repeat(progress)) + chalk.gray("░".repeat(20 - progress));
-          
-          logger.log(`  ${chalk.bold.cyan(`Level ${score.level}`)} - ${chalk.white(score.totalXp.toLocaleString())} XP`);
+          const progressBar =
+            chalk.cyan("█".repeat(progress)) + chalk.gray("░".repeat(20 - progress));
+
+          logger.log(
+            `  ${chalk.bold.cyan(`Level ${score.level}`)} - ${chalk.white(score.totalXp.toLocaleString())} XP`
+          );
           logger.log(`  ${progressBar} ${score.currentLevelXp}/${score.xpToNextLevel}`);
           logger.newline();
 
           // Streak
-          logger.log(`  ${chalk.bold("Streak:")} ${chalk.yellow(score.currentStreak)} days ${chalk.gray(`(best: ${score.longestStreak})`)}`);
+          logger.log(
+            `  ${chalk.bold("Streak:")} ${chalk.yellow(score.currentStreak)} days ${chalk.gray(`(best: ${score.longestStreak})`)}`
+          );
           logger.newline();
 
           // Stats
@@ -189,12 +194,17 @@ function createListCommand(): Command {
 
           for (const [type, learnings] of Object.entries(byType)) {
             const color = typeColors[type] || chalk.white;
-            logger.log(color.bold(`  ${type.charAt(0).toUpperCase() + type.slice(1)}s (${learnings.length})`));
-            
+            logger.log(
+              color.bold(`  ${type.charAt(0).toUpperCase() + type.slice(1)}s (${learnings.length})`)
+            );
+
             for (const l of learnings) {
-              const scopeTag = l.scope !== "global" ? chalk.gray(` [${l.scope}${l.project ? `:${l.project}` : ""}]`) : "";
+              const scopeTag =
+                l.scope !== "global"
+                  ? chalk.gray(` [${l.scope}${l.project ? `:${l.project}` : ""}]`)
+                  : "";
               const activeIcon = l.isActive ? chalk.green("●") : chalk.gray("○");
-              
+
               logger.log(`    ${activeIcon} ${chalk.white(l.trigger)}${scopeTag}`);
               logger.log(`      ${chalk.gray("→")} ${l.response}`);
               if (l.usageCount > 0) {
@@ -246,10 +256,10 @@ function createAddCommand(): Command {
       try {
         const client = getClient();
         const result = await client.createLearning({
-          type: options.type as any || "correction",
+          type: (options.type as any) || "correction",
           trigger,
           response,
-          scope: options.scope as any || "global",
+          scope: (options.scope as any) || "global",
           project: options.project,
           libraryId: options.library,
           flowId: options.flow,
@@ -356,14 +366,22 @@ function createLeaderboardCommand(): Command {
 
           const medals = ["🥇", "🥈", "🥉"];
 
-          result.leaderboard.forEach((entry: { userId: string; totalXp: number; level: number; currentStreak: number }, i: number) => {
-            const rank = i < 3 ? medals[i] : chalk.gray(`${i + 1}.`);
-            const streakIcon = entry.currentStreak > 0 ? chalk.yellow(`🔥${entry.currentStreak}`) : "";
-            
-            logger.log(`  ${rank} ${chalk.bold(`Level ${entry.level}`)} - ${entry.totalXp.toLocaleString()} XP ${streakIcon}`);
-            logger.log(`     ${chalk.gray(entry.userId.slice(0, 8) + "...")}`);
-          });
-          
+          result.leaderboard.forEach(
+            (
+              entry: { userId: string; totalXp: number; level: number; currentStreak: number },
+              i: number
+            ) => {
+              const rank = i < 3 ? medals[i] : chalk.gray(`${i + 1}.`);
+              const streakIcon =
+                entry.currentStreak > 0 ? chalk.yellow(`🔥${entry.currentStreak}`) : "";
+
+              logger.log(
+                `  ${rank} ${chalk.bold(`Level ${entry.level}`)} - ${entry.totalXp.toLocaleString()} XP ${streakIcon}`
+              );
+              logger.log(`     ${chalk.gray(entry.userId.slice(0, 8) + "...")}`);
+            }
+          );
+
           logger.newline();
         }
       } catch (error) {

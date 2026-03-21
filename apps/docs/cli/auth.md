@@ -15,11 +15,11 @@ nexus auth <command>
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `login` | Authenticate with Nexus and get an API key |
-| `logout` | Remove stored authentication |
-| `status` | Check authentication status |
+| Command  | Description                                |
+| -------- | ------------------------------------------ |
+| `login`  | Authenticate with Nexus and get an API key |
+| `logout` | Remove stored authentication               |
+| `status` | Check authentication status                |
 
 ## Login
 

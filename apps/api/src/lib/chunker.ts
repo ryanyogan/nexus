@@ -47,7 +47,7 @@ function detectContentType(content: string): "text" | "code" | "mixed" {
 function splitByHeaders(content: string): Section[] {
   const sections: Section[] = [];
   const headerRegex = /^(#{1,6})\s+(.+)$/gm;
-  
+
   let lastIndex = 0;
   let lastTitle: string | null = null;
   let lastLevel = 0;
@@ -106,7 +106,7 @@ function splitWithOverlap(
 ): ChunkData[] {
   const chunks: ChunkData[] = [];
   const paragraphs = content.split(/\n\n+/);
-  
+
   let currentChunk = "";
   let currentTokens = 0;
 
@@ -119,7 +119,7 @@ function splitWithOverlap(
       if (currentChunk.trim()) {
         chunks.push(createChunk(currentChunk.trim(), title, sourceFile));
       }
-      
+
       // Split large paragraph
       const sentences = paragraph.split(/(?<=[.!?])\s+/);
       currentChunk = "";
@@ -127,10 +127,10 @@ function splitWithOverlap(
 
       for (const sentence of sentences) {
         const sentenceTokens = estimateTokens(sentence);
-        
+
         if (currentTokens + sentenceTokens > options.maxTokens && currentChunk.trim()) {
           chunks.push(createChunk(currentChunk.trim(), title, sourceFile));
-          
+
           // Add overlap from previous chunk
           const words = currentChunk.trim().split(/\s+/);
           const overlapWords = words.slice(-Math.floor(options.overlap / 4));
@@ -147,7 +147,7 @@ function splitWithOverlap(
     // Check if adding this paragraph would exceed limit
     if (currentTokens + paragraphTokens > options.maxTokens && currentChunk.trim()) {
       chunks.push(createChunk(currentChunk.trim(), title, sourceFile));
-      
+
       // Add overlap from previous chunk
       const words = currentChunk.trim().split(/\s+/);
       const overlapWords = words.slice(-Math.floor(options.overlap / 4));
@@ -170,11 +170,7 @@ function splitWithOverlap(
 /**
  * Create a ChunkData object.
  */
-function createChunk(
-  content: string,
-  title: string | null,
-  sourceFile: string | null
-): ChunkData {
+function createChunk(content: string, title: string | null, sourceFile: string | null): ChunkData {
   return {
     id: crypto.randomUUID(),
     title,
@@ -214,12 +210,7 @@ export function chunkMarkdown(
       });
     } else {
       // Section too large, split with overlap
-      const subChunks = splitWithOverlap(
-        section.content,
-        section.title,
-        sourceFile,
-        opts
-      );
+      const subChunks = splitWithOverlap(section.content, section.title, sourceFile, opts);
       chunks.push(...subChunks);
     }
   }

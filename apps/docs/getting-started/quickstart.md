@@ -70,12 +70,12 @@ Store information about your project so the AI remembers it:
 
 ### Memory Types
 
-| Type | Use For |
-|------|---------|
-| `project_context` | Tech stack, architecture, conventions |
-| `session_summary` | What was accomplished in a session |
-| `decision` | Architectural decisions with rationale |
-| `correction` | Lessons learned, things to avoid |
+| Type              | Use For                                |
+| ----------------- | -------------------------------------- |
+| `project_context` | Tech stack, architecture, conventions  |
+| `session_summary` | What was accomplished in a session     |
+| `decision`        | Architectural decisions with rationale |
+| `correction`      | Lessons learned, things to avoid       |
 
 ## 3. Recall Context
 

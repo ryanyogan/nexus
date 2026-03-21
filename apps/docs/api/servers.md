@@ -10,12 +10,12 @@ GET /servers
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `category` | string | Filter by category |
+| Parameter  | Type    | Description           |
+| ---------- | ------- | --------------------- |
+| `category` | string  | Filter by category    |
 | `official` | boolean | Only official servers |
-| `q` | string | Search query |
-| `limit` | number | Max results |
+| `q`        | string  | Search query          |
+| `limit`    | number  | Max results           |
 
 ### Response
 
@@ -65,9 +65,9 @@ GET /servers/:id/config
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `format` | string | `claude-desktop`, `vscode`, `generic` |
+| Parameter | Type   | Description                           |
+| --------- | ------ | ------------------------------------- |
+| `format`  | string | `claude-desktop`, `vscode`, `generic` |
 
 ### Response
 

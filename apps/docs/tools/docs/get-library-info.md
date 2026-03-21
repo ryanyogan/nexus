@@ -13,6 +13,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "libraryId": "nextjs"
@@ -20,6 +21,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "id": "nextjs",
@@ -35,9 +37,9 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `libraryId` | string | Yes | The library ID |
+| Parameter   | Type   | Required | Description    |
+| ----------- | ------ | -------- | -------------- |
+| `libraryId` | string | Yes      | The library ID |
 
 ## Returns
 

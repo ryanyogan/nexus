@@ -95,25 +95,33 @@ const createStackSchema = z.object({
   cliPreferences: z.record(z.unknown()).optional(),
   manifestType: z.string().optional(),
   manifestContent: z.string().optional(),
-  canvasData: z.object({
-    nodes: z.array(z.object({
-      id: z.string(),
-      type: z.string(),
-      position: z.object({ x: z.number(), y: z.number() }),
-      data: z.record(z.unknown()),
-    })),
-    edges: z.array(z.object({
-      id: z.string(),
-      source: z.string(),
-      target: z.string(),
-      type: z.string().optional(),
-    })),
-    viewport: z.object({
-      x: z.number(),
-      y: z.number(),
-      zoom: z.number(),
-    }).optional(),
-  }).optional(),
+  canvasData: z
+    .object({
+      nodes: z.array(
+        z.object({
+          id: z.string(),
+          type: z.string(),
+          position: z.object({ x: z.number(), y: z.number() }),
+          data: z.record(z.unknown()),
+        })
+      ),
+      edges: z.array(
+        z.object({
+          id: z.string(),
+          source: z.string(),
+          target: z.string(),
+          type: z.string().optional(),
+        })
+      ),
+      viewport: z
+        .object({
+          x: z.number(),
+          y: z.number(),
+          zoom: z.number(),
+        })
+        .optional(),
+    })
+    .optional(),
   tokenBudget: z.enum(TOKEN_BUDGETS).optional(),
   isPublic: z.boolean().optional(),
 });
@@ -157,7 +165,7 @@ function generateId(): string {
 stacksRouter.get("/", optionalAuth, async (c) => {
   const db = c.get("db");
   const user = c.get("user");
-  
+
   const filter = c.req.query("filter") || "all"; // all, my, installed, featured, starter
   const category = c.req.query("category");
   const search = c.req.query("search");
@@ -175,12 +183,17 @@ stacksRouter.get("/", optionalAuth, async (c) => {
       .select({ stackId: userStacks.stackId })
       .from(userStacks)
       .where(eq(userStacks.userId, user.id));
-    
+
     if (installedStacks.length === 0) {
       return c.json({ stacks: [], total: 0, hasMore: false });
     }
-    
-    conditions.push(inArray(stacks.id, installedStacks.map(s => s.stackId)));
+
+    conditions.push(
+      inArray(
+        stacks.id,
+        installedStacks.map((s) => s.stackId)
+      )
+    );
   } else if (filter === "featured") {
     conditions.push(eq(stacks.isFeatured, true));
     conditions.push(eq(stacks.isPublic, true));
@@ -202,12 +215,7 @@ stacksRouter.get("/", optionalAuth, async (c) => {
 
   // Search filter
   if (search) {
-    conditions.push(
-      or(
-        like(stacks.name, `%${search}%`),
-        like(stacks.description, `%${search}%`)
-      )
-    );
+    conditions.push(or(like(stacks.name, `%${search}%`), like(stacks.description, `%${search}%`)));
   }
 
   // Query with count
@@ -300,12 +308,7 @@ stacksRouter.get("/:id", optionalAuth, async (c) => {
   const [stack] = await db
     .select()
     .from(stacks)
-    .where(
-      and(
-        or(eq(stacks.id, stackId), eq(stacks.slug, stackId)),
-        eq(stacks.isActive, true)
-      )
-    )
+    .where(and(or(eq(stacks.id, stackId), eq(stacks.slug, stackId)), eq(stacks.isActive, true)))
     .limit(1);
 
   if (!stack) {
@@ -318,10 +321,7 @@ stacksRouter.get("/:id", optionalAuth, async (c) => {
   }
 
   // Get repos
-  const repos = await db
-    .select()
-    .from(stackRepos)
-    .where(eq(stackRepos.stackId, stack.id));
+  const repos = await db.select().from(stackRepos).where(eq(stackRepos.stackId, stack.id));
 
   // Get packages
   const packages = await db
@@ -389,12 +389,7 @@ stacksRouter.get("/:id/prompt", optionalAuth, async (c) => {
   const [stack] = await db
     .select()
     .from(stacks)
-    .where(
-      and(
-        or(eq(stacks.id, stackId), eq(stacks.slug, stackId)),
-        eq(stacks.isActive, true)
-      )
-    )
+    .where(and(or(eq(stacks.id, stackId), eq(stacks.slug, stackId)), eq(stacks.isActive, true)))
     .limit(1);
 
   if (!stack) {
@@ -437,11 +432,7 @@ stacksRouter.post("/", zValidator("json", createStackSchema), async (c) => {
   const slug = generateSlug(data.name);
 
   // Check for slug uniqueness
-  const [existing] = await db
-    .select()
-    .from(stacks)
-    .where(eq(stacks.slug, slug))
-    .limit(1);
+  const [existing] = await db.select().from(stacks).where(eq(stacks.slug, slug)).limit(1);
 
   const finalSlug = existing ? `${slug}-${id.slice(-6)}` : slug;
 
@@ -457,7 +448,7 @@ stacksRouter.post("/", zValidator("json", createStackSchema), async (c) => {
     layer: data.layer || 0,
     tags: data.tags || [],
     instructions: data.instructions || null,
-    cliPreferences: data.cliPreferences as StackPreferences || {},
+    cliPreferences: (data.cliPreferences as StackPreferences) || {},
     manifestType: data.manifestType || null,
     manifestContent: data.manifestContent || null,
     canvasData: data.canvasData || null,
@@ -699,11 +690,7 @@ stacksRouter.post("/:id/install", async (c) => {
       and(
         eq(stacks.id, stackId),
         eq(stacks.isActive, true),
-        or(
-          eq(stacks.isPublic, true),
-          eq(stacks.isStarter, true),
-          eq(stacks.userId, user.id)
-        )
+        or(eq(stacks.isPublic, true), eq(stacks.isStarter, true), eq(stacks.userId, user.id))
       )
     )
     .limit(1);
@@ -851,11 +838,7 @@ stacksRouter.post("/:id/compose", zValidator("json", composeStackSchema), async 
       and(
         eq(stacks.id, data.childStackId),
         eq(stacks.isActive, true),
-        or(
-          eq(stacks.isPublic, true),
-          eq(stacks.isStarter, true),
-          eq(stacks.userId, user.id)
-        )
+        or(eq(stacks.isPublic, true), eq(stacks.isStarter, true), eq(stacks.userId, user.id))
       )
     )
     .limit(1);
@@ -905,19 +888,22 @@ stacksRouter.post("/:id/compose", zValidator("json", composeStackSchema), async 
 
   await db.insert(stackCompositions).values(newComposition);
 
-  return c.json({
-    composition: {
-      id: newComposition.id,
-      position: newComposition.position,
-      childStack: {
-        id: childStack.id,
-        name: childStack.name,
-        slug: childStack.slug,
-        category: childStack.category,
-        layer: childStack.layer,
+  return c.json(
+    {
+      composition: {
+        id: newComposition.id,
+        position: newComposition.position,
+        childStack: {
+          id: childStack.id,
+          name: childStack.name,
+          slug: childStack.slug,
+          category: childStack.category,
+          layer: childStack.layer,
+        },
       },
     },
-  }, 201);
+    201
+  );
 });
 
 // DELETE /api/stacks/:id/compose/:childStackId - Remove composition

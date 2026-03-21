@@ -99,12 +99,12 @@ export const getSessionFn = createServerFn({ method: "GET" }).handler(
 
     try {
       fnLogger.debug("getSessionFn started");
-      
+
       const request = getRequest();
       const url = new URL(request.url);
-      
+
       fnLogger.debug("Creating auth instance", { path: url.pathname });
-      
+
       const auth = createAuth({
         DB: env.DB,
         GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
@@ -126,19 +126,19 @@ export const getSessionFn = createServerFn({ method: "GET" }).handler(
         return null;
       }
 
-      fnLogger.info("Session retrieved", { 
-        durationMs, 
+      fnLogger.info("Session retrieved", {
+        durationMs,
         userId: session.user?.id,
-        hasSession: true 
+        hasSession: true,
       });
-      
+
       return session as SessionData;
     } catch (error) {
       const durationMs = Date.now() - startTime;
       const err = error instanceof Error ? error : new Error(String(error));
-      
+
       fnLogger.error("Failed to get session", { durationMs }, err);
-      
+
       // Return null instead of throwing to avoid breaking the app
       return null;
     }

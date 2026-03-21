@@ -20,7 +20,9 @@ interface ServerSubmission {
   processedAt: string | null;
 }
 
-export const Route = createFileRoute("/_authed/admin/server-submissions")({ component: AdminServerSubmissionsPage });
+export const Route = createFileRoute("/_authed/admin/server-submissions")({
+  component: AdminServerSubmissionsPage,
+});
 
 function AdminServerSubmissionsPage() {
   // Note: session available via Route.useRouteContext() if needed
@@ -35,12 +37,13 @@ function AdminServerSubmissionsPage() {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        const url = filter === "all"
-          ? `${API_URL}/api/server-submissions?limit=50`
-          : `${API_URL}/api/server-submissions?status=${filter}&limit=50`;
+        const url =
+          filter === "all"
+            ? `${API_URL}/api/server-submissions?limit=50`
+            : `${API_URL}/api/server-submissions?status=${filter}&limit=50`;
         const res = await fetch(url);
         if (res.ok) {
-          const data = await res.json() as { submissions: ServerSubmission[] };
+          const data = (await res.json()) as { submissions: ServerSubmission[] };
           setSubmissions(data.submissions || []);
         }
       } catch (error) {
@@ -62,11 +65,11 @@ function AdminServerSubmissionsPage() {
         body: JSON.stringify({}),
       });
       if (res.ok) {
-        setSubmissions(prev => prev.map(s => 
-          s.id === id ? { ...s, status: "approved" as const } : s
-        ));
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === id ? { ...s, status: "approved" as const } : s))
+        );
       } else {
-        const error = await res.json() as { error?: string };
+        const error = (await res.json()) as { error?: string };
         alert(error.error || "Failed to approve");
       }
     } catch (error) {
@@ -85,13 +88,17 @@ function AdminServerSubmissionsPage() {
         body: JSON.stringify({ reason: rejectReason || undefined }),
       });
       if (res.ok) {
-        setSubmissions(prev => prev.map(s => 
-          s.id === id ? { ...s, status: "rejected" as const, rejectionReason: rejectReason || null } : s
-        ));
+        setSubmissions((prev) =>
+          prev.map((s) =>
+            s.id === id
+              ? { ...s, status: "rejected" as const, rejectionReason: rejectReason || null }
+              : s
+          )
+        );
         setRejectDialogId(null);
         setRejectReason("");
       } else {
-        const error = await res.json() as { error?: string };
+        const error = (await res.json()) as { error?: string };
         alert(error.error || "Failed to reject");
       }
     } catch (error) {
@@ -155,17 +162,16 @@ function AdminServerSubmissionsPage() {
       ) : (
         <div className="space-y-4">
           {submissions.map((submission) => (
-            <div
-              key={submission.id}
-              className="rounded-xl border border-border bg-card p-4"
-            >
+            <div key={submission.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h3 className="font-semibold text-foreground">
                       {submission.displayName || submission.name}
                     </h3>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[submission.status]}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[submission.status]}`}
+                    >
                       {submission.status}
                     </span>
                     <span className="rounded bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground">
@@ -203,14 +209,9 @@ function AdminServerSubmissionsPage() {
                       <Clock className="h-3 w-3" />
                       {new Date(submission.createdAt).toLocaleString()}
                     </span>
-                    {submission.submitterEmail && (
-                      <span>by {submission.submitterEmail}</span>
-                    )}
+                    {submission.submitterEmail && <span>by {submission.submitterEmail}</span>}
                     {submission.serverId && (
-                      <Link
-                        to="/explore/servers"
-                        className="text-primary hover:underline"
-                      >
+                      <Link to="/explore/servers" className="text-primary hover:underline">
                         View server
                       </Link>
                     )}
@@ -221,7 +222,7 @@ function AdminServerSubmissionsPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {submission.status === "pending" && (
                   <div className="flex gap-2">
                     <button
@@ -279,9 +280,7 @@ function AdminServerSubmissionsPage() {
                 disabled={actionLoading === rejectDialogId}
                 className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
               >
-                {actionLoading === rejectDialogId && (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                )}
+                {actionLoading === rejectDialogId && <Loader2 className="h-4 w-4 animate-spin" />}
                 Reject
               </button>
             </div>

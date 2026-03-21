@@ -96,7 +96,7 @@ async function awardXp(
   db: Database,
   userId: string,
   eventType: keyof typeof XP_VALUES,
-  category: typeof XP_CATEGORIES[number],
+  category: (typeof XP_CATEGORIES)[number],
   options?: {
     description?: string;
     referenceId?: string;
@@ -106,7 +106,7 @@ async function awardXp(
 ): Promise<{ xpAwarded: number; newLevel: number; leveledUp: boolean }> {
   const now = new Date().toISOString();
   const today = now.split("T")[0];
-  
+
   const baseXp = XP_VALUES[eventType];
   const multiplier = options?.multiplier || 1;
   const xpAmount = Math.floor(baseXp * multiplier);
@@ -150,7 +150,7 @@ async function awardXp(
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split("T")[0];
-    
+
     if (score.lastActivityDate === yesterdayStr) {
       newStreak = score.currentStreak + 1;
     } else {
@@ -309,10 +309,10 @@ brainRouter.get("/learnings", async (c) => {
   const conditions = [eq(learnings.userId, user.id), eq(learnings.isActive, true)];
 
   if (type) {
-    conditions.push(eq(learnings.type, type as typeof LEARNING_TYPES[number]));
+    conditions.push(eq(learnings.type, type as (typeof LEARNING_TYPES)[number]));
   }
   if (scope) {
-    conditions.push(eq(learnings.scope, scope as typeof LEARNING_SCOPES[number]));
+    conditions.push(eq(learnings.scope, scope as (typeof LEARNING_SCOPES)[number]));
   }
   if (project) {
     conditions.push(eq(learnings.project, project));
@@ -390,11 +390,14 @@ brainRouter.post("/learnings", zValidator("json", createLearningSchema), async (
     referenceType: "learning",
   });
 
-  return c.json({
-    success: true,
-    learningId: id,
-    xp: xpResult,
-  }, 201);
+  return c.json(
+    {
+      success: true,
+      learningId: id,
+      xp: xpResult,
+    },
+    201
+  );
 });
 
 // ============================================================================
@@ -630,7 +633,7 @@ brainRouter.get("/community", async (c) => {
     conditions.push(eq(communityLearnings.libraryId, libraryId));
   }
   if (type) {
-    conditions.push(eq(communityLearnings.type, type as typeof LEARNING_TYPES[number]));
+    conditions.push(eq(communityLearnings.type, type as (typeof LEARNING_TYPES)[number]));
   }
 
   const community = await db
@@ -750,7 +753,7 @@ brainRouter.post("/community/:id/vote", zValidator("json", voteSchema), async (c
 
   if (adoption) {
     const previousVote = adoption.vote || 0;
-    
+
     // Update vote
     await db
       .update(learningAdoptions)

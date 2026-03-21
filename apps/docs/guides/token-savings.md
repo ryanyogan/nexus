@@ -17,21 +17,21 @@ Without Nexus, you waste tokens on:
 
 Instead of pasting entire documentation pages, Nexus returns only relevant chunks:
 
-| Approach | Tokens |
-|----------|--------|
-| Paste React docs page | ~5,000 |
-| Nexus query result | ~500 |
-| **Savings** | **90%** |
+| Approach              | Tokens  |
+| --------------------- | ------- |
+| Paste React docs page | ~5,000  |
+| Nexus query result    | ~500    |
+| **Savings**           | **90%** |
 
 ### 2. Persistent Memory
 
 Load all project context with one tool call:
 
-| Approach | Tokens per session |
-|----------|-------------------|
-| Re-explain context | ~2,000 |
-| Load from memory | ~200 |
-| **Savings** | **90%** |
+| Approach           | Tokens per session |
+| ------------------ | ------------------ |
+| Re-explain context | ~2,000             |
+| Load from memory   | ~200               |
+| **Savings**        | **90%**            |
 
 ### 3. Targeted Results
 
@@ -51,7 +51,7 @@ Good: "useEffect cleanup function for subscriptions"
 ```json
 {
   "query": "...",
-  "tokens": "compact"  // or "code-only", "summary"
+  "tokens": "compact" // or "code-only", "summary"
 }
 ```
 

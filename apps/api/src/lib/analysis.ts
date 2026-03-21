@@ -239,10 +239,7 @@ function calculateBreakdown(
   const descriptionRate = documents.size > 0 ? docsWithDescription / documents.size : 0;
   const structureRate = documents.size > 0 ? docsWithGoodStructure / documents.size : 0;
 
-  contentQuality = Math.min(
-    100,
-    avgHeadings * 5 + descriptionRate * 40 + structureRate * 40
-  );
+  contentQuality = Math.min(100, avgHeadings * 5 + descriptionRate * 40 + structureRate * 40);
 
   // Code example quality
   let codeExampleQuality = 0;
@@ -288,10 +285,7 @@ function calculateBreakdown(
 // Overall Score Calculation
 // ============================================================================
 
-function calculateBenchmarkScore(
-  breakdown: ScoreBreakdown,
-  metrics: QualityMetrics
-): number {
+function calculateBenchmarkScore(breakdown: ScoreBreakdown, metrics: QualityMetrics): number {
   // Weighted average of breakdown components
   const weights = {
     contentQuality: 0.25,
@@ -368,9 +362,7 @@ function generateSummary(
       `${libraryName} has excellent documentation quality with comprehensive coverage.`
     );
   } else if (benchmarkScore >= 60) {
-    summaryParts.push(
-      `${libraryName} has good documentation with room for improvement.`
-    );
+    summaryParts.push(`${libraryName} has good documentation with room for improvement.`);
   } else if (benchmarkScore >= 40) {
     summaryParts.push(
       `${libraryName} documentation is adequate but could benefit from enhancements.`
@@ -397,9 +389,7 @@ function generateSummary(
   if (metrics.hasLlmTxt) {
     summaryParts.push("Includes LLM.txt for AI-optimized access.");
   } else {
-    suggestions.push(
-      "Consider adding an llms.txt file for better AI assistant compatibility."
-    );
+    suggestions.push("Consider adding an llms.txt file for better AI assistant compatibility.");
   }
 
   // Coverage suggestions
@@ -412,9 +402,7 @@ function generateSummary(
 
   // Structure suggestions
   if (breakdown.structure < 50) {
-    suggestions.push(
-      "Improve document structure with clear headings and sections."
-    );
+    suggestions.push("Improve document structure with clear headings and sections.");
   }
 
   // Content suggestions

@@ -80,9 +80,7 @@ function Toggle({ label, description, checked, onChange, disabled }: ToggleProps
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
         className={`relative mt-0.5 h-5 w-9 shrink-0 border transition-colors ${
-          checked
-            ? "border-accent bg-accent"
-            : "border-border bg-muted"
+          checked ? "border-accent bg-accent" : "border-border bg-muted"
         } ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
       >
         <span
@@ -96,9 +94,7 @@ function Toggle({ label, description, checked, onChange, disabled }: ToggleProps
           {label}
         </div>
         {description && (
-          <div className="font-mono text-[10px] text-muted-foreground mt-0.5">
-            {description}
-          </div>
+          <div className="font-mono text-[10px] text-muted-foreground mt-0.5">{description}</div>
         )}
       </div>
     </label>
@@ -121,9 +117,7 @@ function Select({ label, description, value, options, onChange, disabled }: Sele
         {label}
       </div>
       {description && (
-        <div className="font-mono text-[10px] text-muted-foreground mb-2">
-          {description}
-        </div>
+        <div className="font-mono text-[10px] text-muted-foreground mb-2">{description}</div>
       )}
       <select
         value={value}
@@ -207,9 +201,7 @@ export function StackOptionsPanel({
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <Settings className="h-4 w-4 text-muted-foreground" />
-        <span className="font-mono text-xs font-bold uppercase tracking-wider">
-          Stack Options
-        </span>
+        <span className="font-mono text-xs font-bold uppercase tracking-wider">Stack Options</span>
       </div>
 
       {/* Scrollable content */}
@@ -239,9 +231,7 @@ export function StackOptionsPanel({
                       {info.tokens}
                     </span>
                   </div>
-                  <p className="font-mono text-[10px] text-muted-foreground">
-                    {info.description}
-                  </p>
+                  <p className="font-mono text-[10px] text-muted-foreground">{info.description}</p>
                 </button>
               );
             })}
@@ -249,8 +239,8 @@ export function StackOptionsPanel({
           <div className="mt-3 flex items-start gap-2 p-2 border border-border bg-muted/30">
             <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
             <p className="font-mono text-[10px] text-muted-foreground">
-              Token budget affects how much documentation and context is included in the compiled prompt.
-              Higher budgets provide more detail but use more context window.
+              Token budget affects how much documentation and context is included in the compiled
+              prompt. Higher budgets provide more detail but use more context window.
             </p>
           </div>
         </Section>
@@ -359,7 +349,11 @@ export function StackOptionsPanel({
         </Section>
 
         {/* Documentation Section */}
-        <Section title="Documentation" icon={<FileText className="h-3.5 w-3.5" />} defaultOpen={false}>
+        <Section
+          title="Documentation"
+          icon={<FileText className="h-3.5 w-3.5" />}
+          defaultOpen={false}
+        >
           <Toggle
             label="Generate README"
             description="Include README.md with setup instructions"
@@ -382,7 +376,11 @@ export function StackOptionsPanel({
         </Section>
 
         {/* AI Behavior Section */}
-        <Section title="AI Behavior" icon={<MessageSquare className="h-3.5 w-3.5" />} defaultOpen={false}>
+        <Section
+          title="AI Behavior"
+          icon={<MessageSquare className="h-3.5 w-3.5" />}
+          defaultOpen={false}
+        >
           <Select
             label="Verbosity"
             description="How verbose AI responses should be"
@@ -417,7 +415,11 @@ export function StackOptionsPanel({
         </Section>
 
         {/* Project Structure Section */}
-        <Section title="Project Structure" icon={<Boxes className="h-3.5 w-3.5" />} defaultOpen={false}>
+        <Section
+          title="Project Structure"
+          icon={<Boxes className="h-3.5 w-3.5" />}
+          defaultOpen={false}
+        >
           <Toggle
             label="Monorepo Ready"
             description="Structure code for monorepo compatibility"

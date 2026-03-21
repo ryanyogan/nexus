@@ -122,7 +122,9 @@ function createSearchCommand(): Command {
             }
           }
           logger.newline();
-          logger.info(`Use ${chalk.cyan("nexus docs search <library> <query>")} to search within a library`);
+          logger.info(
+            `Use ${chalk.cyan("nexus docs search <library> <query>")} to search within a library`
+          );
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";

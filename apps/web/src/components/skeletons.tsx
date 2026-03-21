@@ -1,11 +1,7 @@
 import { Sparkles } from "lucide-react";
 
 export function Skeleton({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse bg-muted ${className}`}
-    />
-  );
+  return <div className={`animate-pulse bg-muted ${className}`} />;
 }
 
 // ============================================================================
@@ -187,10 +183,7 @@ export function LibraryDetailSkeleton() {
           {/* Stats skeleton */}
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="border border-border bg-muted p-4"
-              >
+              <div key={i} className="border border-border bg-muted p-4">
                 <Skeleton className="h-5 w-5 mb-2" />
                 <Skeleton className="h-8 w-16 mb-1" />
                 <Skeleton className="h-4 w-20" />
@@ -227,10 +220,7 @@ export function LibraryDetailSkeleton() {
           {/* Sidebar skeleton */}
           <div className="space-y-6">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="border border-border bg-background p-5"
-              >
+              <div key={i} className="border border-border bg-background p-5">
                 <div className="mb-4 flex items-center gap-2">
                   <Skeleton className="h-4 w-4" />
                   <Skeleton className="h-5 w-24" />

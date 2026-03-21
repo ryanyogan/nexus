@@ -179,7 +179,7 @@ function StackEditorPage() {
       }
 
       setHasChanges(false);
-      
+
       // Refresh stack data
       const refreshRes = await authFetch(`/api/stacks/${stackId}`);
       if (refreshRes.ok) {
@@ -354,7 +354,11 @@ function StackEditorPage() {
         onSave={handleSave}
         onCompile={handleCompile}
         isSaving={saving}
-        isCompiling={compiling || stack.learningStatus === "researching" || stack.learningStatus === "compiling"}
+        isCompiling={
+          compiling ||
+          stack.learningStatus === "researching" ||
+          stack.learningStatus === "compiling"
+        }
         compilationStatus={stack.learningStatus as any}
         hasUnsavedChanges={hasChanges}
       />
@@ -362,22 +366,14 @@ function StackEditorPage() {
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        {mode === "visual" && (
-          <StackSidebar starterStacks={starterStacks} />
-        )}
+        {mode === "visual" && <StackSidebar starterStacks={starterStacks} />}
 
         {/* Canvas, Text Editor, or Options Panel */}
         <div className="flex-1">
           {mode === "visual" ? (
-            <StackCanvas
-              initialData={canvasData}
-              onChange={handleCanvasChange}
-            />
+            <StackCanvas initialData={canvasData} onChange={handleCanvasChange} />
           ) : mode === "text" ? (
-            <InstructionsEditor
-              value={instructions}
-              onChange={handleInstructionsChange}
-            />
+            <InstructionsEditor value={instructions} onChange={handleInstructionsChange} />
           ) : (
             <StackOptionsPanel
               preferences={cliPreferences}

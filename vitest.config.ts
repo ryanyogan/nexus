@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
@@ -10,13 +10,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      exclude: [
-        "node_modules/**",
-        "**/dist/**",
-        "**/*.d.ts",
-        "**/test/**",
-        "**/*.config.*",
-      ],
+      exclude: ["node_modules/**", "**/dist/**", "**/*.d.ts", "**/test/**", "**/*.config.*"],
     },
   },
 });

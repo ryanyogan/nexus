@@ -17,10 +17,12 @@ submissionsRouter.post(
     "json",
     z.object({
       libraryName: z.string().min(1).max(100),
-      sourceUrl: z.string().url().refine(
-        (url) => url.includes("github.com"),
-        { message: "Currently only GitHub repositories are supported" }
-      ),
+      sourceUrl: z
+        .string()
+        .url()
+        .refine((url) => url.includes("github.com"), {
+          message: "Currently only GitHub repositories are supported",
+        }),
       description: z.string().max(500).optional(),
       email: z.string().email().optional(),
     })
@@ -110,9 +112,7 @@ submissionsRouter.get(
     const results = await query;
 
     // Get total count
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(submissions);
+    const countResult = await db.select({ count: sql<number>`count(*)` }).from(submissions);
 
     const total = countResult[0]?.count || 0;
 

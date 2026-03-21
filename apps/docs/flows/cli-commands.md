@@ -12,12 +12,12 @@ nexus flow list [options]
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
-| `--active` | Only show active flows |
-| `--installed` | Only show installed flows |
-| `--starter` | Only show starter pack flows |
-| `--json` | Output as JSON |
+| Option        | Description                  |
+| ------------- | ---------------------------- |
+| `--active`    | Only show active flows       |
+| `--installed` | Only show installed flows    |
+| `--starter`   | Only show starter pack flows |
+| `--json`      | Output as JSON               |
 
 ### Examples
 
@@ -63,8 +63,8 @@ nexus flow active [options]
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
+| Option   | Description    |
+| -------- | -------------- |
 | `--json` | Output as JSON |
 
 ### Examples
@@ -87,8 +87,8 @@ nexus flow activate <flow-id-or-slug> [options]
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
+| Option                | Description                            |
+| --------------------- | -------------------------------------- |
 | `--priority <number>` | Set priority (lower = higher priority) |
 
 ### Examples
@@ -129,10 +129,10 @@ nexus flow download <flow-id-or-slug> [options]
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
-| `--output <path>` | Output file path (default: FLOW.md) |
-| `--resolve` | Include resolved parent flow content |
+| Option            | Description                          |
+| ----------------- | ------------------------------------ |
+| `--output <path>` | Output file path (default: FLOW.md)  |
+| `--resolve`       | Include resolved parent flow content |
 
 ### Examples
 
@@ -157,16 +157,16 @@ nexus flow create [options]
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
-| `--name <name>` | Flow name |
-| `--slug <slug>` | URL-friendly slug |
-| `--description <desc>` | Flow description |
-| `--prompt <prompt>` | System prompt |
-| `--parent <id>` | Parent flow to extend |
-| `--libraries <ids>` | Comma-separated library IDs |
-| `--skills <ids>` | Comma-separated skill IDs |
-| `--interactive` | Interactive mode (prompts for input) |
+| Option                 | Description                          |
+| ---------------------- | ------------------------------------ |
+| `--name <name>`        | Flow name                            |
+| `--slug <slug>`        | URL-friendly slug                    |
+| `--description <desc>` | Flow description                     |
+| `--prompt <prompt>`    | System prompt                        |
+| `--parent <id>`        | Parent flow to extend                |
+| `--libraries <ids>`    | Comma-separated library IDs          |
+| `--skills <ids>`       | Comma-separated skill IDs            |
+| `--interactive`        | Interactive mode (prompts for input) |
 
 ### Examples
 
@@ -185,17 +185,17 @@ nexus flow create \
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `NEXUS_API_KEY` | API key for authentication |
-| `NEXUS_DEFAULT_FLOW` | Default flow to activate |
+| Variable             | Description                |
+| -------------------- | -------------------------- |
+| `NEXUS_API_KEY`      | API key for authentication |
+| `NEXUS_DEFAULT_FLOW` | Default flow to activate   |
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | General error |
-| 2 | Authentication required |
-| 3 | Flow not found |
-| 4 | Permission denied |
+| Code | Meaning                 |
+| ---- | ----------------------- |
+| 0    | Success                 |
+| 1    | General error           |
+| 2    | Authentication required |
+| 3    | Flow not found          |
+| 4    | Permission denied       |

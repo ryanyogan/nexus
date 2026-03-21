@@ -34,11 +34,13 @@ Add custom instructions and rules:
 
 ```markdown
 ## Code Style
+
 - Use TypeScript strict mode
 - Prefer const over let
 - Use explicit return types
 
 ## Architecture
+
 - Feature-based folder structure
 - Colocation of related files
 ```
@@ -52,6 +54,7 @@ Add GitHub repositories for the AI to learn from:
 - **Status** - Pending, Analyzing, Complete, Failed
 
 When you add a repository, a background job:
+
 1. Clones the repository structure
 2. Identifies key patterns
 3. Extracts conventions
@@ -82,13 +85,13 @@ Research npm or Cargo packages:
 
 ### Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Delete` | Remove selected node |
-| `Ctrl/Cmd + Z` | Undo |
-| `Ctrl/Cmd + Shift + Z` | Redo |
-| `Ctrl/Cmd + A` | Select all |
-| `Escape` | Deselect all |
+| Key                    | Action               |
+| ---------------------- | -------------------- |
+| `Delete`               | Remove selected node |
+| `Ctrl/Cmd + Z`         | Undo                 |
+| `Ctrl/Cmd + Shift + Z` | Redo                 |
+| `Ctrl/Cmd + A`         | Select all           |
+| `Escape`               | Deselect all         |
 
 ## Connecting Nodes
 
@@ -98,6 +101,7 @@ Nodes have connection handles:
 - **Target handles** (left side) - Incoming connections
 
 To connect:
+
 1. Click and drag from a source handle
 2. Drop on a target handle
 3. The connection is established
@@ -106,14 +110,14 @@ To connect:
 
 Toggle between Canvas and Text modes using the toolbar:
 
-| Feature | Canvas | Text |
-|---------|--------|------|
-| Visual composition | ✓ | - |
-| Node arrangement | ✓ | - |
-| Quick editing | - | ✓ |
-| Markdown support | ✓ | ✓ |
-| Repository nodes | ✓ | ✓ |
-| Copy/paste code | - | ✓ |
+| Feature            | Canvas | Text |
+| ------------------ | ------ | ---- |
+| Visual composition | ✓      | -    |
+| Node arrangement   | ✓      | -    |
+| Quick editing      | -      | ✓    |
+| Markdown support   | ✓      | ✓    |
+| Repository nodes   | ✓      | ✓    |
+| Copy/paste code    | -      | ✓    |
 
 Both modes share the same underlying data - changes in one are reflected in the other.
 

@@ -123,7 +123,7 @@ function ReposPage() {
       setError(`You've reached your limit of ${limits.maxRepos} repos. Upgrade to connect more.`);
       return;
     }
-    
+
     if (repo.isPrivate && limits && !limits.privateRepos) {
       setError("Private repos require a Pro or Team plan. Upgrade to connect private repos.");
       return;
@@ -145,9 +145,9 @@ function ReposPage() {
           isPrivate: repo.isPrivate,
         }),
       });
-      
+
       if (!res.ok) throw new Error("Failed to connect repo");
-      
+
       setShowConnect(false);
       await fetchRepos();
     } catch (err) {
@@ -171,10 +171,14 @@ function ReposPage() {
   }
 
   async function disconnectRepo(id: string) {
-    if (!confirm("Are you sure you want to disconnect this repository? All indexed files will be removed.")) {
+    if (
+      !confirm(
+        "Are you sure you want to disconnect this repository? All indexed files will be removed."
+      )
+    ) {
       return;
     }
-    
+
     setActionLoading(`disconnect-${id}`);
     try {
       const res = await authFetch(`/api/repos/${id}`, { method: "DELETE" });
@@ -253,8 +257,8 @@ function ReposPage() {
                     tier === "team"
                       ? "border-purple-500/50 text-purple-500"
                       : tier === "pro"
-                      ? "border-accent/50 text-accent"
-                      : "border-border text-muted-foreground"
+                        ? "border-accent/50 text-accent"
+                        : "border-border text-muted-foreground"
                   }`}
                 >
                   {tier}
@@ -352,7 +356,9 @@ function ReposPage() {
                 <span className="font-mono text-xs font-bold uppercase">Use</span>
               </div>
               <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Access your repo context via MCP tools: <code className="text-accent">get-repo-file</code>, <code className="text-accent">get-repo-structure</code>.
+                Access your repo context via MCP tools:{" "}
+                <code className="text-accent">get-repo-file</code>,{" "}
+                <code className="text-accent">get-repo-structure</code>.
               </p>
             </div>
           </div>

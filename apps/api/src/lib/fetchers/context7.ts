@@ -88,7 +88,9 @@ export async function fetchContext7Docs(
     }
   }
 
-  console.log(`Context7 fetch complete: ${successfulQueries} successful, ${failedQueries} failed, ${allDocs.size} unique docs`);
+  console.log(
+    `Context7 fetch complete: ${successfulQueries} successful, ${failedQueries} failed, ${allDocs.size} unique docs`
+  );
 
   console.log(`Fetched ${allDocs.size} unique docs from Context7`);
   return Array.from(allDocs.values());
@@ -146,11 +148,7 @@ async function queryContext7(
         .map((c) => `\`\`\`${c.language}\n${c.code}\n\`\`\``)
         .join("\n\n");
 
-      const content = [
-        snippet.codeDescription,
-        "",
-        codeExamples,
-      ].join("\n");
+      const content = [snippet.codeDescription, "", codeExamples].join("\n");
 
       results.push({
         title: snippet.codeTitle || snippet.pageTitle,

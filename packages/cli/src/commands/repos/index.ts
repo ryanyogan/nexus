@@ -95,7 +95,7 @@ function createListCommand(): Command {
 
       try {
         const client = getClient();
-        const result = await client.listConnectedRepos() as {
+        const result = (await client.listConnectedRepos()) as {
           repos: ConnectedRepo[];
           tier: string;
           limits: RepoTierLimits;
@@ -107,9 +107,16 @@ function createListCommand(): Command {
           logger.log(chalk.bold("\nConnected Repositories\n"));
 
           // Show tier info
-          const tierColor = result.tier === "team" ? chalk.magenta : result.tier === "pro" ? chalk.cyan : chalk.gray;
+          const tierColor =
+            result.tier === "team"
+              ? chalk.magenta
+              : result.tier === "pro"
+                ? chalk.cyan
+                : chalk.gray;
           logger.log(`  ${chalk.bold("Tier:")} ${tierColor(result.tier.toUpperCase())}`);
-          logger.log(`  ${chalk.bold("Usage:")} ${result.limits.currentRepoCount}/${result.limits.maxRepos} repos`);
+          logger.log(
+            `  ${chalk.bold("Usage:")} ${result.limits.currentRepoCount}/${result.limits.maxRepos} repos`
+          );
           logger.newline();
 
           if (result.repos.length === 0) {
@@ -122,10 +129,12 @@ function createListCommand(): Command {
           for (const repo of result.repos) {
             const statusIcon = getStatusIcon(repo.indexStatus);
             const privateTag = repo.isPrivate ? chalk.yellow(" [private]") : "";
-            
+
             logger.log(`  ${statusIcon} ${chalk.bold(repo.fullName)}${privateTag}`);
             logger.log(`     ${chalk.gray(`ID: ${repo.id}`)}`);
-            logger.log(`     ${chalk.gray(`${repo.totalFiles} files, ${formatBytes(repo.totalBytes)}`)}`);
+            logger.log(
+              `     ${chalk.gray(`${repo.totalFiles} files, ${formatBytes(repo.totalBytes)}`)}`
+            );
             if (repo.description) {
               logger.log(`     ${chalk.gray(repo.description)}`);
             }
@@ -232,7 +241,7 @@ function createStructureCommand(): Command {
 
       try {
         const client = getClient();
-        const result = await client.getRepoStructure(id) as { structure: RepoTreeNode };
+        const result = (await client.getRepoStructure(id)) as { structure: RepoTreeNode };
 
         if (jsonOutput) {
           outputJson(result);
@@ -255,7 +264,7 @@ function createStructureCommand(): Command {
 function printTree(node: RepoTreeNode, indent: string = ""): void {
   const icon = node.type === "directory" ? chalk.blue("📁") : chalk.gray("📄");
   logger.log(`${indent}${icon} ${node.name}`);
-  
+
   if (node.children) {
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
@@ -288,20 +297,26 @@ function createFileCommand(): Command {
 
       try {
         const client = getClient();
-        const result = await client.getRepoFile(id, filePath) as { file: RepoFile & { content: string } };
+        const result = (await client.getRepoFile(id, filePath)) as {
+          file: RepoFile & { content: string };
+        };
 
         if (jsonOutput) {
           outputJson(result);
         } else {
           const file = result.file;
-          
+
           logger.log(chalk.bold(`\n${file.path}\n`));
-          logger.log(chalk.gray(`Type: ${file.fileType} | Language: ${file.language || "unknown"} | Size: ${formatBytes(file.sizeBytes)}`));
-          
+          logger.log(
+            chalk.gray(
+              `Type: ${file.fileType} | Language: ${file.language || "unknown"} | Size: ${formatBytes(file.sizeBytes)}`
+            )
+          );
+
           if (file.summary) {
             logger.log(chalk.gray(`Summary: ${file.summary}`));
           }
-          
+
           logger.newline();
           logger.log(chalk.gray("─".repeat(60)));
           logger.log(file.content);

@@ -214,22 +214,14 @@ function NewStackPage() {
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        {mode === "visual" && (
-          <StackSidebar starterStacks={starterStacks} />
-        )}
+        {mode === "visual" && <StackSidebar starterStacks={starterStacks} />}
 
         {/* Canvas or Text Editor */}
         <div className="flex-1">
           {mode === "visual" ? (
-            <StackCanvas
-              initialData={formData.canvasData}
-              onChange={handleCanvasChange}
-            />
+            <StackCanvas initialData={formData.canvasData} onChange={handleCanvasChange} />
           ) : (
-            <InstructionsEditor
-              value={formData.instructions}
-              onChange={handleInstructionsChange}
-            />
+            <InstructionsEditor value={formData.instructions} onChange={handleInstructionsChange} />
           )}
         </div>
       </div>

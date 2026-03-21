@@ -18,6 +18,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "memoryId": "mem_abc123",
@@ -28,14 +29,14 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `memoryId` | string | Yes | Memory ID to update |
-| `title` | string | No | New title |
-| `content` | string | No | New content (regenerates embedding) |
-| `tags` | string[] | No | New tags |
-| `importance` | number | No | New importance 1-10 |
-| `summary` | string | No | New summary |
+| Parameter    | Type     | Required | Description                         |
+| ------------ | -------- | -------- | ----------------------------------- |
+| `memoryId`   | string   | Yes      | Memory ID to update                 |
+| `title`      | string   | No       | New title                           |
+| `content`    | string   | No       | New content (regenerates embedding) |
+| `tags`       | string[] | No       | New tags                            |
+| `importance` | number   | No       | New importance 1-10                 |
+| `summary`    | string   | No       | New summary                         |
 
 ## Authentication
 

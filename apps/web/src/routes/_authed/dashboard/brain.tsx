@@ -134,7 +134,7 @@ function BrainPage() {
 
   async function createLearning() {
     if (!newLearning.trigger || !newLearning.response) return;
-    
+
     setActionLoading("new");
     try {
       const res = await authFetch("/api/brain/learnings", {
@@ -142,9 +142,9 @@ function BrainPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newLearning),
       });
-      
+
       if (!res.ok) throw new Error("Failed to create learning");
-      
+
       setShowNewLearning(false);
       setNewLearning({ trigger: "", response: "", type: "correction", scope: "global" });
       await fetchData();
@@ -157,7 +157,7 @@ function BrainPage() {
 
   async function deleteLearning(id: string) {
     if (!confirm("Are you sure you want to delete this learning?")) return;
-    
+
     setActionLoading(id);
     try {
       await authFetch(`/api/brain/learnings/${id}`, { method: "DELETE" });
@@ -255,7 +255,9 @@ function BrainPage() {
                   <Brain className="h-6 w-6 text-accent" />
                 </div>
                 <div>
-                  <p className="font-mono text-2xl font-bold text-foreground">Level {score.level}</p>
+                  <p className="font-mono text-2xl font-bold text-foreground">
+                    Level {score.level}
+                  </p>
                   <p className="font-mono text-xs text-muted-foreground">
                     {score.totalXp.toLocaleString()} Total XP
                   </p>
@@ -452,7 +454,9 @@ function BrainPage() {
                       {new Date(event.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <span className="font-mono text-sm font-bold text-accent">+{event.xpAmount} XP</span>
+                  <span className="font-mono text-sm font-bold text-accent">
+                    +{event.xpAmount} XP
+                  </span>
                 </div>
               ))}
               {xpHistory.length === 0 && (
@@ -473,7 +477,7 @@ function BrainPage() {
               <h2 className="mb-4 font-mono text-lg font-bold uppercase text-foreground">
                 Add Learning
               </h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase text-muted-foreground">
@@ -509,7 +513,10 @@ function BrainPage() {
                     <select
                       value={newLearning.type}
                       onChange={(e) =>
-                        setNewLearning({ ...newLearning, type: e.target.value as typeof newLearning.type })
+                        setNewLearning({
+                          ...newLearning,
+                          type: e.target.value as typeof newLearning.type,
+                        })
                       }
                       className="w-full border border-border bg-background px-3 py-2 font-mono text-sm text-foreground focus:border-accent focus:outline-none"
                     >
@@ -526,7 +533,10 @@ function BrainPage() {
                     <select
                       value={newLearning.scope}
                       onChange={(e) =>
-                        setNewLearning({ ...newLearning, scope: e.target.value as typeof newLearning.scope })
+                        setNewLearning({
+                          ...newLearning,
+                          scope: e.target.value as typeof newLearning.scope,
+                        })
                       }
                       className="w-full border border-border bg-background px-3 py-2 font-mono text-sm text-foreground focus:border-accent focus:outline-none"
                     >
@@ -548,7 +558,9 @@ function BrainPage() {
                 </button>
                 <button
                   onClick={createLearning}
-                  disabled={!newLearning.trigger || !newLearning.response || actionLoading === "new"}
+                  disabled={
+                    !newLearning.trigger || !newLearning.response || actionLoading === "new"
+                  }
                   className="border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
                 >
                   {actionLoading === "new" ? (
@@ -591,7 +603,7 @@ interface LearningCardProps {
 
 function LearningCard({ learning, actionLoading, onDelete, onToggle }: LearningCardProps) {
   const isLoading = actionLoading === learning.id;
-  
+
   const typeColors: Record<string, string> = {
     correction: "border-red-500/50 text-red-500",
     pattern: "border-blue-500/50 text-blue-500",
@@ -633,7 +645,7 @@ function LearningCard({ learning, actionLoading, onDelete, onToggle }: LearningC
             </p>
           )}
         </div>
-        
+
         <div className="flex items-center gap-1">
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

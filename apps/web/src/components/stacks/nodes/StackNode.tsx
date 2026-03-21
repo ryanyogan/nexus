@@ -18,7 +18,7 @@ export type StackNodeType = Node<StackNodeData, "stack">;
 
 function StackNode({ data, selected }: NodeProps<StackNodeType>) {
   const bgColor = data.color || "var(--color-accent)";
-  
+
   return (
     <>
       <NodeToolbar
@@ -107,8 +107,8 @@ function StackNode({ data, selected }: NodeProps<StackNodeType>) {
                   data.learningStatus === "researching" || data.learningStatus === "compiling"
                     ? "animate-pulse bg-amber-500"
                     : data.learningStatus === "failed"
-                    ? "bg-destructive"
-                    : "bg-muted-foreground"
+                      ? "bg-destructive"
+                      : "bg-muted-foreground"
                 }`}
               />
               <span className="font-mono text-[10px] uppercase text-muted-foreground">

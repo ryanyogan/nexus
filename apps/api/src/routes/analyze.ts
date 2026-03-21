@@ -67,43 +67,42 @@ analyzeRouter.get(
   zValidator(
     "query",
     z.object({
-      url: z.string().url().refine(
-        (url) => url.includes("github.com"),
-        { message: "Only GitHub URLs are supported" }
-      ),
+      url: z
+        .string()
+        .url()
+        .refine((url) => url.includes("github.com"), { message: "Only GitHub URLs are supported" }),
     })
   ),
   async (c) => {
     const { url } = c.req.valid("query");
-    
+
     // Parse GitHub URL to extract owner/repo
-    const match = url.match(/github\.com\/([^\/]+)\/([^\/\?#]+)/);
+    const match = url.match(/github\.com\/([^/]+)\/([^/?#]+)/);
     if (!match) {
       return c.json({ error: "Invalid GitHub URL format" }, 400);
     }
-    
+
     const [, owner, repo] = match;
     const repoName = repo.replace(/\.git$/, "");
-    
+
     // GitHub API token from env (optional but recommended for rate limits)
     const githubToken = (c.env as any).GITHUB_TOKEN;
-    
+
     const headers: HeadersInit = {
-      "Accept": "application/vnd.github.v3+json",
+      Accept: "application/vnd.github.v3+json",
       "User-Agent": "Nexus-DocOracle/1.0",
     };
-    
+
     if (githubToken) {
       headers["Authorization"] = `Bearer ${githubToken}`;
     }
-    
+
     try {
       // Fetch repository info
-      const repoResponse = await fetch(
-        `https://api.github.com/repos/${owner}/${repoName}`,
-        { headers }
-      );
-      
+      const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, {
+        headers,
+      });
+
       if (!repoResponse.ok) {
         if (repoResponse.status === 404) {
           return c.json({ error: "Repository not found" }, 404);
@@ -113,23 +112,23 @@ analyzeRouter.get(
         }
         return c.json({ error: "Failed to fetch repository info" }, 500);
       }
-      
+
       const repoData: GitHubRepo = await repoResponse.json();
-      
+
       // Fetch root directory contents
       const contentsResponse = await fetch(
         `https://api.github.com/repos/${owner}/${repoName}/contents`,
         { headers }
       );
-      
+
       let rootContents: GitHubContent[] = [];
       if (contentsResponse.ok) {
         rootContents = await contentsResponse.json();
       }
-      
+
       // Analyze for documentation sources
       const docSources: DocSource[] = [];
-      
+
       // Check for llms.txt (highest priority)
       const llmsTxt = rootContents.find(
         (item) => item.name.toLowerCase() === "llms.txt" && item.type === "file"
@@ -142,7 +141,7 @@ analyzeRouter.get(
           description: "LLM-optimized documentation file (recommended)",
         });
       }
-      
+
       // Check for llms-full.txt
       const llmsFullTxt = rootContents.find(
         (item) => item.name.toLowerCase() === "llms-full.txt" && item.type === "file"
@@ -155,11 +154,11 @@ analyzeRouter.get(
           description: "Full LLM documentation file",
         });
       }
-      
+
       // Check for docs folder
       const docsFolder = rootContents.find(
-        (item) => 
-          (item.name.toLowerCase() === "docs" || item.name.toLowerCase() === "documentation") && 
+        (item) =>
+          (item.name.toLowerCase() === "docs" || item.name.toLowerCase() === "documentation") &&
           item.type === "dir"
       );
       if (docsFolder) {
@@ -170,7 +169,7 @@ analyzeRouter.get(
           description: "Documentation folder",
         });
       }
-      
+
       // Check for README
       const readme = rootContents.find(
         (item) => item.name.toLowerCase().startsWith("readme") && item.type === "file"
@@ -183,32 +182,32 @@ analyzeRouter.get(
           description: "Repository README",
         });
       }
-      
+
       // Check for other doc files
       const docFiles = rootContents.filter(
-        (item) => 
-          item.type === "file" && 
-          (item.name.toLowerCase().endsWith(".md") || 
-           item.name.toLowerCase().includes("guide") ||
-           item.name.toLowerCase().includes("tutorial"))
+        (item) =>
+          item.type === "file" &&
+          (item.name.toLowerCase().endsWith(".md") ||
+            item.name.toLowerCase().includes("guide") ||
+            item.name.toLowerCase().includes("tutorial"))
       );
-      
+
       if (docFiles.length > 0 && !readme) {
         docSources.push({
           type: "doc-files",
-          path: docFiles.map(f => f.path).join(", "),
+          path: docFiles.map((f) => f.path).join(", "),
           priority: 5,
           description: `${docFiles.length} documentation file(s)`,
         });
       }
-      
+
       // Suggest categories based on topics and language
       const suggestedCategories = suggestCategories(
         repoData.topics,
         repoData.language,
         repoData.description
       );
-      
+
       const result: AnalysisResult = {
         repo: {
           name: repoData.name,
@@ -229,14 +228,11 @@ analyzeRouter.get(
         suggestedCategories,
         hasLlmsTxt: !!llmsTxt || !!llmsFullTxt,
       };
-      
+
       return c.json(result);
     } catch (error) {
       console.error("Error analyzing repository:", error);
-      return c.json(
-        { error: "Failed to analyze repository" },
-        500
-      );
+      return c.json({ error: "Failed to analyze repository" }, 500);
     }
   }
 );
@@ -248,24 +244,46 @@ function suggestCategories(
   description: string | null
 ): string[] {
   const categories: Set<string> = new Set();
-  const topicsLower = topics.map(t => t.toLowerCase());
+  const topicsLower = topics.map((t) => t.toLowerCase());
   const descLower = (description || "").toLowerCase();
-  
+
   // Frontend frameworks/libraries
   if (
-    topicsLower.some(t => 
-      ["react", "vue", "angular", "svelte", "solid", "preact", "frontend", "ui", "component"].includes(t)
+    topicsLower.some((t) =>
+      [
+        "react",
+        "vue",
+        "angular",
+        "svelte",
+        "solid",
+        "preact",
+        "frontend",
+        "ui",
+        "component",
+      ].includes(t)
     ) ||
     descLower.includes("frontend") ||
     descLower.includes("ui component")
   ) {
     categories.add("frontend");
   }
-  
+
   // Backend frameworks
   if (
-    topicsLower.some(t => 
-      ["backend", "server", "api", "express", "fastify", "hono", "nest", "koa", "django", "flask", "rails"].includes(t)
+    topicsLower.some((t) =>
+      [
+        "backend",
+        "server",
+        "api",
+        "express",
+        "fastify",
+        "hono",
+        "nest",
+        "koa",
+        "django",
+        "flask",
+        "rails",
+      ].includes(t)
     ) ||
     descLower.includes("backend") ||
     descLower.includes("server") ||
@@ -273,10 +291,10 @@ function suggestCategories(
   ) {
     categories.add("backend");
   }
-  
+
   // Full stack
   if (
-    topicsLower.some(t => 
+    topicsLower.some((t) =>
       ["fullstack", "full-stack", "nextjs", "nuxt", "remix", "sveltekit", "astro"].includes(t)
     ) ||
     descLower.includes("full stack") ||
@@ -284,33 +302,66 @@ function suggestCategories(
   ) {
     categories.add("fullstack");
   }
-  
+
   // Database
   if (
-    topicsLower.some(t => 
-      ["database", "db", "orm", "sql", "nosql", "postgres", "mysql", "mongodb", "prisma", "drizzle", "typeorm"].includes(t)
+    topicsLower.some((t) =>
+      [
+        "database",
+        "db",
+        "orm",
+        "sql",
+        "nosql",
+        "postgres",
+        "mysql",
+        "mongodb",
+        "prisma",
+        "drizzle",
+        "typeorm",
+      ].includes(t)
     ) ||
     descLower.includes("database") ||
     descLower.includes("orm")
   ) {
     categories.add("database");
   }
-  
+
   // Cloud/Infrastructure
   if (
-    topicsLower.some(t => 
-      ["cloud", "aws", "gcp", "azure", "cloudflare", "vercel", "netlify", "docker", "kubernetes", "serverless"].includes(t)
+    topicsLower.some((t) =>
+      [
+        "cloud",
+        "aws",
+        "gcp",
+        "azure",
+        "cloudflare",
+        "vercel",
+        "netlify",
+        "docker",
+        "kubernetes",
+        "serverless",
+      ].includes(t)
     ) ||
     descLower.includes("cloud") ||
     descLower.includes("serverless")
   ) {
     categories.add("cloud");
   }
-  
+
   // AI/ML
   if (
-    topicsLower.some(t => 
-      ["ai", "ml", "machine-learning", "deep-learning", "llm", "openai", "langchain", "embedding", "transformer"].includes(t)
+    topicsLower.some((t) =>
+      [
+        "ai",
+        "ml",
+        "machine-learning",
+        "deep-learning",
+        "llm",
+        "openai",
+        "langchain",
+        "embedding",
+        "transformer",
+      ].includes(t)
     ) ||
     descLower.includes("artificial intelligence") ||
     descLower.includes("machine learning") ||
@@ -318,10 +369,10 @@ function suggestCategories(
   ) {
     categories.add("ai");
   }
-  
+
   // Testing
   if (
-    topicsLower.some(t => 
+    topicsLower.some((t) =>
       ["testing", "test", "jest", "vitest", "playwright", "cypress", "mocha", "e2e"].includes(t)
     ) ||
     descLower.includes("testing") ||
@@ -329,10 +380,10 @@ function suggestCategories(
   ) {
     categories.add("testing");
   }
-  
+
   // Utilities
   if (
-    topicsLower.some(t => 
+    topicsLower.some((t) =>
       ["utility", "utilities", "helper", "tool", "cli", "lodash", "utils"].includes(t)
     ) ||
     descLower.includes("utility") ||
@@ -340,7 +391,7 @@ function suggestCategories(
   ) {
     categories.add("utilities");
   }
-  
+
   // Language-based suggestions
   if (language) {
     const langLower = language.toLowerCase();
@@ -352,7 +403,7 @@ function suggestCategories(
       categories.add("backend");
     }
   }
-  
+
   return Array.from(categories);
 }
 

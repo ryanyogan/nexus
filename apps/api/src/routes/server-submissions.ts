@@ -19,10 +19,14 @@ serverSubmissionsRouter.post(
       name: z.string().min(1).max(100),
       displayName: z.string().max(100).optional(),
       description: z.string().max(1000).optional(),
-      repositoryUrl: z.string().url().refine(
-        (url) => url.includes("github.com") || url.includes("gitlab.com") || url.includes("npmjs.com"),
-        { message: "Please provide a GitHub, GitLab, or npm package URL" }
-      ),
+      repositoryUrl: z
+        .string()
+        .url()
+        .refine(
+          (url) =>
+            url.includes("github.com") || url.includes("gitlab.com") || url.includes("npmjs.com"),
+          { message: "Please provide a GitHub, GitLab, or npm package URL" }
+        ),
       packageName: z.string().max(200).optional(),
       packageType: z.enum(["npm", "pypi", "docker", "binary", "remote"]).default("npm"),
       transportType: z.enum(["stdio", "http", "sse"]).default("stdio"),
@@ -120,9 +124,7 @@ serverSubmissionsRouter.get(
     const results = await query;
 
     // Get total count
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(serverSubmissions);
+    const countResult = await db.select({ count: sql<number>`count(*)` }).from(serverSubmissions);
 
     const total = countResult[0]?.count || 0;
 

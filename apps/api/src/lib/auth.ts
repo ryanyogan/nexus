@@ -26,13 +26,15 @@ async function hashToken(token: string): Promise<string> {
 export async function generateApiToken(): Promise<{ token: string; hash: string; prefix: string }> {
   const tokenBytes = new Uint8Array(32);
   crypto.getRandomValues(tokenBytes);
-  const token = "nxs_" + Array.from(tokenBytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  
+  const token =
+    "nxs_" +
+    Array.from(tokenBytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
   const hash = await hashToken(token);
   const prefix = token.slice(0, 12); // nxs_ + 8 chars
-  
+
   return { token, hash, prefix };
 }
 
@@ -54,7 +56,7 @@ export async function validateToken(
   }
 
   const token = match[1];
-  
+
   // Check if it's a Nexus token
   if (!token.startsWith("nxs_")) {
     return { valid: false, error: "Invalid token format" };
@@ -62,16 +64,11 @@ export async function validateToken(
 
   // Hash the token and look it up
   const tokenHash = await hashToken(token);
-  
+
   const [apiToken] = await db
     .select()
     .from(apiTokens)
-    .where(
-      and(
-        eq(apiTokens.tokenHash, tokenHash),
-        eq(apiTokens.isActive, true)
-      )
-    )
+    .where(and(eq(apiTokens.tokenHash, tokenHash), eq(apiTokens.isActive, true)))
     .limit(1);
 
   if (!apiToken) {

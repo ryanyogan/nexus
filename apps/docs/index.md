@@ -82,11 +82,11 @@ Context is expensive. Nexus uses semantic search to return only the relevant chu
   <StatItem value="100k+" label="Snippets" />
 </StatsGrid>
 
-| Without Nexus | With Nexus |
-|--------------|------------|
-| Re-explain project structure every session | Load context in one tool call |
-| Paste documentation into chat | AI queries docs directly |
-| Search for MCP server setup guides | Get instant installation configs |
+| Without Nexus                              | With Nexus                       |
+| ------------------------------------------ | -------------------------------- |
+| Re-explain project structure every session | Load context in one tool call    |
+| Paste documentation into chat              | AI queries docs directly         |
+| Search for MCP server setup guides         | Get instant installation configs |
 
 ---
 
@@ -128,26 +128,26 @@ Context is expensive. Nexus uses semantic search to return only the relevant chu
 
 ### Documentation Tools
 
-| Tool | Description |
-|------|-------------|
-| `resolve-library` | Find library IDs for documentation queries |
-| `query-docs` | Search indexed documentation with semantic search |
-| `get-library-info` | Get detailed library metadata and stats |
-| `list-libraries` | Browse all indexed documentation |
+| Tool               | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| `resolve-library`  | Find library IDs for documentation queries        |
+| `query-docs`       | Search indexed documentation with semantic search |
+| `get-library-info` | Get detailed library metadata and stats           |
+| `list-libraries`   | Browse all indexed documentation                  |
 
 ### Memory Tools
 
-| Tool | Description |
-|------|-------------|
-| `save-memory` | Store project context, decisions, and learnings |
-| `recall-memories` | Retrieve relevant memories using natural language |
-| `get-project-context` | Load all context for a specific project |
-| `list-memories` | Browse and manage stored memories |
+| Tool                  | Description                                       |
+| --------------------- | ------------------------------------------------- |
+| `save-memory`         | Store project context, decisions, and learnings   |
+| `recall-memories`     | Retrieve relevant memories using natural language |
+| `get-project-context` | Load all context for a specific project           |
+| `list-memories`       | Browse and manage stored memories                 |
 
 ### Server Registry Tools
 
-| Tool | Description |
-|------|-------------|
-| `discover-servers` | Find MCP servers by capability or category |
-| `get-server-info` | Get detailed server documentation |
-| `get-server-config` | Generate ready-to-use MCP configurations |
+| Tool                | Description                                |
+| ------------------- | ------------------------------------------ |
+| `discover-servers`  | Find MCP servers by capability or category |
+| `get-server-info`   | Get detailed server documentation          |
+| `get-server-config` | Generate ready-to-use MCP configurations   |

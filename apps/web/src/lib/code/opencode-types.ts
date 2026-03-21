@@ -82,12 +82,7 @@ export interface AssistantMessage extends Message {
   role: "assistant";
 }
 
-export type Part =
-  | TextPart
-  | ToolCallPart
-  | ToolResultPart
-  | FilePart
-  | ErrorPart;
+export type Part = TextPart | ToolCallPart | ToolResultPart | FilePart | ErrorPart;
 
 export interface TextPart {
   type: "text";
@@ -224,7 +219,10 @@ export type OpenCodeEvent =
   | { type: "session.status"; properties: { sessionID: string; status: SessionStatus } }
   | { type: "message.created"; properties: { info: Message; parts: Part[] } }
   | { type: "message.updated"; properties: { info: Message; parts: Part[] } }
-  | { type: "message.part.updated"; properties: { sessionID: string; messageID: string; part: Part; delta?: string } }
+  | {
+      type: "message.part.updated";
+      properties: { sessionID: string; messageID: string; part: Part; delta?: string };
+    }
   | { type: "file.edited"; properties: { file: string } }
   | { type: "todo.updated"; properties: { sessionID: string; todos: Todo[] } }
   | { type: "permission.updated"; properties: PermissionRequest };

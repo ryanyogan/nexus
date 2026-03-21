@@ -201,9 +201,7 @@ async function searchLibrary(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(
-      `Context7 search error: ${response.status} ${response.statusText} - ${text}`
-    );
+    throw new Error(`Context7 search error: ${response.status} ${response.statusText} - ${text}`);
   }
 
   const data = (await response.json()) as Context7SearchResponse;
@@ -244,9 +242,7 @@ async function fetchDocumentation(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(
-      `Context7 context error: ${response.status} ${response.statusText} - ${text}`
-    );
+    throw new Error(`Context7 context error: ${response.status} ${response.statusText} - ${text}`);
   }
 
   return (await response.json()) as Context7ContextResponse;
@@ -255,9 +251,7 @@ async function fetchDocumentation(
 /**
  * Convert source reputation to numeric trust score (0-10).
  */
-function reputationToTrustScore(
-  reputation: "High" | "Medium" | "Low" | "Unknown"
-): number {
+function reputationToTrustScore(reputation: "High" | "Medium" | "Low" | "Unknown"): number {
   switch (reputation) {
     case "High":
       return 9;
@@ -290,18 +284,7 @@ async function createSyncJob(
     `INSERT INTO sync_jobs (id, type, status, total_items, processed_items, successful_items, failed_items, errors, triggered_by, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
-    .bind(
-      jobId,
-      "context7_libraries",
-      "pending",
-      totalItems,
-      0,
-      0,
-      0,
-      "[]",
-      triggeredBy,
-      now
-    )
+    .bind(jobId, "context7_libraries", "pending", totalItems, 0, 0, 0, "[]", triggeredBy, now)
     .run();
 
   return jobId;
@@ -359,9 +342,7 @@ async function updateSyncJobProgress(
 
   values.push(jobId);
 
-  await env.DB.prepare(
-    `UPDATE sync_jobs SET ${setClauses.join(", ")} WHERE id = ?`
-  )
+  await env.DB.prepare(`UPDATE sync_jobs SET ${setClauses.join(", ")} WHERE id = ?`)
     .bind(...values)
     .run();
 }
@@ -446,10 +427,7 @@ async function syncSingleLibrary(
       }
     } catch (error) {
       // Log but continue with other queries
-      console.warn(
-        `Failed to fetch docs for ${library.name} with query "${query}":`,
-        error
-      );
+      console.warn(`Failed to fetch docs for ${library.name} with query "${query}":`, error);
     }
   }
 
@@ -481,9 +459,7 @@ async function syncSingleLibrary(
   const now = new Date().toISOString();
 
   // Check if library exists
-  const existingLibrary = await env.DB.prepare(
-    `SELECT id FROM libraries WHERE id = ?`
-  )
+  const existingLibrary = await env.DB.prepare(`SELECT id FROM libraries WHERE id = ?`)
     .bind(library.name)
     .first();
 
@@ -561,8 +537,7 @@ async function processBatch(
         await syncSingleLibrary(env, lib, apiKey);
         return { library: lib.name, success: true };
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
         return { library: lib.name, success: false, error: errorMessage };
       }
     })
@@ -588,10 +563,7 @@ async function processBatch(
  * Sync all libraries from Context7.
  * Processes in batches to respect rate limits.
  */
-export async function syncAllLibraries(
-  env: SyncEnv,
-  triggeredBy: string
-): Promise<SyncResult> {
+export async function syncAllLibraries(env: SyncEnv, triggeredBy: string): Promise<SyncResult> {
   const startTime = Date.now();
   const startedAt = new Date().toISOString();
 
@@ -662,9 +634,7 @@ export async function syncAllLibraries(
     completedAt,
   });
 
-  console.log(
-    `Sync completed in ${durationMs}ms: ${successfulItems}/${totalItems} successful`
-  );
+  console.log(`Sync completed in ${durationMs}ms: ${successfulItems}/${totalItems} successful`);
 
   return {
     jobId,
@@ -683,14 +653,9 @@ export async function syncAllLibraries(
 /**
  * Sync a single library by name.
  */
-export async function syncLibrary(
-  env: SyncEnv,
-  libraryName: string
-): Promise<void> {
+export async function syncLibrary(env: SyncEnv, libraryName: string): Promise<void> {
   // Find library in our list
-  const library = TOP_LIBRARIES.find(
-    (lib) => lib.name.toLowerCase() === libraryName.toLowerCase()
-  );
+  const library = TOP_LIBRARIES.find((lib) => lib.name.toLowerCase() === libraryName.toLowerCase());
 
   if (!library) {
     // Create a default entry if not in our curated list
@@ -710,10 +675,7 @@ export async function syncLibrary(
 /**
  * Get the status of a sync job.
  */
-export async function getSyncStatus(
-  env: SyncEnv,
-  jobId: string
-): Promise<SyncJob | null> {
+export async function getSyncStatus(env: SyncEnv, jobId: string): Promise<SyncJob | null> {
   const result = await env.DB.prepare(
     `SELECT id, type, status, total_items, processed_items, successful_items,
             failed_items, errors, triggered_by, started_at, completed_at, created_at

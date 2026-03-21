@@ -33,8 +33,8 @@
   --vp-c-gutter: #e5e5e5;
 
   /* Typography - Geist Mono for everything (matching main site) */
-  --vp-font-family-base: 'Geist Mono', 'SF Mono', Consolas, monospace;
-  --vp-font-family-mono: 'Geist Mono', 'SF Mono', Consolas, monospace;
+  --vp-font-family-base: "Geist Mono", "SF Mono", Consolas, monospace;
+  --vp-font-family-mono: "Geist Mono", "SF Mono", Consolas, monospace;
 
   /* Layout */
   --vp-sidebar-width: 260px;
@@ -101,64 +101,72 @@
    Font Import
    ======================================== */
 @font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-Regular.woff2")
+    format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-Medium.woff2")
+    format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-SemiBold.woff2")
+    format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-Bold.woff2') format('woff2');
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/Geist-Bold.woff2")
+    format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist Mono';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Regular.woff2') format('woff2');
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Regular.woff2")
+    format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist Mono';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Medium.woff2') format('woff2');
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Medium.woff2")
+    format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist Mono';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-SemiBold.woff2') format('woff2');
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-SemiBold.woff2")
+    format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist Mono';
-  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Bold.woff2') format('woff2');
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Bold.woff2")
+    format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -320,19 +328,19 @@ html {
 /* ========================================
    Code Blocks - No rounded corners
    ======================================== */
-.vp-doc [class*='language-'] {
+.vp-doc [class*="language-"] {
   border-radius: 0 !important;
   border: 1px solid var(--vp-c-border);
 }
 
-.vp-doc [class*='language-'] code {
+.vp-doc [class*="language-"] code {
   font-family: var(--vp-font-family-mono);
   font-size: 13px;
   line-height: 1.6;
 }
 
 /* Code block header */
-.vp-doc div[class*='language-'] > span.lang {
+.vp-doc div[class*="language-"] > span.lang {
   font-family: var(--vp-font-family-mono);
   font-size: 10px;
   font-weight: 700;
@@ -474,9 +482,15 @@ html {
 }
 
 /* Terminal buttons use standard colors for recognition */
-.terminal-button.close { background: #737373; }
-.terminal-button.minimize { background: #737373; }
-.terminal-button.maximize { background: #737373; }
+.terminal-button.close {
+  background: #737373;
+}
+.terminal-button.minimize {
+  background: #737373;
+}
+.terminal-button.maximize {
+  background: #737373;
+}
 
 .terminal-title {
   flex: 1;
@@ -524,7 +538,7 @@ html {
 }
 
 .terminal-line.prompt::before {
-  content: '$ ';
+  content: "$ ";
   color: var(--vp-c-brand-1);
 }
 
@@ -535,10 +549,18 @@ html {
 /* Utility text colors - only cyan accent (with proper contrast), rest are neutral grays */
 /* In dark mode: #22d3ee has 8.59:1 contrast on black - WCAG AAA */
 /* In light mode: #0891b2 (darker cyan) has 4.63:1 contrast on white - WCAG AA */
-.text-cyan { color: #0891b2; }
-.dark .text-cyan { color: #22d3ee; }
-.text-muted { color: #737373; }
-.text-bold { font-weight: 700; }
+.text-cyan {
+  color: #0891b2;
+}
+.dark .text-cyan {
+  color: #22d3ee;
+}
+.text-muted {
+  color: #737373;
+}
+.text-bold {
+  font-weight: 700;
+}
 
 /* ========================================
    Feature Grid - Neobrutalist design
@@ -684,11 +706,26 @@ html {
 }
 
 /* API methods use monochrome with accent for primary actions */
-.api-method.get { background: var(--vp-c-brand-1); color: #000000; }
-.api-method.post { background: #000000; color: #ffffff; }
-.api-method.put { background: #404040; color: #ffffff; }
-.api-method.delete { background: #737373; color: #ffffff; }
-.api-method.patch { background: #a3a3a3; color: #000000; }
+.api-method.get {
+  background: var(--vp-c-brand-1);
+  color: #000000;
+}
+.api-method.post {
+  background: #000000;
+  color: #ffffff;
+}
+.api-method.put {
+  background: #404040;
+  color: #ffffff;
+}
+.api-method.delete {
+  background: #737373;
+  color: #ffffff;
+}
+.api-method.patch {
+  background: #a3a3a3;
+  color: #000000;
+}
 
 .api-path {
   font-family: var(--vp-font-family-mono);
@@ -779,10 +816,18 @@ html {
   margin-bottom: 8px;
 }
 
-.callout-tip .callout-title { color: var(--vp-c-brand-1); }
-.callout-warning .callout-title { color: #737373; }
-.callout-danger .callout-title { color: #000000; }
-.callout-info .callout-title { color: var(--vp-c-brand-1); }
+.callout-tip .callout-title {
+  color: var(--vp-c-brand-1);
+}
+.callout-warning .callout-title {
+  color: #737373;
+}
+.callout-danger .callout-title {
+  color: #000000;
+}
+.callout-info .callout-title {
+  color: var(--vp-c-brand-1);
+}
 
 .callout-content {
   font-size: 13px;

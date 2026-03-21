@@ -41,10 +41,7 @@ export const libraries = sqliteTable(
     versions: text("versions", { mode: "json" }).$type<string[]>().default([]),
 
     // Categories (JSON array)
-    categories: text("categories", { mode: "json" })
-      .$type<string[]>()
-      .notNull()
-      .default([]),
+    categories: text("categories", { mode: "json" }).$type<string[]>().notNull().default([]),
 
     // Indexing metadata
     totalChunks: integer("total_chunks").notNull().default(0),
@@ -279,7 +276,9 @@ export const skillSubmissions = sqliteTable(
     description: text("description"),
     skillUrl: text("skill_url").notNull(),
     sourceRepo: text("source_repo"),
-    type: text("type", { enum: ["analysis", "generation", "transformation", "integration", "utility"] }).notNull(),
+    type: text("type", {
+      enum: ["analysis", "generation", "transformation", "integration", "utility"],
+    }).notNull(),
     categories: text("categories", { mode: "json" }).$type<string[]>().default([]),
     contentPreview: text("content_preview"),
     submittedBy: text("submitted_by"),
@@ -350,11 +349,11 @@ export const serverSubmissions = sqliteTable(
     // Source information
     repositoryUrl: text("repository_url").notNull(),
     packageName: text("package_name"), // e.g., "@myorg/server-name"
-    packageType: text("package_type", { 
-      enum: ["npm", "pypi", "docker", "binary", "remote"] 
+    packageType: text("package_type", {
+      enum: ["npm", "pypi", "docker", "binary", "remote"],
     }).default("npm"),
-    transportType: text("transport_type", { 
-      enum: ["stdio", "http", "sse"] 
+    transportType: text("transport_type", {
+      enum: ["stdio", "http", "sse"],
     }).default("stdio"),
 
     // Submitter info
@@ -362,9 +361,7 @@ export const serverSubmissions = sqliteTable(
     submitterUserId: text("submitter_user_id").references(() => users.id),
 
     // Review status
-    status: text("status", { enum: SERVER_SUBMISSION_STATUSES })
-      .notNull()
-      .default("pending"),
+    status: text("status", { enum: SERVER_SUBMISSION_STATUSES }).notNull().default("pending"),
     rejectionReason: text("rejection_reason"),
 
     // If approved, link to created server
@@ -400,11 +397,14 @@ export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "boolean" })
-    .default(false)
-    .notNull(),
+  emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
   image: text("image"),
-  role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
+  role: text("role", { enum: ["user", "admin"] })
+    .notNull()
+    .default("user"),
+  // MCP query counter for usage tracking (replaces Analytics Engine)
+  mcpQueryCount: integer("mcp_query_count").notNull().default(0),
+  mcpQueryCountResetAt: integer("mcp_query_count_reset_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
@@ -532,10 +532,10 @@ export const memories = sqliteTable(
     // Context
     project: text("project"), // Optional project name (e.g., "nexus")
     importance: integer("importance").notNull().default(5), // 1-10
-    
-    // Flow association - which flow was active when memory was saved
-    flowId: text("flow_id"), // References flows.id
-    flowSessionId: text("flow_session_id"), // References flowSessions.id
+
+    // Prompt association - which prompt was active when memory was saved
+    promptId: text("flow_id"), // DB column uses old name, references prompts.id
+    promptSessionId: text("flow_session_id"), // DB column uses old name, references promptSessions.id
 
     // Timestamps
     createdAt: text("created_at").notNull(),
@@ -547,7 +547,7 @@ export const memories = sqliteTable(
     index("memories_scope_idx").on(table.scope),
     index("memories_type_idx").on(table.type),
     index("memories_project_idx").on(table.project),
-    index("memories_flow_idx").on(table.flowId),
+    index("memories_flow_idx").on(table.promptId),
     index("memories_created_at_idx").on(table.createdAt),
   ]
 );
@@ -676,84 +676,90 @@ export const mcpServers = sqliteTable(
   "mcp_servers",
   {
     id: text("id").primaryKey(), // e.g., "filesystem", "postgres", "github"
-    
+
     // Identity
     namespace: text("namespace").notNull(), // e.g., "modelcontextprotocol", "anthropic"
     name: text("name").notNull(), // e.g., "server-filesystem"
     displayName: text("display_name"), // e.g., "Filesystem"
     description: text("description"),
-    
+
     // Version
     version: text("version"),
-    
+
     // Transport & Installation
     transportType: text("transport_type", { enum: TRANSPORT_TYPES }).notNull().default("stdio"),
     packageType: text("package_type", { enum: PACKAGE_TYPES }).notNull().default("npm"),
     packageName: text("package_name"), // e.g., "@modelcontextprotocol/server-filesystem"
-    
+
     // Installation command parts (stored as JSON for flexibility)
     installCommand: text("install_command"), // e.g., "npx"
     installArgs: text("install_args", { mode: "json" }).$type<string[]>().default([]),
-    
+
     // Environment variables required (JSON object)
     envVars: text("env_vars", { mode: "json" }).$type<Record<string, string>>().default({}),
-    
+
     // Capabilities (discovered or declared) - JSON objects
-    tools: text("tools", { mode: "json" }).$type<Array<{name: string; description?: string}>>().default([]),
-    resources: text("resources", { mode: "json" }).$type<Array<{uri: string; name?: string}>>().default([]),
-    prompts: text("prompts", { mode: "json" }).$type<Array<{name: string; description?: string}>>().default([]),
-    
+    tools: text("tools", { mode: "json" })
+      .$type<Array<{ name: string; description?: string }>>()
+      .default([]),
+    resources: text("resources", { mode: "json" })
+      .$type<Array<{ uri: string; name?: string }>>()
+      .default([]),
+    prompts: text("prompts", { mode: "json" })
+      .$type<Array<{ name: string; description?: string }>>()
+      .default([]),
+
     // Capability flags for easy filtering
     hasTools: integer("has_tools", { mode: "boolean" }).notNull().default(false),
     hasResources: integer("has_resources", { mode: "boolean" }).notNull().default(false),
     hasPrompts: integer("has_prompts", { mode: "boolean" }).notNull().default(false),
-    
+
     // Links
     repositoryUrl: text("repository_url"),
     documentationUrl: text("documentation_url"),
     homepageUrl: text("homepage_url"),
     iconUrl: text("icon_url"),
-    
+
     // Auth requirements
     requiresAuth: integer("requires_auth", { mode: "boolean" }).notNull().default(false),
     authType: text("auth_type", { enum: ["oauth", "api_key", "env", "none"] }).default("none"),
-    
+
     // Security Profile - helps users understand what access the server needs
     // Risk level: low (read-only/sandboxed), medium (writes to specific locations), high (system access), critical (full system/network)
-    securityRiskLevel: text("security_risk_level", { 
-      enum: ["low", "medium", "high", "critical"] 
+    securityRiskLevel: text("security_risk_level", {
+      enum: ["low", "medium", "high", "critical"],
     }).default("medium"),
-    
+
     // Access capabilities (JSON array of what the server can access)
     // Examples: "filesystem:read", "filesystem:write", "network:outbound", "shell:execute", "database:read", "database:write"
     securityCapabilities: text("security_capabilities", { mode: "json" })
       .$type<string[]>()
       .default([]),
-    
+
     // Human-readable security notes (e.g., "Can read/write files in specified directories")
     securityNotes: text("security_notes"),
-    
+
     // Whether this server has been security audited
     isSecurityAudited: integer("is_security_audited", { mode: "boolean" }).notNull().default(false),
     securityAuditedAt: text("security_audited_at"),
-    
+
     // Metadata
     author: text("author"),
     license: text("license"),
     keywords: text("keywords", { mode: "json" }).$type<string[]>().default([]),
     categories: text("categories", { mode: "json" }).$type<string[]>().default([]),
-    
+
     // Stats
     weeklyDownloads: integer("weekly_downloads").notNull().default(0),
     githubStars: integer("github_stars").notNull().default(0),
-    
+
     // Verification & Status
     isVerified: integer("is_verified", { mode: "boolean" }).notNull().default(false),
     verifiedAt: text("verified_at"),
     isOfficial: integer("is_official", { mode: "boolean" }).notNull().default(false), // From modelcontextprotocol org
     isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-    
+
     // Timestamps
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
@@ -847,9 +853,7 @@ export const subscriptions = sqliteTable(
 
     // Plan info
     plan: text("plan", { enum: SUBSCRIPTION_PLANS }).notNull().default("free"),
-    status: text("status", { enum: SUBSCRIPTION_STATUSES })
-      .notNull()
-      .default("active"),
+    status: text("status", { enum: SUBSCRIPTION_STATUSES }).notNull().default("active"),
 
     // Stripe integration
     stripeCustomerId: text("stripe_customer_id"),
@@ -925,10 +929,7 @@ export const teams = sqliteTable(
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
   },
-  (table) => [
-    index("teams_slug_idx").on(table.slug),
-    index("teams_owner_idx").on(table.ownerId),
-  ]
+  (table) => [index("teams_slug_idx").on(table.slug), index("teams_owner_idx").on(table.ownerId)]
 );
 
 export const teamMembers = sqliteTable(
@@ -1007,10 +1008,7 @@ export const skills = sqliteTable(
 
     // Classification
     type: text("type", { enum: SKILL_TYPES }).notNull().default("utility"),
-    categories: text("categories", { mode: "json" })
-      .$type<string[]>()
-      .notNull()
-      .default([]),
+    categories: text("categories", { mode: "json" }).$type<string[]>().notNull().default([]),
     tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
 
     // Content
@@ -1019,9 +1017,7 @@ export const skills = sqliteTable(
     contentPreview: text("content_preview"), // First 500 chars for display
 
     // Requirements
-    requiredTools: text("required_tools", { mode: "json" })
-      .$type<string[]>()
-      .default([]),
+    requiredTools: text("required_tools", { mode: "json" }).$type<string[]>().default([]),
     requiredMcpServers: text("required_mcp_servers", { mode: "json" })
       .$type<string[]>()
       .default([]),
@@ -1033,16 +1029,10 @@ export const skills = sqliteTable(
     lastQueriedAt: text("last_queried_at"), // Track when skill was last queried via MCP
 
     // Flags
-    isOfficial: integer("is_official", { mode: "boolean" })
-      .notNull()
-      .default(false), // From official repos
-    isFeatured: integer("is_featured", { mode: "boolean" })
-      .notNull()
-      .default(false),
+    isOfficial: integer("is_official", { mode: "boolean" }).notNull().default(false), // From official repos
+    isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-    isVerified: integer("is_verified", { mode: "boolean" })
-      .notNull()
-      .default(false),
+    isVerified: integer("is_verified", { mode: "boolean" }).notNull().default(false),
 
     // Timestamps
     createdAt: text("created_at").notNull(),
@@ -1100,10 +1090,10 @@ export const userSkillsRelations = relations(userSkills, ({ one }) => ({
 }));
 
 // ============================================================================
-// Flows - Pre-configured AI working environments
+// Prompts - Pre-configured AI working environments (renamed from Flows)
 // ============================================================================
 
-export const FLOW_CATEGORIES = [
+export const PROMPT_CATEGORIES = [
   "frontend",
   "backend",
   "fullstack",
@@ -1115,184 +1105,209 @@ export const FLOW_CATEGORIES = [
   "ai",
   "general",
 ] as const;
-export type FlowCategory = (typeof FLOW_CATEGORIES)[number];
+export type PromptCategory = (typeof PROMPT_CATEGORIES)[number];
 
-export const FLOW_VERBOSITY = ["concise", "balanced", "detailed"] as const;
-export type FlowVerbosity = (typeof FLOW_VERBOSITY)[number];
+// Backwards compatibility aliases
+export const FLOW_CATEGORIES = PROMPT_CATEGORIES;
+export type FlowCategory = PromptCategory;
 
-export const FLOW_CODE_STYLE = ["minimal", "documented", "verbose"] as const;
-export type FlowCodeStyle = (typeof FLOW_CODE_STYLE)[number];
+export const PROMPT_VERBOSITY = ["concise", "balanced", "detailed"] as const;
+export type PromptVerbosity = (typeof PROMPT_VERBOSITY)[number];
 
-export interface FlowPreferences {
-  verbosity?: FlowVerbosity;
-  codeStyle?: FlowCodeStyle;
+export const PROMPT_CODE_STYLE = ["minimal", "documented", "verbose"] as const;
+export type PromptCodeStyle = (typeof PROMPT_CODE_STYLE)[number];
+
+export interface PromptPreferences {
+  verbosity?: PromptVerbosity;
+  codeStyle?: PromptCodeStyle;
   responseFormat?: ResponseFormat;
   useEmojis?: boolean;
   preferredLanguage?: string;
   customRules?: string[];
 }
 
-export const flows = sqliteTable(
-  "flows",
+// Backwards compatibility alias
+export type FlowPreferences = PromptPreferences;
+
+export const prompts = sqliteTable(
+  "prompts",
   {
     id: text("id").primaryKey(),
-    
+
     // Ownership
     userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // NULL = system/starter pack
-    
+
     // Identity
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     description: text("description"),
-    
+
     // The core system prompt
     systemPrompt: text("system_prompt").notNull(),
-    
+
     // Full content stored in R2 (for large prompts/additional context)
     r2Key: text("r2_key"),
-    
-    // Inheritance - allows flows to extend other flows (max 3 levels)
+
+    // Inheritance - allows prompts to extend other prompts (max 3 levels)
     // Self-reference handled via relation, not FK constraint for SQLite compatibility
-    parentFlowId: text("parent_flow_id"),
-    
-    // Link to project (for project-specific flows)
+    parentPromptId: text("parent_flow_id"), // DB column still uses old name for migration compat
+
+    // Link to project (for project-specific prompts)
     projectId: text("project_id"),
-    
+
     // Bundled resources (JSON arrays of IDs)
     skills: text("skills", { mode: "json" }).$type<string[]>().notNull().default([]),
     libraries: text("libraries", { mode: "json" }).$type<string[]>().notNull().default([]),
     mcpServers: text("mcp_servers", { mode: "json" }).$type<string[]>().notNull().default([]),
-    
+
     // Preferences
-    preferences: text("preferences", { mode: "json" }).$type<FlowPreferences>().default({}),
-    
+    preferences: text("preferences", { mode: "json" }).$type<PromptPreferences>().default({}),
+
     // Classification
-    category: text("category", { enum: FLOW_CATEGORIES }).notNull().default("general"),
+    category: text("category", { enum: PROMPT_CATEGORIES }).notNull().default("general"),
     tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
-    
+
     // Visibility & status
     isPublic: integer("is_public", { mode: "boolean" }).notNull().default(false),
     isStarterPack: integer("is_starter_pack", { mode: "boolean" }).notNull().default(false),
     isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-    
+
     // Stats
     installCount: integer("install_count").notNull().default(0),
     usageCount: integer("usage_count").notNull().default(0),
-    
+
     // Timestamps
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
   },
   (table) => [
-    index("flows_user_id_idx").on(table.userId),
-    index("flows_slug_idx").on(table.slug),
-    index("flows_parent_idx").on(table.parentFlowId),
-    index("flows_project_idx").on(table.projectId),
-    index("flows_category_idx").on(table.category),
-    index("flows_public_idx").on(table.isPublic),
-    index("flows_starter_idx").on(table.isStarterPack),
-    index("flows_featured_idx").on(table.isFeatured),
-    index("flows_active_idx").on(table.isActive),
+    index("prompts_user_id_idx").on(table.userId),
+    index("prompts_slug_idx").on(table.slug),
+    index("prompts_parent_idx").on(table.parentPromptId),
+    index("prompts_project_idx").on(table.projectId),
+    index("prompts_category_idx").on(table.category),
+    index("prompts_public_idx").on(table.isPublic),
+    index("prompts_starter_idx").on(table.isStarterPack),
+    index("prompts_featured_idx").on(table.isFeatured),
+    index("prompts_active_idx").on(table.isActive),
   ]
 );
 
-// User's installed/active flows
-export const userFlows = sqliteTable(
-  "user_flows",
+// Backwards compatibility alias
+export const flows = prompts;
+
+// User's installed/active prompts
+export const userPrompts = sqliteTable(
+  "user_prompts",
   {
     id: text("id").primaryKey(),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    flowId: text("flow_id")
+    promptId: text("flow_id") // DB column still uses old name for migration compat
       .notNull()
-      .references(() => flows.id, { onDelete: "cascade" }),
-    
+      .references(() => prompts.id, { onDelete: "cascade" }),
+
     // Customization - user's additions/overrides
-    customPrompt: text("custom_prompt"), // Additional instructions
-    customPreferences: text("custom_preferences", { mode: "json" }).$type<FlowPreferences>(),
-    
+    customPromptText: text("custom_prompt"), // Additional instructions
+    customPreferences: text("custom_preferences", { mode: "json" }).$type<PromptPreferences>(),
+
     // State
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(false),
-    displayOrder: integer("display_order").notNull().default(0), // For multiple active flows
-    
+    displayOrder: integer("display_order").notNull().default(0), // For multiple active prompts
+
     // Timestamps
     installedAt: text("installed_at").notNull(),
     lastUsedAt: text("last_used_at"),
   },
   (table) => [
-    index("user_flows_user_idx").on(table.userId),
-    index("user_flows_flow_idx").on(table.flowId),
-    index("user_flows_active_idx").on(table.isActive),
-    index("user_flows_order_idx").on(table.displayOrder),
+    index("user_prompts_user_idx").on(table.userId),
+    index("user_prompts_prompt_idx").on(table.promptId),
+    index("user_prompts_active_idx").on(table.isActive),
+    index("user_prompts_order_idx").on(table.displayOrder),
   ]
 );
 
-// Track flow sessions (when flows are used)
-export const flowSessions = sqliteTable(
-  "flow_sessions",
+// Backwards compatibility alias
+export const userFlows = userPrompts;
+
+// Track prompt sessions (when prompts are used)
+export const promptSessions = sqliteTable(
+  "prompt_sessions",
   {
     id: text("id").primaryKey(),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    flowId: text("flow_id")
+    promptId: text("flow_id") // DB column still uses old name for migration compat
       .notNull()
-      .references(() => flows.id, { onDelete: "cascade" }),
-    
+      .references(() => prompts.id, { onDelete: "cascade" }),
+
     // Context
     project: text("project"), // Project name if provided
-    
+
     // Timestamps
     startedAt: text("started_at").notNull(),
     endedAt: text("ended_at"),
   },
   (table) => [
-    index("flow_sessions_user_idx").on(table.userId),
-    index("flow_sessions_flow_idx").on(table.flowId),
-    index("flow_sessions_project_idx").on(table.project),
-    index("flow_sessions_started_idx").on(table.startedAt),
+    index("prompt_sessions_user_idx").on(table.userId),
+    index("prompt_sessions_prompt_idx").on(table.promptId),
+    index("prompt_sessions_project_idx").on(table.project),
+    index("prompt_sessions_started_idx").on(table.startedAt),
   ]
 );
 
+// Backwards compatibility alias
+export const flowSessions = promptSessions;
+
 // Relations
-export const flowsRelations = relations(flows, ({ one, many }) => ({
+export const promptsRelations = relations(prompts, ({ one, many }) => ({
   user: one(users, {
-    fields: [flows.userId],
+    fields: [prompts.userId],
     references: [users.id],
   }),
-  parentFlow: one(flows, {
-    fields: [flows.parentFlowId],
-    references: [flows.id],
-    relationName: "flowInheritance",
+  parentPrompt: one(prompts, {
+    fields: [prompts.parentPromptId],
+    references: [prompts.id],
+    relationName: "promptInheritance",
   }),
-  childFlows: many(flows, { relationName: "flowInheritance" }),
-  userFlows: many(userFlows),
-  sessions: many(flowSessions),
+  childPrompts: many(prompts, { relationName: "promptInheritance" }),
+  userPrompts: many(userPrompts),
+  sessions: many(promptSessions),
 }));
 
-export const userFlowsRelations = relations(userFlows, ({ one }) => ({
+// Backwards compatibility alias
+export const flowsRelations = promptsRelations;
+
+export const userPromptsRelations = relations(userPrompts, ({ one }) => ({
   user: one(users, {
-    fields: [userFlows.userId],
+    fields: [userPrompts.userId],
     references: [users.id],
   }),
-  flow: one(flows, {
-    fields: [userFlows.flowId],
-    references: [flows.id],
+  prompt: one(prompts, {
+    fields: [userPrompts.promptId],
+    references: [prompts.id],
   }),
 }));
 
-export const flowSessionsRelations = relations(flowSessions, ({ one }) => ({
+// Backwards compatibility alias
+export const userFlowsRelations = userPromptsRelations;
+
+export const promptSessionsRelations = relations(promptSessions, ({ one }) => ({
   user: one(users, {
-    fields: [flowSessions.userId],
+    fields: [promptSessions.userId],
     references: [users.id],
   }),
-  flow: one(flows, {
-    fields: [flowSessions.flowId],
-    references: [flows.id],
+  prompt: one(prompts, {
+    fields: [promptSessions.promptId],
+    references: [prompts.id],
   }),
 }));
+
+// Backwards compatibility alias
+export const flowSessionsRelations = promptSessionsRelations;
 
 // ============================================================================
 // Learnings - System corrections, patterns, preferences
@@ -1384,9 +1399,7 @@ export const intelligenceScores = sqliteTable(
     currentLevelXp: integer("current_level_xp").notNull().default(0),
 
     // Category breakdown
-    categoryXp: text("category_xp", { mode: "json" })
-      .$type<Record<string, number>>()
-      .default({}),
+    categoryXp: text("category_xp", { mode: "json" }).$type<Record<string, number>>().default({}),
 
     // Streak tracking
     currentStreak: integer("current_streak").notNull().default(0),
@@ -1394,9 +1407,7 @@ export const intelligenceScores = sqliteTable(
     lastActivityDate: text("last_activity_date"),
 
     // Achievements
-    achievements: text("achievements", { mode: "json" })
-      .$type<string[]>()
-      .default([]),
+    achievements: text("achievements", { mode: "json" }).$type<string[]>().default([]),
 
     // Stats
     totalQueries: integer("total_queries").notNull().default(0),
@@ -1517,9 +1528,7 @@ export const connectedRepos = sqliteTable(
     isPrivate: integer("is_private", { mode: "boolean" }).notNull().default(false),
 
     // Indexing status
-    indexStatus: text("index_status", { enum: REPO_INDEX_STATUS })
-      .notNull()
-      .default("pending"),
+    indexStatus: text("index_status", { enum: REPO_INDEX_STATUS }).notNull().default("pending"),
     lastIndexedAt: text("last_indexed_at"),
     indexError: text("index_error"),
 
@@ -1535,12 +1544,8 @@ export const connectedRepos = sqliteTable(
 
     // Settings
     autoSync: integer("auto_sync", { mode: "boolean" }).notNull().default(false),
-    includePatterns: text("include_patterns", { mode: "json" })
-      .$type<string[]>()
-      .default([]),
-    excludePatterns: text("exclude_patterns", { mode: "json" })
-      .$type<string[]>()
-      .default([]),
+    includePatterns: text("include_patterns", { mode: "json" }).$type<string[]>().default([]),
+    excludePatterns: text("exclude_patterns", { mode: "json" }).$type<string[]>().default([]),
 
     // Timestamps
     createdAt: text("created_at").notNull(),
@@ -1640,29 +1645,19 @@ export const projects = sqliteTable(
     description: text("description"),
 
     // Tech stack fingerprint
-    stack: text("stack", { mode: "json" })
-      .$type<Record<string, string>>()
-      .default({}),
-    dependencies: text("dependencies", { mode: "json" })
-      .$type<string[]>()
-      .default([]),
-    devDependencies: text("dev_dependencies", { mode: "json" })
-      .$type<string[]>()
-      .default([]),
+    stack: text("stack", { mode: "json" }).$type<Record<string, string>>().default({}),
+    dependencies: text("dependencies", { mode: "json" }).$type<string[]>().default([]),
+    devDependencies: text("dev_dependencies", { mode: "json" }).$type<string[]>().default([]),
 
     // Detected patterns
-    patterns: text("patterns", { mode: "json" })
-      .$type<Record<string, unknown>>()
-      .default({}),
+    patterns: text("patterns", { mode: "json" }).$type<Record<string, unknown>>().default({}),
 
     // Linked resources
     repoId: text("repo_id"),
     flowId: text("flow_id"),
 
     // Suggested flows
-    suggestedFlows: text("suggested_flows", { mode: "json" })
-      .$type<string[]>()
-      .default([]),
+    suggestedFlows: text("suggested_flows", { mode: "json" }).$type<string[]>().default([]),
 
     // Stats
     sessionCount: integer("session_count").notNull().default(0),
@@ -1815,12 +1810,8 @@ export const userPreferences = sqliteTable(
     preferredCodeLanguage: text("preferred_code_language"), // e.g., "typescript", "python"
 
     // Email preferences
-    emailNotifications: integer("email_notifications", { mode: "boolean" })
-      .notNull()
-      .default(true),
-    emailWeeklyDigest: integer("email_weekly_digest", { mode: "boolean" })
-      .notNull()
-      .default(false),
+    emailNotifications: integer("email_notifications", { mode: "boolean" }).notNull().default(true),
+    emailWeeklyDigest: integer("email_weekly_digest", { mode: "boolean" }).notNull().default(false),
 
     // Timestamps
     createdAt: text("created_at").notNull(),
@@ -1850,25 +1841,27 @@ export const syncJobs = sqliteTable(
   "sync_jobs",
   {
     id: text("id").primaryKey(),
-    
+
     // Job type
     type: text("type", { enum: SYNC_JOB_TYPES }).notNull(),
-    
+
     // Status
     status: text("status", { enum: SYNC_JOB_STATUSES }).notNull().default("pending"),
-    
+
     // Progress tracking
     totalItems: integer("total_items").notNull().default(0),
     processedItems: integer("processed_items").notNull().default(0),
     successfulItems: integer("successful_items").notNull().default(0),
     failedItems: integer("failed_items").notNull().default(0),
-    
+
     // Error details (JSON array of errors)
-    errors: text("errors", { mode: "json" }).$type<Array<{ item: string; error: string }>>().default([]),
-    
+    errors: text("errors", { mode: "json" })
+      .$type<Array<{ item: string; error: string }>>()
+      .default([]),
+
     // Trigger info
     triggeredBy: text("triggered_by"), // "cron" or userId
-    
+
     // Timestamps
     startedAt: text("started_at"),
     completedAt: text("completed_at"),
@@ -1914,41 +1907,50 @@ export type StackLearningStatus = (typeof STACK_LEARNING_STATUSES)[number];
 export const TOKEN_BUDGETS = ["minimal", "standard", "comprehensive"] as const;
 export type TokenBudget = (typeof TOKEN_BUDGETS)[number];
 
-export const PACKAGE_MANAGERS = ["npm", "pnpm", "bun", "yarn", "cargo", "mix", "bundler", "go"] as const;
+export const PACKAGE_MANAGERS = [
+  "npm",
+  "pnpm",
+  "bun",
+  "yarn",
+  "cargo",
+  "mix",
+  "bundler",
+  "go",
+] as const;
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
 
 export interface StackPreferences {
   // Generation
   useOfficialCLIs?: boolean;
   preferredPackageManager?: PackageManager;
-  
+
   // Code Style
   useTypeScript?: boolean;
   strictMode?: boolean;
   preferFunctionalComponents?: boolean;
-  
+
   // Formatting
   usePrettier?: boolean;
   useESLint?: boolean;
   useBiome?: boolean;
-  
+
   // Testing
   includeTests?: boolean;
   testingFramework?: "vitest" | "jest" | "playwright" | "rspec" | "exunit";
-  
+
   // Documentation
   generateReadme?: boolean;
   inlineComments?: "minimal" | "standard" | "verbose";
-  
+
   // AI Behavior
   verbosity?: "concise" | "balanced" | "detailed";
   codeBlockStyle?: "full-file" | "diff-only" | "snippet";
   explainDecisions?: boolean;
-  
+
   // Project Structure
   monorepoReady?: boolean;
   preferTurborepo?: boolean;
-  
+
   // Custom Rules
   customRules?: string[];
 }
@@ -1957,65 +1959,72 @@ export const stacks = sqliteTable(
   "stacks",
   {
     id: text("id").primaryKey(),
-    
+
     // Ownership
     userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // NULL = system starter
-    
+
     // Identity
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     description: text("description"),
     icon: text("icon"), // emoji or lucide icon name
     color: text("color"), // hex color for visual canvas
-    
+
     // Classification
     category: text("category", { enum: STACK_CATEGORIES }).notNull().default("general"),
     layer: integer("layer").notNull().default(0), // 0=infra, 1=backend, 2=frontend, 3=tooling
     tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
-    
+
     // Instructions & Config
     instructions: text("instructions"), // User's stack instructions (markdown)
     cliPreferences: text("cli_preferences", { mode: "json" }).$type<StackPreferences>().default({}),
-    
+
     // Package Manifest (optional)
     manifestType: text("manifest_type"), // package.json, Cargo.toml, mix.exs, Gemfile
     manifestContent: text("manifest_content"), // Raw manifest content
-    
+
     // Visual Canvas Data (React Flow)
     canvasData: text("canvas_data", { mode: "json" }).$type<{
-      nodes: Array<{ id: string; type: string; position: { x: number; y: number }; data: Record<string, unknown> }>;
+      nodes: Array<{
+        id: string;
+        type: string;
+        position: { x: number; y: number };
+        data: Record<string, unknown>;
+      }>;
       edges: Array<{ id: string; source: string; target: string; type?: string }>;
       viewport?: { x: number; y: number; zoom: number };
     }>(),
-    
+
     // Generated Context (compiled prompt)
     compiledPrompt: text("compiled_prompt"), // AI-generated optimized prompt
     compiledAt: text("compiled_at"),
     tokenCount: integer("token_count"),
     tokenBudget: text("token_budget", { enum: TOKEN_BUDGETS }).notNull().default("standard"),
-    
+
     // Full content stored in R2 (for large compiled prompts)
     r2Key: text("r2_key"),
-    
+
     // Learning Status
-    learningStatus: text("learning_status", { enum: STACK_LEARNING_STATUSES }).notNull().default("pending"),
+    learningStatus: text("learning_status", { enum: STACK_LEARNING_STATUSES })
+      .notNull()
+      .default("pending"),
     learningProgress: integer("learning_progress").notNull().default(0), // 0-100
     learningError: text("learning_error"),
-    
+
     // Forking
     forkedFromId: text("forked_from_id"), // Original stack if forked
-    
+
     // Visibility & Sharing
     isPublic: integer("is_public", { mode: "boolean" }).notNull().default(false),
     isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
     isStarter: integer("is_starter", { mode: "boolean" }).notNull().default(false), // System starter stacks
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-    
+
     // Stats
     forkCount: integer("fork_count").notNull().default(0),
     useCount: integer("use_count").notNull().default(0),
     installCount: integer("install_count").notNull().default(0),
-    
+
     // Timestamps
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
@@ -2045,25 +2054,25 @@ export const stackRepos = sqliteTable(
     stackId: text("stack_id")
       .notNull()
       .references(() => stacks.id, { onDelete: "cascade" }),
-    
+
     // Repository Info
     githubUrl: text("github_url").notNull(),
     isPrivate: integer("is_private", { mode: "boolean" }).notNull().default(false),
     branch: text("branch").default("main"),
     paths: text("paths", { mode: "json" }).$type<string[]>(), // Specific paths to analyze
-    
+
     // Extracted Knowledge
     r2Key: text("r2_key"), // Full analysis stored in R2
     summary: text("summary"), // AI-generated summary
     paradigms: text("paradigms", { mode: "json" }).$type<string[]>(), // Detected patterns
     packages: text("packages", { mode: "json" }).$type<string[]>(), // Extracted dependencies
     directoryStructure: text("directory_structure"), // JSON tree structure
-    
+
     // Status
     status: text("status", { enum: STACK_REPO_STATUSES }).notNull().default("pending"),
     indexedAt: text("indexed_at"),
     error: text("error"),
-    
+
     createdAt: text("created_at").notNull(),
   },
   (table) => [
@@ -2083,10 +2092,10 @@ export const stackCompositions = sqliteTable(
     childStackId: text("child_stack_id")
       .notNull()
       .references(() => stacks.id, { onDelete: "cascade" }),
-    
+
     // Position in composition order
     position: integer("position").notNull().default(0),
-    
+
     createdAt: text("created_at").notNull(),
   },
   (table) => [
@@ -2109,22 +2118,22 @@ export const stackPackages = sqliteTable(
     stackId: text("stack_id")
       .notNull()
       .references(() => stacks.id, { onDelete: "cascade" }),
-    
+
     // Package Info
     name: text("name").notNull(),
     registry: text("registry", { enum: PACKAGE_REGISTRIES }).notNull().default("npm"),
     version: text("version"),
-    
+
     // Research Results
     libraryId: text("library_id").references(() => libraries.id), // Link to indexed docs
     documentationSummary: text("documentation_summary"),
     keyApis: text("key_apis", { mode: "json" }).$type<string[]>(), // Important APIs/patterns
-    
+
     // Status
     status: text("status", { enum: STACK_PACKAGE_STATUSES }).notNull().default("pending"),
     researchedAt: text("researched_at"),
     error: text("error"),
-    
+
     createdAt: text("created_at").notNull(),
   },
   (table) => [
@@ -2145,11 +2154,11 @@ export const userStacks = sqliteTable(
     stackId: text("stack_id")
       .notNull()
       .references(() => stacks.id, { onDelete: "cascade" }),
-    
+
     // Customization
     customInstructions: text("custom_instructions"),
     customPreferences: text("custom_preferences", { mode: "json" }).$type<StackPreferences>(),
-    
+
     // Timestamps
     installedAt: text("installed_at").notNull(),
     lastUsedAt: text("last_used_at"),
@@ -2269,12 +2278,20 @@ export type RefreshJob = typeof refreshJobs.$inferSelect;
 export type NewRefreshJob = typeof refreshJobs.$inferInsert;
 export type SkillSubmission = typeof skillSubmissions.$inferSelect;
 export type NewSkillSubmission = typeof skillSubmissions.$inferInsert;
-export type Flow = typeof flows.$inferSelect;
-export type NewFlow = typeof flows.$inferInsert;
-export type UserFlow = typeof userFlows.$inferSelect;
-export type NewUserFlow = typeof userFlows.$inferInsert;
-export type FlowSession = typeof flowSessions.$inferSelect;
-export type NewFlowSession = typeof flowSessions.$inferInsert;
+export type Prompt = typeof prompts.$inferSelect;
+export type NewPrompt = typeof prompts.$inferInsert;
+export type UserPrompt = typeof userPrompts.$inferSelect;
+export type NewUserPrompt = typeof userPrompts.$inferInsert;
+export type PromptSession = typeof promptSessions.$inferSelect;
+export type NewPromptSession = typeof promptSessions.$inferInsert;
+
+// Backwards compatibility type aliases
+export type Flow = Prompt;
+export type NewFlow = NewPrompt;
+export type UserFlow = UserPrompt;
+export type NewUserFlow = NewUserPrompt;
+export type FlowSession = PromptSession;
+export type NewFlowSession = NewPromptSession;
 export type Learning = typeof learnings.$inferSelect;
 export type NewLearning = typeof learnings.$inferInsert;
 export type IntelligenceScore = typeof intelligenceScores.$inferSelect;

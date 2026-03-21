@@ -2,12 +2,7 @@ import { Command } from "commander";
 import chalk from "chalk";
 import { logger } from "../../utils/logger.js";
 import { outputJson, isJsonOutput } from "../../utils/json.js";
-import {
-  isAuthenticated,
-  getAuth,
-  getEditors,
-  getApiUrl,
-} from "../../services/config.js";
+import { isAuthenticated, getAuth, getEditors, getApiUrl } from "../../services/config.js";
 import { checkConnection } from "../../services/api.js";
 
 interface StatusOptions {

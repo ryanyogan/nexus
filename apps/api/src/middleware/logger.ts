@@ -1,6 +1,6 @@
 /**
  * Structured JSON logger middleware for Hono.
- * 
+ *
  * Outputs JSON that Cloudflare Workers Logs automatically indexes.
  * Includes request/response timing, status codes, and error information.
  */
@@ -17,7 +17,7 @@ const logger = createLogger("nexus-api");
 export const structuredLogger: MiddlewareHandler = async (c, next) => {
   const startTime = Date.now();
   const requestId = crypto.randomUUID().slice(0, 8);
-  
+
   const requestContext = {
     requestId,
     method: c.req.method,
@@ -30,10 +30,10 @@ export const structuredLogger: MiddlewareHandler = async (c, next) => {
 
   try {
     await next();
-    
+
     const durationMs = Date.now() - startTime;
     const status = c.res.status;
-    
+
     // Choose log level based on status
     if (status >= 500) {
       logger.error("Request completed with server error", {
@@ -57,12 +57,16 @@ export const structuredLogger: MiddlewareHandler = async (c, next) => {
   } catch (error) {
     const durationMs = Date.now() - startTime;
     const err = error instanceof Error ? error : new Error(String(error));
-    
-    logger.error("Request failed with exception", {
-      ...requestContext,
-      durationMs,
-    }, err);
-    
+
+    logger.error(
+      "Request failed with exception",
+      {
+        ...requestContext,
+        durationMs,
+      },
+      err
+    );
+
     throw error;
   }
 };
@@ -82,10 +86,7 @@ export function logError(
 /**
  * Info logging helper for use in route handlers.
  */
-export function logInfo(
-  message: string,
-  context?: Record<string, unknown>
-): void {
+export function logInfo(message: string, context?: Record<string, unknown>): void {
   logger.info(message, context);
 }
 

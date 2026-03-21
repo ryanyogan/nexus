@@ -68,10 +68,7 @@ export function createAuth(env: AuthEnv) {
         secure: true,
       },
     },
-    trustedOrigins: [
-      "https://nexus.yogan.dev",
-      "https://code.nexus.yogan.dev",
-    ],
+    trustedOrigins: ["https://nexus.yogan.dev", "https://code.nexus.yogan.dev"],
   });
 }
 

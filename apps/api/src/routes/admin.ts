@@ -1,6 +1,15 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
-import { libraries, submissions, libraryStats, chunks, mcpServers, mcpServerStats, serverSubmissions, type NewMcpServer } from "@nexus/db";
+import {
+  libraries,
+  submissions,
+  libraryStats,
+  chunks,
+  mcpServers,
+  mcpServerStats,
+  serverSubmissions,
+  type NewMcpServer,
+} from "@nexus/db";
 import type { AppContext, IngestionJob } from "../types";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
@@ -32,7 +41,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "react",
     name: "React",
-    description: "A JavaScript library for building user interfaces with a component-based architecture.",
+    description:
+      "A JavaScript library for building user interfaces with a component-based architecture.",
     sourceType: "context7",
     sourceUrl: "https://react.dev",
     context7Id: "/websites/react_dev",
@@ -45,7 +55,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "nextjs",
     name: "Next.js",
-    description: "The React framework for production with hybrid static & server rendering, TypeScript support, and more.",
+    description:
+      "The React framework for production with hybrid static & server rendering, TypeScript support, and more.",
     sourceType: "context7",
     sourceUrl: "https://nextjs.org",
     context7Id: "/vercel/next.js",
@@ -99,7 +110,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "hono",
     name: "Hono",
-    description: "Ultrafast web framework for the Edges. Works on Cloudflare Workers, Deno, Bun, and more.",
+    description:
+      "Ultrafast web framework for the Edges. Works on Cloudflare Workers, Deno, Bun, and more.",
     sourceType: "context7",
     sourceUrl: "https://hono.dev",
     context7Id: "/honojs/website",
@@ -169,7 +181,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "cloudflare-workers",
     name: "Cloudflare Workers",
-    description: "Build serverless applications on Cloudflare's edge network with JavaScript/TypeScript.",
+    description:
+      "Build serverless applications on Cloudflare's edge network with JavaScript/TypeScript.",
     sourceType: "context7",
     sourceUrl: "https://workers.cloudflare.com",
     context7Id: "/websites/developers_cloudflare_workers",
@@ -292,7 +305,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "typescript",
     name: "TypeScript",
-    description: "JavaScript with syntax for types. A strongly typed programming language that builds on JavaScript.",
+    description:
+      "JavaScript with syntax for types. A strongly typed programming language that builds on JavaScript.",
     sourceType: "context7",
     sourceUrl: "https://typescriptlang.org",
     context7Id: "/websites/typescriptlang",
@@ -322,7 +336,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "langchain",
     name: "LangChain.js",
-    description: "Framework for developing applications powered by language models in JavaScript/TypeScript.",
+    description:
+      "Framework for developing applications powered by language models in JavaScript/TypeScript.",
     sourceType: "context7",
     sourceUrl: "https://js.langchain.com",
     context7Id: "/websites/langchain_oss_javascript",
@@ -338,7 +353,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "shopify",
     name: "Shopify",
-    description: "E-commerce platform for building online stores. Perfect for band merch and retail.",
+    description:
+      "E-commerce platform for building online stores. Perfect for band merch and retail.",
     sourceType: "context7",
     sourceUrl: "https://shopify.dev",
     context7Id: "/websites/shopify_dev",
@@ -351,7 +367,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "shopify-liquid",
     name: "Shopify Liquid",
-    description: "Template language for Shopify themes. Build custom storefronts with dynamic content.",
+    description:
+      "Template language for Shopify themes. Build custom storefronts with dynamic content.",
     sourceType: "context7",
     sourceUrl: "https://shopify.dev/api/liquid",
     context7Id: "/websites/shopify_dev_api_liquid",
@@ -373,7 +390,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "wix",
     name: "Wix",
-    description: "Full-stack development platform for customizing websites with code and building apps.",
+    description:
+      "Full-stack development platform for customizing websites with code and building apps.",
     sourceType: "context7",
     sourceUrl: "https://dev.wix.com",
     context7Id: "/websites/dev_wix",
@@ -385,7 +403,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "squarespace",
     name: "Squarespace",
-    description: "Developer platform for building custom Squarespace websites with templates and APIs.",
+    description:
+      "Developer platform for building custom Squarespace websites with templates and APIs.",
     sourceType: "context7",
     sourceUrl: "https://developers.squarespace.com",
     context7Id: "/websites/developers_squarespace",
@@ -423,7 +442,8 @@ const SEED_LIBRARIES: LibrarySeed[] = [
   {
     id: "wordpress",
     name: "WordPress",
-    description: "Open-source CMS powering over 40% of the web. Plugins, themes, and the Block Editor.",
+    description:
+      "Open-source CMS powering over 40% of the web. Plugins, themes, and the Block Editor.",
     sourceType: "context7",
     sourceUrl: "https://developer.wordpress.org",
     context7Id: "/websites/developer_wordpress_block-editor",
@@ -533,11 +553,7 @@ adminRouter.post("/index/:id", async (c) => {
   const now = new Date().toISOString();
 
   // Get the library
-  const [library] = await db
-    .select()
-    .from(libraries)
-    .where(eq(libraries.id, id))
-    .limit(1);
+  const [library] = await db.select().from(libraries).where(eq(libraries.id, id)).limit(1);
 
   if (!library) {
     return c.json({ error: "Library not found" }, 404);
@@ -633,11 +649,7 @@ adminRouter.post("/submissions/:id/approve", async (c) => {
   const now = new Date().toISOString();
 
   // Get the submission
-  const [submission] = await db
-    .select()
-    .from(submissions)
-    .where(eq(submissions.id, id))
-    .limit(1);
+  const [submission] = await db.select().from(submissions).where(eq(submissions.id, id)).limit(1);
 
   if (!submission) {
     return c.json({ error: "Submission not found" }, 404);
@@ -739,11 +751,7 @@ adminRouter.post("/submissions/:id/reject", async (c) => {
   const db = c.get("db");
   const now = new Date().toISOString();
 
-  const [submission] = await db
-    .select()
-    .from(submissions)
-    .where(eq(submissions.id, id))
-    .limit(1);
+  const [submission] = await db.select().from(submissions).where(eq(submissions.id, id)).limit(1);
 
   if (!submission) {
     return c.json({ error: "Submission not found" }, 404);
@@ -776,11 +784,7 @@ adminRouter.delete("/libraries/:id", async (c) => {
   const db = c.get("db");
 
   // Get the library
-  const [library] = await db
-    .select()
-    .from(libraries)
-    .where(eq(libraries.id, id))
-    .limit(1);
+  const [library] = await db.select().from(libraries).where(eq(libraries.id, id)).limit(1);
 
   if (!library) {
     return c.json({ error: "Library not found" }, 404);
@@ -809,9 +813,7 @@ adminRouter.delete("/libraries/:id", async (c) => {
     for (let i = 0; i < libraryChunks.length; i += R2_BATCH_SIZE) {
       const batch = libraryChunks.slice(i, i + R2_BATCH_SIZE);
       await Promise.all(
-        batch.map((chunk) =>
-          c.env.DOCS_BUCKET.delete(chunk.r2Key).catch(() => {})
-        )
+        batch.map((chunk) => c.env.DOCS_BUCKET.delete(chunk.r2Key).catch(() => {}))
       );
     }
   }
@@ -838,11 +840,7 @@ adminRouter.post("/reindex/:id", async (c) => {
   const now = new Date().toISOString();
 
   // Get the library
-  const [library] = await db
-    .select()
-    .from(libraries)
-    .where(eq(libraries.id, id))
-    .limit(1);
+  const [library] = await db.select().from(libraries).where(eq(libraries.id, id)).limit(1);
 
   if (!library) {
     return c.json({ error: "Library not found" }, 404);
@@ -949,9 +947,7 @@ adminRouter.post("/reseed", async (c) => {
         for (let i = 0; i < libraryChunks.length; i += R2_BATCH_SIZE) {
           const batch = libraryChunks.slice(i, i + R2_BATCH_SIZE);
           await Promise.all(
-            batch.map((chunk) =>
-              c.env.DOCS_BUCKET.delete(chunk.r2Key).catch(() => {})
-            )
+            batch.map((chunk) => c.env.DOCS_BUCKET.delete(chunk.r2Key).catch(() => {}))
           );
         }
       }
@@ -962,7 +958,9 @@ adminRouter.post("/reseed", async (c) => {
       await db.delete(libraries).where(eq(libraries.id, lib.id));
       results.deleted++;
     } catch (error) {
-      results.errors.push(`delete ${lib.id}: ${error instanceof Error ? error.message : String(error)}`);
+      results.errors.push(
+        `delete ${lib.id}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -994,7 +992,9 @@ adminRouter.post("/reseed", async (c) => {
 
       results.created++;
     } catch (error) {
-      results.errors.push(`create ${lib.id}: ${error instanceof Error ? error.message : String(error)}`);
+      results.errors.push(
+        `create ${lib.id}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -1021,9 +1021,9 @@ interface McpServerSeed {
   installCommand: string;
   installArgs: string[];
   envVars: Record<string, string>;
-  tools: Array<{name: string; description?: string}>;
-  resources: Array<{uri: string; name?: string}>;
-  prompts: Array<{name: string; description?: string}>;
+  tools: Array<{ name: string; description?: string }>;
+  resources: Array<{ uri: string; name?: string }>;
+  prompts: Array<{ name: string; description?: string }>;
   hasTools: boolean;
   hasResources: boolean;
   hasPrompts: boolean;
@@ -1048,7 +1048,8 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     namespace: "modelcontextprotocol",
     name: "server-filesystem",
     displayName: "Filesystem",
-    description: "Secure file operations with configurable access controls. Read, write, and manage files and directories.",
+    description:
+      "Secure file operations with configurable access controls. Read, write, and manage files and directories.",
     transportType: "stdio",
     packageType: "npm",
     packageName: "@modelcontextprotocol/server-filesystem",
@@ -1086,13 +1087,14 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     namespace: "modelcontextprotocol",
     name: "server-github",
     displayName: "GitHub",
-    description: "GitHub API integration for repository management, file operations, issues, pull requests, and more.",
+    description:
+      "GitHub API integration for repository management, file operations, issues, pull requests, and more.",
     transportType: "stdio",
     packageType: "npm",
     packageName: "@modelcontextprotocol/server-github",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-github"],
-    envVars: { "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token" },
+    envVars: { GITHUB_PERSONAL_ACCESS_TOKEN: "your-github-token" },
     tools: [
       { name: "create_or_update_file", description: "Create or update a file in a repository" },
       { name: "search_repositories", description: "Search for GitHub repositories" },
@@ -1123,19 +1125,16 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     namespace: "modelcontextprotocol",
     name: "server-postgres",
     displayName: "PostgreSQL",
-    description: "Read-only PostgreSQL database access with schema inspection and query capabilities.",
+    description:
+      "Read-only PostgreSQL database access with schema inspection and query capabilities.",
     transportType: "stdio",
     packageType: "npm",
     packageName: "@modelcontextprotocol/server-postgres",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"],
     envVars: {},
-    tools: [
-      { name: "query", description: "Execute a read-only SQL query" },
-    ],
-    resources: [
-      { uri: "postgres://schema", name: "Database schema information" },
-    ],
+    tools: [{ name: "query", description: "Execute a read-only SQL query" }],
+    resources: [{ uri: "postgres://schema", name: "Database schema information" }],
     prompts: [],
     hasTools: true,
     hasResources: true,
@@ -1187,7 +1186,8 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     namespace: "modelcontextprotocol",
     name: "server-memory",
     displayName: "Memory",
-    description: "Knowledge graph-based persistent memory system for storing and retrieving entities and relations.",
+    description:
+      "Knowledge graph-based persistent memory system for storing and retrieving entities and relations.",
     transportType: "stdio",
     packageType: "npm",
     packageName: "@modelcontextprotocol/server-memory",
@@ -1268,7 +1268,7 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     packageName: "@modelcontextprotocol/server-brave-search",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-brave-search"],
-    envVars: { "BRAVE_API_KEY": "your-brave-api-key" },
+    envVars: { BRAVE_API_KEY: "your-brave-api-key" },
     tools: [
       { name: "brave_web_search", description: "Search the web using Brave" },
       { name: "brave_local_search", description: "Search local businesses" },
@@ -1298,7 +1298,7 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     packageName: "@modelcontextprotocol/server-google-maps",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-google-maps"],
-    envVars: { "GOOGLE_MAPS_API_KEY": "your-google-maps-api-key" },
+    envVars: { GOOGLE_MAPS_API_KEY: "your-google-maps-api-key" },
     tools: [
       { name: "maps_geocode", description: "Convert address to coordinates" },
       { name: "maps_reverse_geocode", description: "Convert coordinates to address" },
@@ -1333,7 +1333,7 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     packageName: "@modelcontextprotocol/server-slack",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-slack"],
-    envVars: { "SLACK_BOT_TOKEN": "xoxb-your-bot-token", "SLACK_TEAM_ID": "T00000000" },
+    envVars: { SLACK_BOT_TOKEN: "xoxb-your-bot-token", SLACK_TEAM_ID: "T00000000" },
     tools: [
       { name: "slack_list_channels", description: "List Slack channels" },
       { name: "slack_post_message", description: "Post a message to a channel" },
@@ -1370,9 +1370,7 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-fetch"],
     envVars: {},
-    tools: [
-      { name: "fetch", description: "Fetch a URL and extract content" },
-    ],
+    tools: [{ name: "fetch", description: "Fetch a URL and extract content" }],
     resources: [],
     prompts: [],
     hasTools: true,
@@ -1433,7 +1431,7 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     packageName: "@modelcontextprotocol/server-sentry",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-sentry"],
-    envVars: { "SENTRY_AUTH_TOKEN": "your-sentry-auth-token" },
+    envVars: { SENTRY_AUTH_TOKEN: "your-sentry-auth-token" },
     tools: [
       { name: "get_sentry_issues", description: "Get list of issues" },
       { name: "get_sentry_issue_details", description: "Get issue details" },
@@ -1458,23 +1456,23 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     namespace: "modelcontextprotocol",
     name: "server-sequential-thinking",
     displayName: "Sequential Thinking",
-    description: "Dynamic problem-solving through thought sequences with branching and revision capabilities.",
+    description:
+      "Dynamic problem-solving through thought sequences with branching and revision capabilities.",
     transportType: "stdio",
     packageType: "npm",
     packageName: "@modelcontextprotocol/server-sequential-thinking",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-sequential-thinking"],
     envVars: {},
-    tools: [
-      { name: "sequentialthinking", description: "A tool for dynamic problem-solving" },
-    ],
+    tools: [{ name: "sequentialthinking", description: "A tool for dynamic problem-solving" }],
     resources: [],
     prompts: [],
     hasTools: true,
     hasResources: false,
     hasPrompts: false,
     repositoryUrl: "https://github.com/modelcontextprotocol/servers",
-    documentationUrl: "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking",
+    documentationUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking",
     author: "Anthropic",
     license: "MIT",
     keywords: ["thinking", "reasoning", "problem-solving", "ai"],
@@ -1493,7 +1491,7 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     packageName: "@modelcontextprotocol/server-everart",
     installCommand: "npx",
     installArgs: ["-y", "@modelcontextprotocol/server-everart"],
-    envVars: { "EVERART_API_KEY": "your-everart-api-key" },
+    envVars: { EVERART_API_KEY: "your-everart-api-key" },
     tools: [
       { name: "generate_image", description: "Generate an image from a prompt" },
       { name: "get_models", description: "List available models" },
@@ -1563,13 +1561,14 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     namespace: "neondatabase",
     name: "mcp-server-neon",
     displayName: "Neon",
-    description: "Neon serverless PostgreSQL operations including project, branch, and database management.",
+    description:
+      "Neon serverless PostgreSQL operations including project, branch, and database management.",
     transportType: "stdio",
     packageType: "npm",
     packageName: "@neondatabase/mcp-server-neon",
     installCommand: "npx",
     installArgs: ["-y", "@neondatabase/mcp-server-neon"],
-    envVars: { "NEON_API_KEY": "your-neon-api-key" },
+    envVars: { NEON_API_KEY: "your-neon-api-key" },
     tools: [
       { name: "list_projects", description: "List Neon projects" },
       { name: "create_project", description: "Create a new project" },
@@ -1605,7 +1604,7 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     packageName: "exa-mcp-server",
     installCommand: "npx",
     installArgs: ["-y", "exa-mcp-server"],
-    envVars: { "EXA_API_KEY": "your-exa-api-key" },
+    envVars: { EXA_API_KEY: "your-exa-api-key" },
     tools: [
       { name: "search", description: "Search using Exa" },
       { name: "get_contents", description: "Get page contents" },
@@ -1633,7 +1632,8 @@ const SEED_MCP_SERVERS: McpServerSeed[] = [
     namespace: "nexus",
     name: "nexus-mcp",
     displayName: "Nexus Documentation Oracle",
-    description: "Semantic documentation search across 30+ libraries. Find code examples, API references, and learn how to use any library correctly.",
+    description:
+      "Semantic documentation search across 30+ libraries. Find code examples, API references, and learn how to use any library correctly.",
     transportType: "http",
     packageType: "remote",
     packageName: "https://api.nexus.yogan.dev/mcp",
@@ -1681,13 +1681,15 @@ adminRouter.post(
   "/server-submissions/:id/approve",
   zValidator(
     "json",
-    z.object({
-      namespace: z.string().min(1).max(100).optional(),
-      displayName: z.string().max(100).optional(),
-      categories: z.array(z.string()).optional(),
-      keywords: z.array(z.string()).optional(),
-      isFeatured: z.boolean().optional(),
-    }).optional()
+    z
+      .object({
+        namespace: z.string().min(1).max(100).optional(),
+        displayName: z.string().max(100).optional(),
+        categories: z.array(z.string()).optional(),
+        keywords: z.array(z.string()).optional(),
+        isFeatured: z.boolean().optional(),
+      })
+      .optional()
   ),
   async (c) => {
     const id = c.req.param("id");
@@ -1744,7 +1746,7 @@ adminRouter.post(
     // Extract namespace from repository URL or package name
     let namespace = body.namespace || "community";
     if (!body.namespace && submission.repositoryUrl) {
-      const match = submission.repositoryUrl.match(/github\.com\/([^\/]+)/);
+      const match = submission.repositoryUrl.match(/github\.com\/([^/]+)/);
       if (match) {
         namespace = match[1].toLowerCase();
       }
@@ -1814,9 +1816,11 @@ adminRouter.post(
   "/server-submissions/:id/reject",
   zValidator(
     "json",
-    z.object({
-      reason: z.string().max(500).optional(),
-    }).optional()
+    z
+      .object({
+        reason: z.string().max(500).optional(),
+      })
+      .optional()
   ),
   async (c) => {
     const id = c.req.param("id");
@@ -1926,7 +1930,9 @@ adminRouter.post("/seed-servers", async (c) => {
 
       results.created++;
     } catch (error) {
-      results.errors.push(`${server.id}: ${error instanceof Error ? error.message : String(error)}`);
+      results.errors.push(
+        `${server.id}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -1947,14 +1953,14 @@ adminRouter.post("/seed-servers", async (c) => {
  */
 adminRouter.post("/sync/libraries", async (c) => {
   const { syncAllLibraries } = await import("../services/context7-sync");
-  
+
   // Start the sync in the background
   const env = c.env;
   const syncPromise = syncAllLibraries(env, "admin-manual");
-  
+
   // Use waitUntil to ensure sync completes even after response
   c.executionCtx.waitUntil(syncPromise);
-  
+
   return c.json({
     message: "Context7 library sync started",
     info: "Sync is running in the background. Check /api/admin/sync/jobs for status.",
@@ -1968,17 +1974,20 @@ adminRouter.post("/sync/libraries", async (c) => {
 adminRouter.post("/sync/library/:name", async (c) => {
   const { name } = c.req.param();
   const { syncLibrary } = await import("../services/context7-sync");
-  
+
   try {
     await syncLibrary(c.env, name);
     return c.json({
       message: `Library "${name}" synced successfully`,
     });
   } catch (error) {
-    return c.json({
-      error: "Sync failed",
-      message: error instanceof Error ? error.message : String(error),
-    }, 500);
+    return c.json(
+      {
+        error: "Sync failed",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      500
+    );
   }
 });
 
@@ -1988,12 +1997,12 @@ adminRouter.post("/sync/library/:name", async (c) => {
  */
 adminRouter.get("/sync/jobs", async (c) => {
   const { listSyncJobs } = await import("../services/context7-sync");
-  
+
   const limit = parseInt(c.req.query("limit") || "20");
   const offset = parseInt(c.req.query("offset") || "0");
-  
+
   const jobs = await listSyncJobs(c.env, { limit, offset });
-  
+
   return c.json({
     jobs,
     pagination: { limit, offset },
@@ -2006,13 +2015,13 @@ adminRouter.get("/sync/jobs", async (c) => {
  */
 adminRouter.get("/sync/jobs/latest", async (c) => {
   const { getLatestSyncJob } = await import("../services/context7-sync");
-  
+
   const job = await getLatestSyncJob(c.env);
-  
+
   if (!job) {
     return c.json({ error: "No sync jobs found" }, 404);
   }
-  
+
   return c.json({ job });
 });
 
@@ -2023,13 +2032,13 @@ adminRouter.get("/sync/jobs/latest", async (c) => {
 adminRouter.get("/sync/jobs/:id", async (c) => {
   const { id } = c.req.param();
   const { getSyncStatus } = await import("../services/context7-sync");
-  
+
   const job = await getSyncStatus(c.env, id);
-  
+
   if (!job) {
     return c.json({ error: "Sync job not found" }, 404);
   }
-  
+
   return c.json({ job });
 });
 
@@ -2039,20 +2048,20 @@ adminRouter.get("/sync/jobs/:id", async (c) => {
  */
 adminRouter.get("/sync/stats", async (c) => {
   const db = c.get("db");
-  
+
   // Count libraries with Context7 data
   const syncedResult = await c.env.DB.prepare(
     `SELECT COUNT(*) as count FROM libraries WHERE context7_synced_at IS NOT NULL`
   ).first<{ count: number }>();
-  
+
   const totalResult = await c.env.DB.prepare(
     `SELECT COUNT(*) as count FROM libraries WHERE is_active = 1`
   ).first<{ count: number }>();
-  
+
   const lastSyncResult = await c.env.DB.prepare(
     `SELECT MAX(context7_synced_at) as last_sync FROM libraries`
   ).first<{ last_sync: string | null }>();
-  
+
   const jobsResult = await c.env.DB.prepare(
     `SELECT 
       COUNT(*) as total_jobs,
@@ -2060,7 +2069,7 @@ adminRouter.get("/sync/stats", async (c) => {
       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_jobs
     FROM sync_jobs`
   ).first<{ total_jobs: number; completed_jobs: number; failed_jobs: number }>();
-  
+
   return c.json({
     libraries: {
       synced: syncedResult?.count || 0,

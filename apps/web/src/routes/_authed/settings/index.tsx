@@ -71,7 +71,7 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [preferences, setPreferences] = useState<UserPreferences>({
     defaultResponseFormat: "full",
     defaultTokenBudget: null,
@@ -87,7 +87,7 @@ function SettingsPage() {
       try {
         const res = await authFetch("/user/preferences");
         if (res.ok) {
-          const data = await res.json() as UserPreferences;
+          const data = (await res.json()) as UserPreferences;
           setPreferences({
             defaultResponseFormat: data.defaultResponseFormat || "full",
             defaultTokenBudget: data.defaultTokenBudget,
@@ -109,18 +109,18 @@ function SettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     setError(null);
-    
+
     try {
       const res = await authFetch("/user/preferences", {
         method: "PUT",
         body: JSON.stringify(preferences),
       });
-      
+
       if (!res.ok) {
-        const data = await res.json() as { error?: string };
+        const data = (await res.json()) as { error?: string };
         throw new Error(data.error || "Failed to save preferences");
       }
-      
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -143,16 +143,12 @@ function SettingsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-stone-900">Settings</h1>
-        <p className="mt-1 text-stone-600">
-          Customize your Nexus experience
-        </p>
+        <p className="mt-1 text-stone-600">Customize your Nexus experience</p>
       </div>
 
       {/* Response Format Section */}
       <section className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-stone-900">
-          Default Response Format
-        </h2>
+        <h2 className="mb-4 text-lg font-semibold text-stone-900">Default Response Format</h2>
         <p className="mb-4 text-sm text-stone-600">
           Choose how documentation is returned when using the MCP tools
         </p>
@@ -202,13 +198,9 @@ function SettingsPage() {
                   >
                     {option.icon}
                   </span>
-                  <span className="font-medium text-stone-900">
-                    {option.label}
-                  </span>
+                  <span className="font-medium text-stone-900">{option.label}</span>
                 </div>
-                <p className="mt-0.5 text-sm text-stone-600">
-                  {option.description}
-                </p>
+                <p className="mt-0.5 text-sm text-stone-600">{option.description}</p>
               </div>
             </label>
           ))}
@@ -217,9 +209,7 @@ function SettingsPage() {
 
       {/* Token Budget Section */}
       <section className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-stone-900">
-          Token Budget
-        </h2>
+        <h2 className="mb-4 text-lg font-semibold text-stone-900">Token Budget</h2>
         <p className="mb-4 text-sm text-stone-600">
           Limit the maximum tokens returned per query (leave empty for no limit)
         </p>
@@ -231,9 +221,7 @@ function SettingsPage() {
             onChange={(e) =>
               setPreferences({
                 ...preferences,
-                defaultTokenBudget: e.target.value
-                  ? parseInt(e.target.value)
-                  : null,
+                defaultTokenBudget: e.target.value ? parseInt(e.target.value) : null,
               })
             }
             placeholder="No limit"
@@ -248,9 +236,7 @@ function SettingsPage() {
 
       {/* Code Preferences Section */}
       <section className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-stone-900">
-          Code Preferences
-        </h2>
+        <h2 className="mb-4 text-lg font-semibold text-stone-900">Code Preferences</h2>
 
         <div className="space-y-4">
           <label className="flex items-center gap-3">
@@ -269,9 +255,7 @@ function SettingsPage() {
           </label>
 
           <div>
-            <label className="mb-2 block text-sm text-stone-700">
-              Preferred code language
-            </label>
+            <label className="mb-2 block text-sm text-stone-700">Preferred code language</label>
             <select
               value={preferences.preferredCodeLanguage}
               onChange={(e) =>
@@ -294,9 +278,7 @@ function SettingsPage() {
 
       {/* Email Preferences Section */}
       <section className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-stone-900">
-          Email Preferences
-        </h2>
+        <h2 className="mb-4 text-lg font-semibold text-stone-900">Email Preferences</h2>
 
         <div className="space-y-4">
           <label className="flex items-center gap-3">
@@ -333,9 +315,7 @@ function SettingsPage() {
             />
             <div>
               <span className="text-stone-900">Weekly digest</span>
-              <p className="text-sm text-stone-600">
-                Get a summary of new libraries and features
-              </p>
+              <p className="text-sm text-stone-600">Get a summary of new libraries and features</p>
             </div>
           </label>
         </div>

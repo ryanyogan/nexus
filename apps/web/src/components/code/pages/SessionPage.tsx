@@ -10,8 +10,7 @@ interface SessionPageProps {
 export function SessionPage({ sessionId }: SessionPageProps) {
   const navigate = useNavigate();
 
-  const { connectionStatus, activeSessionId, selectSession, client } =
-    useEditorStore();
+  const { connectionStatus, activeSessionId, selectSession, client } = useEditorStore();
 
   // Redirect if not connected
   useEffect(() => {
@@ -41,11 +40,7 @@ export function SessionPage({ sessionId }: SessionPageProps) {
             delta?: string;
           };
 
-          if (
-            props.sessionID === sessionId &&
-            props.part.type === "text" &&
-            props.delta
-          ) {
+          if (props.sessionID === sessionId && props.part.type === "text" && props.delta) {
             store.appendStreamingContent(props.delta);
           }
           break;

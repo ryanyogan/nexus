@@ -1,6 +1,7 @@
 {
   "name": "nexus",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "turbo dev --filter=web --filter=api --filter=@nexus/docs",
     "dev:web": "turbo dev --filter=web...",
@@ -13,7 +14,7 @@
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
     "test": "turbo test",
-    "test:run": "vitest run",
+    "test:run": "vp test run",
     "deploy": "turbo build && pnpm run db:migrate:remote && turbo deploy --filter=api --filter=web --filter=@nexus/docs",
     "deploy:api": "turbo deploy --filter=api",
     "deploy:web": "turbo deploy --filter=web",
@@ -21,22 +22,31 @@
     "db:generate": "pnpm --filter @nexus/db db:generate",
     "db:migrate:local": "pnpm --filter api exec wrangler d1 migrations apply nexus-db --local --persist-to ../../.wrangler/state",
     "db:migrate:remote": "pnpm --filter api exec wrangler d1 migrations apply nexus-db --remote",
-    "clean": "turbo clean && rm -rf .turbo node_modules"
+    "clean": "turbo clean && rm -rf .turbo node_modules",
+    "prepare": "vp config"
   },
   "devDependencies": {
     "turbo": "^2.5.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.5"
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": ["workerd"],
-    "supportedArchitectures": {
-      "os": ["linux"],
-      "cpu": ["x64"]
-    }
-  },
-  "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "workerd"
+    ],
+    "supportedArchitectures": {
+      "os": [
+        "linux"
+      ],
+      "cpu": [
+        "x64"
+      ]
+    }
   }
 }

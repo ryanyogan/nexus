@@ -10,9 +10,9 @@ Retrieve a compiled stack prompt by ID or slug.
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `stackId` | string | Yes | Stack ID or slug |
+| Name      | Type   | Required | Description      |
+| --------- | ------ | -------- | ---------------- |
+| `stackId` | string | Yes      | Stack ID or slug |
 
 **Example:**
 
@@ -46,12 +46,12 @@ List available stacks with optional filtering.
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `category` | string | No | Filter by category |
-| `layer` | number | No | Filter by layer (0-3) |
-| `search` | string | No | Search query |
-| `limit` | number | No | Max results (default: 20) |
+| Name       | Type   | Required | Description               |
+| ---------- | ------ | -------- | ------------------------- |
+| `category` | string | No       | Filter by category        |
+| `layer`    | number | No       | Filter by layer (0-3)     |
+| `search`   | string | No       | Search query              |
+| `limit`    | number | No       | Max results (default: 20) |
 
 **Example:**
 
@@ -156,21 +156,21 @@ Add to your MCP configuration:
 
 Stack prompts count against your token budget. The `tokenCount` field shows the compiled prompt size:
 
-| Budget | Typical Size |
-|--------|-------------|
-| Minimal | 1,500 - 2,500 |
-| Standard | 4,000 - 6,000 |
+| Budget        | Typical Size   |
+| ------------- | -------------- |
+| Minimal       | 1,500 - 2,500  |
+| Standard      | 4,000 - 6,000  |
 | Comprehensive | 8,000 - 12,000 |
 
 ## Error Handling
 
 Common errors:
 
-| Code | Meaning | Solution |
-|------|---------|----------|
-| `STACK_NOT_FOUND` | Stack ID/slug doesn't exist | Check the ID or use `list-stacks` |
-| `STACK_NOT_PUBLIC` | Stack is private | Use your own stacks or public ones |
-| `COMPILATION_PENDING` | Stack not yet compiled | Wait for background job to complete |
+| Code                  | Meaning                     | Solution                            |
+| --------------------- | --------------------------- | ----------------------------------- |
+| `STACK_NOT_FOUND`     | Stack ID/slug doesn't exist | Check the ID or use `list-stacks`   |
+| `STACK_NOT_PUBLIC`    | Stack is private            | Use your own stacks or public ones  |
+| `COMPILATION_PENDING` | Stack not yet compiled      | Wait for background job to complete |
 
 ## Best Practices
 

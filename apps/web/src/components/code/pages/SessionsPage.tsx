@@ -1,15 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@nexus/ui/components/button";
-import {
-  ArrowLeft,
-  Plus,
-  MessageSquare,
-  Clock,
-  Loader2,
-  CheckCircle,
-  Circle,
-} from "lucide-react";
+import { ArrowLeft, Plus, MessageSquare, Clock, Loader2, CheckCircle, Circle } from "lucide-react";
 import { useEditorStore } from "@/stores/editor-store";
 import type { Session } from "@/lib/code/opencode-types";
 
@@ -64,12 +56,8 @@ export function SessionsPage() {
   };
 
   // Group sessions by status
-  const activeSessions = sessions.filter(
-    (s) => !s.title?.includes("[Completed]")
-  );
-  const recentSessions = sessions.filter((s) =>
-    s.title?.includes("[Completed]")
-  );
+  const activeSessions = sessions.filter((s) => !s.title?.includes("[Completed]"));
+  const recentSessions = sessions.filter((s) => s.title?.includes("[Completed]"));
 
   return (
     <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
@@ -124,9 +112,7 @@ export function SessionsPage() {
             {/* Active Sessions */}
             {activeSessions.length > 0 && (
               <div>
-                <h2 className="text-sm font-medium text-muted-foreground mb-3">
-                  Active Sessions
-                </h2>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3">Active Sessions</h2>
                 <div className="space-y-2">
                   {activeSessions.map((session) => (
                     <SessionCard
@@ -142,9 +128,7 @@ export function SessionsPage() {
             {/* Recent Sessions */}
             {recentSessions.length > 0 && (
               <div>
-                <h2 className="text-sm font-medium text-muted-foreground mb-3">
-                  Recent
-                </h2>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3">Recent</h2>
                 <div className="space-y-2">
                   {recentSessions.map((session) => (
                     <SessionCard
@@ -176,16 +160,9 @@ export function SessionsPage() {
   );
 }
 
-function SessionCard({
-  session,
-  onClick,
-}: {
-  session: Session;
-  onClick: () => void;
-}) {
+function SessionCard({ session, onClick }: { session: Session; onClick: () => void }) {
   const isCompleted = session.title?.includes("[Completed]");
-  const displayTitle =
-    session.title?.replace("[Completed]", "").trim() || "Untitled Session";
+  const displayTitle = session.title?.replace("[Completed]", "").trim() || "Untitled Session";
 
   return (
     <button

@@ -74,10 +74,7 @@ export function findProjectRoot(startDir?: string): string | null {
   let dir = startDir || process.cwd();
 
   while (dir !== "/") {
-    if (
-      existsSync(join(dir, "package.json")) ||
-      existsSync(join(dir, ".git"))
-    ) {
+    if (existsSync(join(dir, "package.json")) || existsSync(join(dir, ".git"))) {
       return dir;
     }
     dir = join(dir, "..");

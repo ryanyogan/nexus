@@ -67,9 +67,7 @@ function ErrorDisplay({
     <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
       <div className="flex items-start gap-2">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
-        <div className="flex-1 text-sm text-red-700 dark:text-red-400">
-          {error}
-        </div>
+        <div className="flex-1 text-sm text-red-700 dark:text-red-400">{error}</div>
       </div>
       <div className="mt-2 flex gap-2">
         <button
@@ -120,7 +118,7 @@ interface LibraryData {
 
 function AdminLibrariesPage() {
   // Note: session and router available via Route.useRouteContext() and useRouter() if needed
-  
+
   // Local state
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -154,7 +152,7 @@ function AdminLibrariesPage() {
 
   // Auto-refresh when indexing
   const hasIndexingLibraries = libraries.some((lib) => lib.indexStatus === "indexing");
-  
+
   useEffect(() => {
     if (!hasIndexingLibraries) return;
     const interval = setInterval(fetchLibraries, 5000);
@@ -365,7 +363,7 @@ function AdminLibrariesPage() {
           <h1 className="text-2xl font-bold text-foreground">Libraries</h1>
           <p className="text-muted-foreground">Manage indexed documentation libraries</p>
         </div>
-        
+
         {/* Auto-refresh indicator */}
         {hasIndexingLibraries && (
           <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-xs text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
@@ -411,10 +409,7 @@ function AdminLibrariesPage() {
       ) : (
         <div className="space-y-3">
           {libraries.map((lib) => (
-            <div
-              key={lib.id}
-              className="rounded-xl border border-border bg-card p-4"
-            >
+            <div key={lib.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start gap-4">
                 {lib.iconUrl ? (
                   <img
@@ -467,9 +462,7 @@ function AdminLibrariesPage() {
                       <span className="capitalize">{lib.categories.join(", ")}</span>
                     )}
                     {lib.lastIndexedAt && (
-                      <span>
-                        Last indexed: {new Date(lib.lastIndexedAt).toLocaleDateString()}
-                      </span>
+                      <span>Last indexed: {new Date(lib.lastIndexedAt).toLocaleDateString()}</span>
                     )}
                   </div>
 

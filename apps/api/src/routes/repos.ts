@@ -1,12 +1,6 @@
 import { Hono } from "hono";
 import { eq, and, desc, sql } from "drizzle-orm";
-import {
-  connectedRepos,
-  repoFiles,
-  accounts,
-  subscriptions,
-  type Database,
-} from "@nexus/db";
+import { connectedRepos, repoFiles, accounts, subscriptions, type Database } from "@nexus/db";
 import { createAuth } from "@nexus/auth";
 import type { AppContext, AuthUser } from "../types";
 import { z } from "zod";
@@ -92,7 +86,7 @@ const SMART_INCLUDE_PATTERNS = [
   "documentation/**/*.md",
   "CONTRIBUTING.md",
   "CHANGELOG.md",
-  
+
   // Configuration
   "package.json",
   "tsconfig.json",
@@ -117,7 +111,7 @@ const SMART_INCLUDE_PATTERNS = [
   "eslint.config.*",
   ".eslintrc*",
   "biome.json",
-  
+
   // Types and interfaces
   "**/*.d.ts",
   "**/types.ts",
@@ -126,7 +120,7 @@ const SMART_INCLUDE_PATTERNS = [
   "**/interfaces/*.ts",
   "**/*types*.ts",
   "**/*schema*.ts",
-  
+
   // Entry points
   "src/index.ts",
   "src/main.ts",
@@ -140,14 +134,14 @@ const SMART_INCLUDE_PATTERNS = [
   "__init__.py",
   "main.go",
   "lib.rs",
-  
+
   // API definitions
   "**/routes.ts",
   "**/router.ts",
   "**/api/**/*.ts",
   "**/*controller*.ts",
   "**/*handler*.ts",
-  
+
   // Database schemas
   "**/schema.ts",
   "**/schema.prisma",
@@ -222,10 +216,13 @@ reposRouter.get("/available", async (c) => {
 
   const token = await getGitHubToken(db, user.id);
   if (!token) {
-    return c.json({
-      error: "GitHub not connected",
-      authUrl: "/api/auth/github?scope=repo",
-    }, 400);
+    return c.json(
+      {
+        error: "GitHub not connected",
+        authUrl: "/api/auth/github?scope=repo",
+      },
+      400
+    );
   }
 
   try {
@@ -242,10 +239,13 @@ reposRouter.get("/available", async (c) => {
 
     if (!response.ok) {
       if (response.status === 401) {
-        return c.json({
-          error: "GitHub token expired",
-          authUrl: "/api/auth/github?scope=repo",
-        }, 401);
+        return c.json(
+          {
+            error: "GitHub token expired",
+            authUrl: "/api/auth/github?scope=repo",
+          },
+          401
+        );
       }
       throw new Error(`GitHub API error: ${response.status}`);
     }
@@ -292,9 +292,12 @@ reposRouter.get("/available", async (c) => {
 
     return c.json({ repos: availableRepos, page, perPage });
   } catch (error) {
-    return c.json({
-      error: error instanceof Error ? error.message : "Failed to fetch repos",
-    }, 500);
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : "Failed to fetch repos",
+      },
+      500
+    );
   }
 });
 
@@ -325,10 +328,13 @@ reposRouter.post("/", zValidator("json", connectRepoSchema), async (c) => {
 
   // Check if private repo is allowed
   if (data.isPrivate && !limits.privateRepos) {
-    return c.json({
-      error: "Private repositories require Pro or Team plan",
-      upgrade: true,
-    }, 403);
+    return c.json(
+      {
+        error: "Private repositories require Pro or Team plan",
+        upgrade: true,
+      },
+      403
+    );
   }
 
   // Check repo count limit
@@ -338,19 +344,20 @@ reposRouter.post("/", zValidator("json", connectRepoSchema), async (c) => {
     .where(eq(connectedRepos.userId, user.id));
 
   if ((existingCount[0]?.count || 0) >= limits.maxRepos) {
-    return c.json({
-      error: `Maximum ${limits.maxRepos} repositories allowed on ${tier} plan`,
-      upgrade: true,
-    }, 403);
+    return c.json(
+      {
+        error: `Maximum ${limits.maxRepos} repositories allowed on ${tier} plan`,
+        upgrade: true,
+      },
+      403
+    );
   }
 
   // Check if already connected
   const [existing] = await db
     .select()
     .from(connectedRepos)
-    .where(
-      and(eq(connectedRepos.userId, user.id), eq(connectedRepos.githubId, data.githubId))
-    )
+    .where(and(eq(connectedRepos.userId, user.id), eq(connectedRepos.githubId, data.githubId)))
     .limit(1);
 
   if (existing) {
@@ -821,11 +828,14 @@ function matchGlob(path: string, pattern: string): boolean {
   return new RegExp(`^${regex}$`).test(path);
 }
 
-function categorizeFile(path: string): "readme" | "docs" | "config" | "types" | "source" | "test" | "other" {
+function categorizeFile(
+  path: string
+): "readme" | "docs" | "config" | "types" | "source" | "test" | "other" {
   const lower = path.toLowerCase();
   if (lower.includes("readme")) return "readme";
   if (lower.includes("docs/") || lower.includes("documentation/")) return "docs";
-  if (lower.includes(".d.ts") || lower.includes("types") || lower.includes("interfaces")) return "types";
+  if (lower.includes(".d.ts") || lower.includes("types") || lower.includes("interfaces"))
+    return "types";
   if (lower.includes("test") || lower.includes("spec")) return "test";
   if (
     lower.endsWith(".json") ||

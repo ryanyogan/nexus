@@ -17,13 +17,7 @@ interface ResultModalProps {
   description: string;
 }
 
-export function ResultModal({
-  open,
-  onOpenChange,
-  type,
-  title,
-  description,
-}: ResultModalProps) {
+export function ResultModal({ open, onOpenChange, type, title, description }: ResultModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -36,9 +30,7 @@ export function ResultModal({
             )}
             <DialogTitle>{title}</DialogTitle>
           </div>
-          <DialogDescription className="whitespace-pre-line pt-2">
-            {description}
-          </DialogDescription>
+          <DialogDescription className="whitespace-pre-line pt-2">{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>OK</Button>

@@ -164,7 +164,7 @@ function SkillDetailPage() {
 
   const copyContent = async () => {
     if (!content) return;
-    
+
     try {
       await navigator.clipboard.writeText(content);
       setCopied(true);
@@ -220,18 +220,14 @@ function SkillDetailPage() {
                   </span>
                 )}
               </div>
-              
+
               {skill.description && (
-                <p className="mt-2 font-mono text-sm text-muted-foreground">
-                  {skill.description}
-                </p>
+                <p className="mt-2 font-mono text-sm text-muted-foreground">{skill.description}</p>
               )}
 
               {/* Meta */}
               <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-xs">
-                <span className={`font-bold uppercase ${typeInfo.color}`}>
-                  {typeInfo.label}
-                </span>
+                <span className={`font-bold uppercase ${typeInfo.color}`}>{typeInfo.label}</span>
                 {skill.version && (
                   <>
                     <span className="text-border">|</span>
@@ -344,9 +340,7 @@ function SkillDetailPage() {
                 <div className="h-64 animate-pulse border border-border bg-muted" />
               ) : content ? (
                 <pre className="max-h-[600px] overflow-auto border border-border bg-muted p-4 font-mono text-xs">
-                  <code className="whitespace-pre-wrap text-foreground">
-                    {content}
-                  </code>
+                  <code className="whitespace-pre-wrap text-foreground">{content}</code>
                 </pre>
               ) : (
                 <div className="flex h-32 items-center justify-center border border-border bg-muted font-mono text-xs uppercase text-muted-foreground">
@@ -356,7 +350,7 @@ function SkillDetailPage() {
             </div>
 
             {/* Requirements */}
-            {((skill.requiredTools && skill.requiredTools.length > 0) || 
+            {((skill.requiredTools && skill.requiredTools.length > 0) ||
               (skill.requiredMcpServers && skill.requiredMcpServers.length > 0)) && (
               <div className="border border-border p-6">
                 <h2 className="mb-4 flex items-center gap-2 font-mono text-sm font-bold uppercase text-foreground">
@@ -419,9 +413,7 @@ function SkillDetailPage() {
                 Ask your AI assistant to install this skill:
               </p>
               <pre className="mt-3 overflow-x-auto border border-border bg-background p-3 font-mono text-[10px]">
-                <code className="text-foreground">
-                  "Install the {skill.name} skill"
-                </code>
+                <code className="text-foreground">"Install the {skill.name} skill"</code>
               </pre>
             </div>
 
@@ -433,15 +425,11 @@ function SkillDetailPage() {
               <dl className="space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between">
                   <dt className="uppercase text-muted-foreground">Type</dt>
-                  <dd className={`font-bold uppercase ${typeInfo.color}`}>
-                    {typeInfo.label}
-                  </dd>
+                  <dd className={`font-bold uppercase ${typeInfo.color}`}>{typeInfo.label}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="uppercase text-muted-foreground">Format</dt>
-                  <dd className="uppercase text-foreground">
-                    {skill.format}
-                  </dd>
+                  <dd className="uppercase text-foreground">{skill.format}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="uppercase text-muted-foreground">Installs</dt>
@@ -462,9 +450,7 @@ function SkillDetailPage() {
                 {skill.version && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Version</dt>
-                    <dd className="text-foreground">
-                      {skill.version}
-                    </dd>
+                    <dd className="text-foreground">{skill.version}</dd>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
@@ -530,7 +516,7 @@ function SkillDetailSkeleton() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-4 py-8">
         <Skeleton className="mb-8 h-4 w-16" />
-        
+
         <div className="mb-8 border-b border-border pb-8">
           <div className="flex items-start gap-4">
             <Skeleton className="h-16 w-16" />
@@ -544,7 +530,7 @@ function SkillDetailSkeleton() {
             </div>
           </div>
         </div>
-        
+
         <div className="mb-8 flex gap-6">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-4 w-20" />

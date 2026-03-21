@@ -10,11 +10,11 @@ nexus docs <command> [options]
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `search <library> <query>` | Search documentation |
-| `list` | List available libraries |
-| `info <library>` | Get library info |
+| Command                    | Description              |
+| -------------------------- | ------------------------ |
+| `search <library> <query>` | Search documentation     |
+| `list`                     | List available libraries |
+| `info <library>`           | Get library info         |
 
 ## Examples
 
@@ -34,8 +34,8 @@ nexus docs list --category frontend
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `--limit <n>` | Max results (default 5) |
-| `--format <fmt>` | Output format: text, json |
-| `--category <cat>` | Filter by category |
+| Option             | Description               |
+| ------------------ | ------------------------- |
+| `--limit <n>`      | Max results (default 5)   |
+| `--format <fmt>`   | Output format: text, json |
+| `--category <cat>` | Filter by category        |

@@ -17,6 +17,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "query": "how do we handle authentication",
@@ -26,6 +27,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "memories": [
@@ -42,13 +44,13 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `query` | string | Yes | Natural language search query |
-| `project` | string | No | Filter to specific project |
-| `type` | string | No | Filter by memory type |
-| `tags` | string[] | No | Filter by tags |
-| `limit` | number | No | Max results 1-10, default 5 |
+| Parameter | Type     | Required | Description                   |
+| --------- | -------- | -------- | ----------------------------- |
+| `query`   | string   | Yes      | Natural language search query |
+| `project` | string   | No       | Filter to specific project    |
+| `type`    | string   | No       | Filter by memory type         |
+| `tags`    | string[] | No       | Filter by tags                |
+| `limit`   | number   | No       | Max results 1-10, default 5   |
 
 ## Returns
 

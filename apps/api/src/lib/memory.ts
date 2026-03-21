@@ -7,12 +7,7 @@ import type { MemoryType, MemoryScope, MemoryMetadata, MemoryResult } from "../t
 // Constants
 // ============================================================================
 
-const MEMORY_TYPES: MemoryType[] = [
-  "project_context",
-  "session_summary",
-  "decision",
-  "correction",
-];
+const MEMORY_TYPES: MemoryType[] = ["project_context", "session_summary", "decision", "correction"];
 
 // ============================================================================
 // Memory Storage
@@ -81,8 +76,8 @@ export async function saveMemory(
         unit === "d"
           ? parseInt(num) * 24 * 60 * 60 * 1000
           : unit === "h"
-          ? parseInt(num) * 60 * 60 * 1000
-          : parseInt(num) * 60 * 1000;
+            ? parseInt(num) * 60 * 60 * 1000
+            : parseInt(num) * 60 * 1000;
       expiresAt = new Date(Date.now() + ms).toISOString();
     }
   }
@@ -175,15 +170,7 @@ export async function recallMemories(
   db: Database,
   env: Env
 ): Promise<RecallMemoriesResult> {
-  const {
-    query,
-    type,
-    project,
-    tags,
-    scope = "all",
-    userId,
-    limit = 5,
-  } = input;
+  const { query, type, project, tags, scope = "all", userId, limit = 5 } = input;
 
   const clampedLimit = Math.min(Math.max(1, limit), 10);
 
@@ -269,10 +256,7 @@ export async function recallMemories(
         .limit(1);
 
       // Get content from R2
-      const r2Key =
-        meta.scope === "user"
-          ? `users/${meta.userId}/${meta.id}`
-          : `global/${meta.id}`;
+      const r2Key = meta.scope === "user" ? `users/${meta.userId}/${meta.id}` : `global/${meta.id}`;
       const object = await env.MEMORY_BUCKET.get(r2Key);
       const content = object ? await object.text() : "[Content unavailable]";
 
@@ -356,13 +340,7 @@ export async function getProjectContext(
     const results = await db
       .select()
       .from(memories)
-      .where(
-        and(
-          eq(memories.project, project),
-          eq(memories.type, type),
-          scopeConditions
-        )
-      )
+      .where(and(eq(memories.project, project), eq(memories.type, type), scopeConditions))
       .orderBy(desc(memories.importance), desc(memories.createdAt))
       .limit(limit);
 
@@ -556,11 +534,7 @@ export async function updateMemory(
   const { memoryId, userId, content, title, tags, importance, summary } = input;
 
   // Fetch existing memory
-  const [existing] = await db
-    .select()
-    .from(memories)
-    .where(eq(memories.id, memoryId))
-    .limit(1);
+  const [existing] = await db.select().from(memories).where(eq(memories.id, memoryId)).limit(1);
 
   if (!existing) {
     throw new Error(`Memory not found: ${memoryId}`);
@@ -657,11 +631,7 @@ export async function deleteMemory(
   const { memoryId, userId } = input;
 
   // Fetch existing memory
-  const [existing] = await db
-    .select()
-    .from(memories)
-    .where(eq(memories.id, memoryId))
-    .limit(1);
+  const [existing] = await db.select().from(memories).where(eq(memories.id, memoryId)).limit(1);
 
   if (!existing) {
     throw new Error(`Memory not found: ${memoryId}`);

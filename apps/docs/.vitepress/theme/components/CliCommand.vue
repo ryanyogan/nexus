@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const props = defineProps<{
-  command: string
-}>()
+  command: string;
+}>();
 
-const copied = ref(false)
+const copied = ref(false);
 
 function copyToClipboard() {
-  navigator.clipboard.writeText(props.command)
-  copied.value = true
+  navigator.clipboard.writeText(props.command);
+  copied.value = true;
   setTimeout(() => {
-    copied.value = false
-  }, 2000)
+    copied.value = false;
+  }, 2000);
 }
 </script>
 
@@ -20,7 +20,7 @@ function copyToClipboard() {
   <div class="cli-command">
     <code>{{ command }}</code>
     <button class="cli-command-copy" @click="copyToClipboard">
-      {{ copied ? 'Copied!' : 'Copy' }}
+      {{ copied ? "Copied!" : "Copy" }}
     </button>
   </div>
 </template>

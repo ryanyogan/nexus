@@ -165,42 +165,42 @@ Context is expensive. Nexus uses semantic search to return only the relevant chu
 
 ### Before vs After
 
-| Without Nexus | With Nexus |
-|---------------|------------|
-| Re-explain project structure every session | Load context in one tool call |
-| Paste documentation into chat | AI queries docs directly |
-| Search for MCP server setup guides | Get instant installation configs |
-| Lose context between conversations | Persistent memory across sessions |
+| Without Nexus                              | With Nexus                        |
+| ------------------------------------------ | --------------------------------- |
+| Re-explain project structure every session | Load context in one tool call     |
+| Paste documentation into chat              | AI queries docs directly          |
+| Search for MCP server setup guides         | Get instant installation configs  |
+| Lose context between conversations         | Persistent memory across sessions |
 
 ## Available Tools
 
 ### Documentation Tools
 
-| Tool | Description |
-|------|-------------|
-| [`resolve-library`](/tools/docs/resolve-library) | Find library IDs for documentation queries |
-| [`query-docs`](/tools/docs/query-docs) | Search indexed documentation with semantic search |
-| [`get-library-info`](/tools/docs/get-library-info) | Get detailed library metadata and stats |
-| [`list-libraries`](/tools/docs/list-libraries) | Browse all indexed documentation |
+| Tool                                               | Description                                       |
+| -------------------------------------------------- | ------------------------------------------------- |
+| [`resolve-library`](/tools/docs/resolve-library)   | Find library IDs for documentation queries        |
+| [`query-docs`](/tools/docs/query-docs)             | Search indexed documentation with semantic search |
+| [`get-library-info`](/tools/docs/get-library-info) | Get detailed library metadata and stats           |
+| [`list-libraries`](/tools/docs/list-libraries)     | Browse all indexed documentation                  |
 
 ### Memory Tools
 
-| Tool | Description |
-|------|-------------|
-| [`save-memory`](/tools/memory/save-memory) | Store project context, decisions, and learnings |
-| [`recall-memories`](/tools/memory/recall-memories) | Retrieve relevant memories using natural language |
-| [`get-project-context`](/tools/memory/get-project-context) | Load all context for a specific project |
-| [`list-memories`](/tools/memory/list-memories) | Browse and manage stored memories |
-| [`update-memory`](/tools/memory/update-memory) | Update an existing memory |
-| [`delete-memory`](/tools/memory/delete-memory) | Delete a memory permanently |
+| Tool                                                       | Description                                       |
+| ---------------------------------------------------------- | ------------------------------------------------- |
+| [`save-memory`](/tools/memory/save-memory)                 | Store project context, decisions, and learnings   |
+| [`recall-memories`](/tools/memory/recall-memories)         | Retrieve relevant memories using natural language |
+| [`get-project-context`](/tools/memory/get-project-context) | Load all context for a specific project           |
+| [`list-memories`](/tools/memory/list-memories)             | Browse and manage stored memories                 |
+| [`update-memory`](/tools/memory/update-memory)             | Update an existing memory                         |
+| [`delete-memory`](/tools/memory/delete-memory)             | Delete a memory permanently                       |
 
 ### Server Registry Tools
 
-| Tool | Description |
-|------|-------------|
-| [`discover-servers`](/tools/servers/discover-servers) | Find MCP servers by capability or category |
-| [`get-server-info`](/tools/servers/get-server-info) | Get detailed server documentation |
-| [`get-server-config`](/tools/servers/get-server-config) | Generate ready-to-use MCP configurations |
+| Tool                                                    | Description                                |
+| ------------------------------------------------------- | ------------------------------------------ |
+| [`discover-servers`](/tools/servers/discover-servers)   | Find MCP servers by capability or category |
+| [`get-server-info`](/tools/servers/get-server-info)     | Get detailed server documentation          |
+| [`get-server-config`](/tools/servers/get-server-config) | Generate ready-to-use MCP configurations   |
 
 ## Next Steps
 

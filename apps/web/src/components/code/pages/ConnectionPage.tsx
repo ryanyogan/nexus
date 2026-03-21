@@ -9,13 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@nexus/ui/components/card";
-import {
-  Monitor,
-  Clock,
-  Loader2,
-  AlertCircle,
-  ExternalLink,
-} from "lucide-react";
+import { Monitor, Clock, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import { useEditorStore } from "@/stores/editor-store";
 import type { SessionData } from "@/server/auth";
 
@@ -89,18 +83,14 @@ export function ConnectionPage({ session }: ConnectionPageProps) {
       {/* Header */}
       <div className="text-center mb-8 pt-4">
         <h1 className="text-2xl font-bold mb-2">Nexus Code</h1>
-        <p className="text-muted-foreground text-sm">
-          Connect to your OpenCode server
-        </p>
+        <p className="text-muted-foreground text-sm">Connect to your OpenCode server</p>
       </div>
 
       {/* Connection Form */}
       <Card className="mb-6">
         <CardHeader className="pb-4">
           <CardTitle className="text-lg">Server Connection</CardTitle>
-          <CardDescription>
-            Enter the URL of your OpenCode server
-          </CardDescription>
+          <CardDescription>Enter the URL of your OpenCode server</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -123,8 +113,7 @@ export function ConnectionPage({ session }: ConnectionPageProps) {
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                Password{" "}
-                <span className="text-muted-foreground">(optional)</span>
+                Password <span className="text-muted-foreground">(optional)</span>
               </label>
               <Input
                 id="password"
@@ -144,11 +133,7 @@ export function ConnectionPage({ session }: ConnectionPageProps) {
               </div>
             )}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!url.trim() || isConnecting}
-            >
+            <Button type="submit" className="w-full" disabled={!url.trim() || isConnecting}>
               {isConnecting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -165,9 +150,7 @@ export function ConnectionPage({ session }: ConnectionPageProps) {
       {/* Recent Connections */}
       {recentConnections.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Recent Connections
-          </h2>
+          <h2 className="text-sm font-medium text-muted-foreground">Recent Connections</h2>
           {recentConnections.map((conn) => (
             <button
               key={conn.url}
@@ -180,9 +163,7 @@ export function ConnectionPage({ session }: ConnectionPageProps) {
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{conn.url}</div>
                   <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                    <span className="truncate">
-                      {conn.projectName || "Unknown project"}
-                    </span>
+                    <span className="truncate">{conn.projectName || "Unknown project"}</span>
                     <span className="text-border">-</span>
                     <Clock className="h-3 w-3" />
                     <span>{formatRelativeTime(conn.lastUsed)}</span>

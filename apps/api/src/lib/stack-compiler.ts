@@ -1,6 +1,6 @@
 /**
  * Stack Prompt Compiler
- * 
+ *
  * Compiles knowledge from repos, packages, and child stacks
  * into a token-efficient context prompt for AI coding assistants.
  */
@@ -41,20 +41,18 @@ const SECTION_WEIGHTS = {
   header: 0.05,
   instructions: 0.25,
   paradigms: 0.15,
-  packages: 0.20,
+  packages: 0.2,
   structure: 0.15,
-  childStacks: 0.20,
+  childStacks: 0.2,
 } as const;
 
 /**
  * Compile a stack's knowledge into an optimized prompt.
  */
-export async function compileStackPrompt(
-  options: CompileOptions
-): Promise<CompiledPrompt> {
+export async function compileStackPrompt(options: CompileOptions): Promise<CompiledPrompt> {
   const { stack, repos, packages, childStacks, tokenBudget } = options;
   const maxTokens = TOKEN_LIMITS[tokenBudget];
-  
+
   const sections: PromptSection[] = [];
   const parts: string[] = [];
 
@@ -142,10 +140,7 @@ export async function compileStackPrompt(
  * Compile the header section with stack metadata.
  */
 function compileHeader(stack: Stack): string {
-  const lines = [
-    `# ${stack.name}`,
-    "",
-  ];
+  const lines = [`# ${stack.name}`, ""];
 
   if (stack.description) {
     lines.push(stack.description, "");
@@ -174,7 +169,7 @@ function compileParadigms(
 
   for (const repo of repos) {
     if (repo.paradigms) {
-      repo.paradigms.forEach(p => allParadigms.add(p));
+      repo.paradigms.forEach((p) => allParadigms.add(p));
     }
     if (repo.techStack) {
       const stack = repo.techStack;
@@ -237,7 +232,7 @@ function compilePackages(
 
   for (const pkg of sorted) {
     const pkgLines = [`### ${pkg.name}`];
-    
+
     if (pkg.documentationSummary) {
       pkgLines.push(pkg.documentationSummary);
     }
@@ -293,7 +288,7 @@ function compileStructure(
   }
 
   let text = lines.join("\n");
-  
+
   if (estimateTokens(text) > budget) {
     const result = truncateToTokens(text, budget);
     text = result.text;
@@ -316,7 +311,7 @@ function compileChildStacks(
 
   for (const child of childStacks) {
     const childLines = [`### ${child.name}`];
-    
+
     if (child.description) {
       childLines.push(child.description);
     }
@@ -358,7 +353,7 @@ function formatDirectoryTree(
 ): string {
   const lines: string[] = [];
   const isDir = node.type === "directory";
-  
+
   lines.push(`${prefix}${node.name}${isDir ? "/" : ""}`);
 
   if (node.children && node.children.length > 0) {
@@ -377,10 +372,10 @@ function formatDirectoryTree(
  */
 function formatParadigm(paradigm: string): string {
   const mapping: Record<string, string> = {
-    "monorepo": "Monorepo architecture",
+    monorepo: "Monorepo architecture",
     "api-routes": "API routes pattern",
     "component-based": "Component-based architecture",
-    "ssr": "Server-side rendering",
+    ssr: "Server-side rendering",
     "edge-first": "Edge-first/serverless deployment",
     "type-safe-db": "Type-safe database (ORM)",
     "test-driven": "Test-driven development",
@@ -399,23 +394,20 @@ function estimateTokens(text: string): number {
 /**
  * Truncate text to fit within a token budget.
  */
-function truncateToTokens(
-  text: string,
-  maxTokens: number
-): { text: string; truncated: boolean } {
+function truncateToTokens(text: string, maxTokens: number): { text: string; truncated: boolean } {
   const currentTokens = estimateTokens(text);
-  
+
   if (currentTokens <= maxTokens) {
     return { text, truncated: false };
   }
 
   // Approximate character limit
   const maxChars = maxTokens * 4;
-  
+
   // Try to truncate at a paragraph boundary
   let truncated = text.slice(0, maxChars);
   const lastParagraph = truncated.lastIndexOf("\n\n");
-  
+
   if (lastParagraph > maxChars * 0.7) {
     truncated = truncated.slice(0, lastParagraph);
   }
@@ -436,15 +428,15 @@ export async function aiOptimizePrompt(
   ai: Ai
 ): Promise<string> {
   const currentTokens = estimateTokens(prompt);
-  
+
   // Only optimize if we're more than 20% over budget
   if (currentTokens <= targetTokens * 1.2) {
     return prompt;
   }
 
   const ratio = targetTokens / currentTokens;
-  
-  const response = await ai.run("@cf/meta/llama-3-8b-instruct", {
+
+  const response = (await ai.run("@cf/meta/llama-3-8b-instruct", {
     messages: [
       {
         role: "system",
@@ -456,7 +448,7 @@ export async function aiOptimizePrompt(
       },
     ],
     max_tokens: Math.min(targetTokens * 1.1, 8000),
-  }) as { response: string };
+  })) as { response: string };
 
   return response.response || prompt;
 }

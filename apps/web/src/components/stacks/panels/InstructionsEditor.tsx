@@ -41,9 +41,7 @@ export function InstructionsEditor({
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="font-mono text-xs font-bold uppercase tracking-wider">
-            Instructions
-          </span>
+          <span className="font-mono text-xs font-bold uppercase tracking-wider">Instructions</span>
           <span className="font-mono text-[10px] text-muted-foreground">
             ({value.length} chars, {lineCount} lines)
           </span>
@@ -80,10 +78,7 @@ export function InstructionsEditor({
         {/* Line numbers */}
         <div className="flex-shrink-0 select-none border-r border-border bg-muted/30 px-3 py-3 text-right">
           {lineNumbers.map((num) => (
-            <div
-              key={num}
-              className="font-mono text-[11px] leading-[1.6] text-muted-foreground/50"
-            >
+            <div key={num} className="font-mono text-[11px] leading-[1.6] text-muted-foreground/50">
               {num}
             </div>
           ))}

@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { libraries, chunks, libraryStats, type Database } from "@nexus/db";
-import { 
-  fetchGitHubDocs, 
-  fetchGitHubDocsEnhanced, 
+import {
+  fetchGitHubDocs,
+  fetchGitHubDocsEnhanced,
   getGitHubRepoMetadata,
   fetchIncrementalChanges,
   parseGitHubUrl,
@@ -19,7 +19,7 @@ import type { IngestionJob, ChunkData } from "../types";
 
 /**
  * Process an ingestion job for a library.
- * 
+ *
  * This is called by the queue consumer and handles the full
  * ingestion pipeline:
  * 1. Update status to "indexing"
@@ -55,7 +55,7 @@ export async function processIngestionJob(
     let files: Array<{ path: string; content: string }>;
     let fetchResult: FetchResult | null = null;
     let hasLlmTxt = false;
-    
+
     if (sourceType === "context7") {
       // Fetch from Context7 API
       const context7Id = job.context7Id;
@@ -67,19 +67,21 @@ export async function processIngestionJob(
     } else if (sourceType === "github") {
       // Try to get GitHub token from env for higher rate limits
       const token = (env as unknown as { GITHUB_TOKEN?: string }).GITHUB_TOKEN;
-      
+
       // Use enhanced fetcher with LLM.txt support
       fetchResult = await fetchGitHubDocsEnhanced(sourceUrl, {
         token,
         preferLlmTxt: true,
         fetchVersions: true,
       });
-      
-      files = fetchResult.files.map(f => ({ path: f.path, content: f.content }));
+
+      files = fetchResult.files.map((f) => ({ path: f.path, content: f.content }));
       hasLlmTxt = fetchResult.hasLlmTxt;
-      
-      console.log(`Fetched ${files.length} docs from GitHub for ${libraryId} (LLM.txt: ${hasLlmTxt})`);
-      
+
+      console.log(
+        `Fetched ${files.length} docs from GitHub for ${libraryId} (LLM.txt: ${hasLlmTxt})`
+      );
+
       // Update library metadata
       const { metadata, versions } = fetchResult;
       await db
@@ -92,7 +94,7 @@ export async function processIngestionJob(
           githubBranch: metadata.branch,
           lastCommitSha: metadata.commitSha,
           githubStars: metadata.stars,
-          versions: versions.slice(0, 50).map(v => v.version), // Store top 50 version strings
+          versions: versions.slice(0, 50).map((v) => v.version), // Store top 50 version strings
           updatedAt: new Date().toISOString(),
         })
         .where(eq(libraries.id, libraryId));
@@ -101,7 +103,7 @@ export async function processIngestionJob(
       const websiteResult = await fetchWebsiteDocs(sourceUrl, {
         maxPages: 100,
       });
-      
+
       // Check for LLM.txt first
       const llmTxt = await fetchWebsiteLlmTxt(sourceUrl);
       if (llmTxt) {
@@ -109,12 +111,12 @@ export async function processIngestionJob(
         hasLlmTxt = true;
         console.log(`Found LLM.txt at ${llmTxt.url} for ${libraryId}`);
       } else {
-        files = websiteResult.pages.map(p => ({ 
-          path: p.url, 
-          content: `# ${p.title}\n\n${p.content}` 
+        files = websiteResult.pages.map((p) => ({
+          path: p.url,
+          content: `# ${p.title}\n\n${p.content}`,
         }));
       }
-      
+
       console.log(`Fetched ${files.length} pages from website for ${libraryId}`);
     } else {
       throw new Error(`Unsupported source type: ${sourceType}`);
@@ -166,27 +168,31 @@ export async function processIngestionJob(
     let benchmarkScore: number | undefined;
     let trustScore: number | undefined;
     let qualityAnalysis: string | undefined;
-    
+
     try {
       // Parse documents for analysis
       const parsedDocs = parseMultipleDocuments(files);
-      
+
       // Run quality analysis
       const analysis = analyzeDocumentation({
         documents: parsedDocs,
-        repoMetadata: fetchResult ? {
-          stars: fetchResult.metadata.stars,
-          updatedAt: fetchResult.metadata.updatedAt,
-          hasLlmTxt,
-        } : { hasLlmTxt },
+        repoMetadata: fetchResult
+          ? {
+              stars: fetchResult.metadata.stars,
+              updatedAt: fetchResult.metadata.updatedAt,
+              hasLlmTxt,
+            }
+          : { hasLlmTxt },
         libraryName: job.libraryName,
       });
-      
+
       benchmarkScore = analysis.benchmarkScore;
       trustScore = analysis.trustScore;
       qualityAnalysis = serializeAnalysis(analysis);
-      
-      console.log(`Quality analysis for ${libraryId}: benchmark=${benchmarkScore}, trust=${trustScore}`);
+
+      console.log(
+        `Quality analysis for ${libraryId}: benchmark=${benchmarkScore}, trust=${trustScore}`
+      );
     } catch (error) {
       console.warn(`Quality analysis failed for ${libraryId}:`, error);
       // Use quick score as fallback
@@ -194,7 +200,7 @@ export async function processIngestionJob(
         files.length,
         allChunks.reduce((sum, c) => sum + c.tokenCount, 0),
         hasLlmTxt,
-        allChunks.filter(c => c.contentType === "code" || c.contentType === "mixed").length,
+        allChunks.filter((c) => c.contentType === "code" || c.contentType === "mixed").length,
         fetchResult?.metadata.stars
       );
     }
@@ -253,11 +259,7 @@ export async function processIngestionJob(
 /**
  * Delete old chunks for a library (used when re-indexing).
  */
-async function deleteOldChunks(
-  libraryId: string,
-  env: Env,
-  db: Database
-): Promise<void> {
+async function deleteOldChunks(libraryId: string, env: Env, db: Database): Promise<void> {
   // Get existing chunk IDs
   const existingChunks = await db
     .select({ id: chunks.id, r2Key: chunks.r2Key })
@@ -292,11 +294,7 @@ async function deleteOldChunks(
 /**
  * Store chunk content in R2.
  */
-async function storeChunksInR2(
-  libraryId: string,
-  chunkData: ChunkData[],
-  env: Env
-): Promise<void> {
+async function storeChunksInR2(libraryId: string, chunkData: ChunkData[], env: Env): Promise<void> {
   // Process in batches to avoid overwhelming R2
   const BATCH_SIZE = 50;
 

@@ -8,23 +8,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": ".",
+
+    /* Path aliases */
     "paths": {
       "@/*": ["./*"]
     }
   },
-  "include": [
-    ".vitepress/**/*.ts",
-    ".vitepress/**/*.vue",
-    "**/*.md",
-    "**/*.vue"
-  ],
-  "exclude": [
-    "node_modules",
-    "docs",
-    "src",
-    ".docusaurus",
-    ".astro",
-    "build"
-  ]
+  "include": [".vitepress/**/*.ts", ".vitepress/**/*.vue", "**/*.md", "**/*.vue"],
+  "exclude": ["node_modules", "docs", "src", ".docusaurus", ".astro", "build"]
 }

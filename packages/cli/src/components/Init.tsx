@@ -5,11 +5,7 @@ import { MultiSelect, type MultiSelectItem } from "./MultiSelect.js";
 import { Confirm } from "./Confirm.js";
 import { Spinner } from "./Spinner.js";
 import type { EditorId } from "../utils/paths.js";
-import {
-  setEditors,
-  isAuthenticated,
-  getAuth,
-} from "../services/config.js";
+import { setEditors, isAuthenticated, getAuth } from "../services/config.js";
 import { createAdapter } from "../adapters/index.js";
 
 type Step = "welcome" | "editors" | "configure" | "complete";
@@ -155,12 +151,15 @@ export function Init({ onComplete }: InitProps) {
       {/* Step: Configure */}
       {step === "configure" && !configuring && (
         <Box flexDirection="column">
-          <Text color="cyan" bold>Selected Editors:</Text>
+          <Text color="cyan" bold>
+            Selected Editors:
+          </Text>
           {selectedEditors.map((id) => {
             const editor = EDITORS.find((e) => e.id === id);
             return (
               <Text key={id} color="gray">
-                {"  "}{figures.pointer} {editor?.name}
+                {"  "}
+                {figures.pointer} {editor?.name}
               </Text>
             );
           })}
@@ -192,7 +191,8 @@ export function Init({ onComplete }: InitProps) {
               <Text color="cyan">Configured:</Text>
               {configuredEditors.map((name) => (
                 <Text key={name} color="gray">
-                  {"  "}{figures.tick} {name}
+                  {"  "}
+                  {figures.tick} {name}
                 </Text>
               ))}
             </Box>
@@ -203,18 +203,21 @@ export function Init({ onComplete }: InitProps) {
               <Text color="red">Errors:</Text>
               {configErrors.map((err, i) => (
                 <Text key={i} color="red">
-                  {"  "}{figures.cross} {err}
+                  {"  "}
+                  {figures.cross} {err}
                 </Text>
               ))}
             </Box>
           )}
 
           <Box flexDirection="column" marginTop={1}>
-            <Text color="gray" dimColor>Quick commands:</Text>
-            <Text color="cyan">  nexus docs search react hooks</Text>
-            <Text color="cyan">  nexus skills list</Text>
-            <Text color="cyan">  nexus servers list</Text>
-            <Text color="cyan">  nexus stats</Text>
+            <Text color="gray" dimColor>
+              Quick commands:
+            </Text>
+            <Text color="cyan"> nexus docs search react hooks</Text>
+            <Text color="cyan"> nexus skills list</Text>
+            <Text color="cyan"> nexus servers list</Text>
+            <Text color="cyan"> nexus stats</Text>
           </Box>
 
           {/* Auto-exit after showing complete */}

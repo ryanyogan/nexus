@@ -4,17 +4,15 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
-  "routes": [
-    { "pattern": "nexus.yogan.dev", "custom_domain": true }
-  ],
+  "routes": [{ "pattern": "nexus.yogan.dev", "custom_domain": true }],
 
   // Full observability - logs, traces, source maps
   "observability": {
     "enabled": true,
     "logs": {
       "invocation_logs": true,
-      "head_sampling_rate": 1
-    }
+      "head_sampling_rate": 1,
+    },
   },
 
   // Upload source maps for readable stack traces
@@ -26,14 +24,14 @@
       "binding": "DB",
       "database_name": "nexus-db",
       "database_id": "bf8148c0-b43e-4d09-bcee-d79d4760650e",
-      "migrations_dir": "../../packages/db/migrations"
-    }
+      "migrations_dir": "../../packages/db/migrations",
+    },
   ],
 
   // Public environment variables
   "vars": {
-    "BETTER_AUTH_URL": "https://nexus.yogan.dev"
-  }
+    "BETTER_AUTH_URL": "https://nexus.yogan.dev",
+  },
 
   // Secrets (set via .dev.vars locally, wrangler secret put for production):
   // - BETTER_AUTH_SECRET

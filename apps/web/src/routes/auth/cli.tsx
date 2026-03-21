@@ -6,8 +6,7 @@ import { signIn } from "@nexus/auth/client";
 // API URL - use env var or default to production
 const API_URL =
   (typeof import.meta !== "undefined" &&
-    (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env
-      ?.VITE_API_URL) ||
+    (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL) ||
   "https://api.nexus.yogan.dev";
 
 export const Route = createFileRoute("/auth/cli")({
@@ -26,9 +25,7 @@ export const Route = createFileRoute("/auth/cli")({
 function CLIAuthPage() {
   const { code } = Route.useSearch();
   const { session } = Route.useRouteContext();
-  const [status, setStatus] = useState<"pending" | "success" | "error">(
-    "pending"
-  );
+  const [status, setStatus] = useState<"pending" | "success" | "error">("pending");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<"google" | "github" | null>(null);
 
@@ -60,9 +57,7 @@ function CLIAuthPage() {
       setStatus("success");
     } catch (error) {
       setStatus("error");
-      setErrorMessage(
-        error instanceof Error ? error.message : "Unknown error"
-      );
+      setErrorMessage(error instanceof Error ? error.message : "Unknown error");
     }
   };
 
@@ -100,15 +95,11 @@ function CLIAuthPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10">
             <Check className="h-7 w-7 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            CLI Authenticated!
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground">CLI Authenticated!</h1>
           <p className="mt-2 text-muted-foreground">
             You can close this window and return to your terminal.
           </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Your CLI session is now active.
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">Your CLI session is now active.</p>
         </div>
       </div>
     );
@@ -122,18 +113,11 @@ function CLIAuthPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
             <X className="h-7 w-7 text-destructive" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Authentication Failed
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {errorMessage || "Something went wrong"}
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">Authentication Failed</h1>
+          <p className="mt-2 text-muted-foreground">{errorMessage || "Something went wrong"}</p>
           <p className="mt-4 text-sm text-muted-foreground">
             Please try running{" "}
-            <code className="rounded bg-muted px-1 py-0.5">
-              nexus auth login
-            </code>{" "}
-            again.
+            <code className="rounded bg-muted px-1 py-0.5">nexus auth login</code> again.
           </p>
         </div>
       </div>
@@ -150,12 +134,8 @@ function CLIAuthPage() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
               <Terminal className="h-7 w-7 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Nexus CLI Login
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              Sign in to authenticate your CLI
-            </p>
+            <h1 className="text-2xl font-bold text-foreground">Nexus CLI Login</h1>
+            <p className="mt-2 text-muted-foreground">Sign in to authenticate your CLI</p>
           </div>
 
           {/* Code display */}
@@ -232,12 +212,8 @@ function CLIAuthPage() {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
           <Layers className="h-7 w-7 text-primary-foreground animate-pulse" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Completing Authentication...
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Please wait while we set up your CLI session.
-        </p>
+        <h1 className="text-2xl font-bold text-foreground">Completing Authentication...</h1>
+        <p className="mt-2 text-muted-foreground">Please wait while we set up your CLI session.</p>
       </div>
     </div>
   );

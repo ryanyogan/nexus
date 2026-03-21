@@ -183,10 +183,7 @@ export function getProjectConfig(projectRoot?: string): ProjectConfig | null {
 /**
  * Write project config
  */
-export function setProjectConfig(
-  config: ProjectConfig,
-  projectRoot?: string
-): void {
+export function setProjectConfig(config: ProjectConfig, projectRoot?: string): void {
   const root = projectRoot || findProjectRoot() || process.cwd();
   const configPath = getProjectConfigPath(root);
   const configDir = getProjectConfigDir(root);
@@ -202,10 +199,7 @@ export function setProjectConfig(
 /**
  * Update project config (merge with existing)
  */
-export function updateProjectConfig(
-  updates: Partial<ProjectConfig>,
-  projectRoot?: string
-): void {
+export function updateProjectConfig(updates: Partial<ProjectConfig>, projectRoot?: string): void {
   const existing = getProjectConfig(projectRoot) || {};
   setProjectConfig({ ...existing, ...updates }, projectRoot);
 }

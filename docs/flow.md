@@ -16,36 +16,42 @@ The pain point being solved: **"I type so much to start every session"** - getti
 ## Questions to Clarify the Vision
 
 ### 1. Flow Composition
+
 What exactly goes into a Flow?
 
-| Component | Example |
-|-----------|---------|
-| **Skills** | `neobrutalist-design`, `typescript-strict`, `testing-playwright` |
-| **Docs** | React, TailwindCSS, Drizzle ORM |
-| **System Prompt** | "You are an expert UI designer. Always suggest 3 options..." |
-| **Private Repos** | `~/personal/nexus` (PRO only) |
-| **Preferences** | Response format, verbosity level, emoji usage |
+| Component         | Example                                                          |
+| ----------------- | ---------------------------------------------------------------- |
+| **Skills**        | `neobrutalist-design`, `typescript-strict`, `testing-playwright` |
+| **Docs**          | React, TailwindCSS, Drizzle ORM                                  |
+| **System Prompt** | "You are an expert UI designer. Always suggest 3 options..."     |
+| **Private Repos** | `~/personal/nexus` (PRO only)                                    |
+| **Preferences**   | Response format, verbosity level, emoji usage                    |
 
 Is this the right mental model?
 
 ### 2. Starter Flow Packs
+
 "Starter flow packs" - options:
 
 **Option A: Curated by Nexus**
+
 - "React + TypeScript Expert"
 - "Testing & QA Engineer"
 - "UI/UX Designer"
 - "New Project Bootstrap"
 
 **Option B: Community-created**
+
 - Users can publish their flows
 - Others can install/fork them
 
 **Option C: Both**
+
 - Official starter packs + community marketplace
 
 ### 3. Switching Flows
-How do you envision switching? 
+
+How do you envision switching?
 
 - **In-session**: `/flow ui-designer` command mid-conversation?
 - **Session start**: Pick a flow when starting a new session?
@@ -53,34 +59,40 @@ How do you envision switching?
 
 ### 4. Flow vs Skill - Key Differences
 
-| | Skill | Flow |
-|---|---|---|
-| **Scope** | Single capability | Complete working environment |
-| **Contains** | Instructions for one task | Skills + Docs + Repos + Prefs |
-| **Example** | "Write tests with Playwright" | "QA Engineer" (includes testing skill, Playwright docs, testing prefs) |
-| **Switching** | Can stack multiple | Switch between (one active at a time?) |
+|               | Skill                         | Flow                                                                   |
+| ------------- | ----------------------------- | ---------------------------------------------------------------------- |
+| **Scope**     | Single capability             | Complete working environment                                           |
+| **Contains**  | Instructions for one task     | Skills + Docs + Repos + Prefs                                          |
+| **Example**   | "Write tests with Playwright" | "QA Engineer" (includes testing skill, Playwright docs, testing prefs) |
+| **Switching** | Can stack multiple            | Switch between (one active at a time?)                                 |
 
 Is this distinction right?
 
 ### 5. Pricing Model
+
 Mentioned:
+
 - Part of pay-for-use
 - Allow one free flow?
 
 Ideas:
+
 - **Free tier**: 1 custom flow OR use any starter pack
 - **PRO ($5/mo)**: Unlimited custom flows + private repos in flows
 - **Flow marketplace**: Some free, some paid (creator monetization?)
 
 ### 6. "Extreme Level of Detail"
+
 When you say you want to start with extreme detail - do you mean:
 
 **A) The Flow definition itself is very detailed**
+
 - Extensive system prompts
 - Specific formatting rules
 - Detailed behavior instructions
 
 **B) A Flow creation wizard that asks lots of questions**
+
 - "How verbose should responses be?"
 - "What frameworks do you use?"
 - "Preferred testing style?"

@@ -13,6 +13,6 @@ export const LIBRARY_CATEGORIES = [
   { id: "utilities", label: "Utilities" },
 ] as const;
 
-export type CategoryId = typeof LIBRARY_CATEGORIES[number]["id"];
+export type CategoryId = (typeof LIBRARY_CATEGORIES)[number]["id"];
 
-export const CATEGORY_IDS = LIBRARY_CATEGORIES.map(c => c.id);
+export const CATEGORY_IDS = LIBRARY_CATEGORIES.map((c) => c.id);

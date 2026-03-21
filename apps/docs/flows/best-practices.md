@@ -53,11 +53,13 @@ nexus flow activate testing-qa-engineer --priority 2
 ### Be Specific About Constraints
 
 Instead of:
+
 ```
 Be careful with security.
 ```
 
 Write:
+
 ```
 Security Requirements:
 - Always sanitize user inputs before database queries
@@ -72,6 +74,7 @@ Tell the AI what NOT to do:
 
 ```markdown
 ## Avoid These Patterns
+
 - Never use `any` type; use `unknown` with type guards
 - Don't use `var`; prefer `const`, then `let`
 - Avoid default exports; use named exports
@@ -86,6 +89,7 @@ Explain WHY, not just WHAT:
 ## Why These Choices
 
 We use Zustand instead of Redux because:
+
 - Smaller bundle size for our performance requirements
 - Simpler API for our team's experience level
 - Better TypeScript inference
@@ -101,6 +105,7 @@ This context helps you make consistent recommendations.
 # Base: typescript-strict
 
 System Prompt:
+
 - Use TypeScript strict mode conventions
 - Explicit return types for all exported functions
 - No implicit any
@@ -115,7 +120,9 @@ Child flows should add, not repeat:
 # Child: react-typescript (extends typescript-strict)
 
 System Prompt:
+
 # React-Specific Additions
+
 - Use functional components with hooks
 - Prefer composition over inheritance
 - (TypeScript rules are inherited automatically)
@@ -127,7 +134,9 @@ Add comments explaining the chain:
 
 ```markdown
 # Flow: react-testing
+
 # Extends: react-typescript -> typescript-strict
+
 # Purpose: React component testing with Vitest
 ```
 
@@ -149,11 +158,11 @@ Align preferences with your team's style guide:
 
 Different projects may need different settings:
 
-| Project | Verbosity | Code Style |
-|---------|-----------|------------|
-| Greenfield | Detailed | Documented |
-| Maintenance | Concise | Minimal |
-| Documentation | Detailed | Verbose |
+| Project       | Verbosity | Code Style |
+| ------------- | --------- | ---------- |
+| Greenfield    | Detailed  | Documented |
+| Maintenance   | Concise   | Minimal    |
+| Documentation | Detailed  | Verbose    |
 
 ## Auto-Activation Patterns
 
@@ -190,11 +199,12 @@ When saving memories, associate them with flows:
 
 ```typescript
 // Memory is automatically tagged with active flows
-save-memory({
-  title: "React Query caching pattern",
-  content: "...",
-  // flowId is automatically added based on active flows
-})
+save -
+  memory({
+    title: "React Query caching pattern",
+    content: "...",
+    // flowId is automatically added based on active flows
+  });
 ```
 
 ### Recall by Flow
@@ -202,10 +212,11 @@ save-memory({
 Query memories in flow context:
 
 ```typescript
-recall-memories({
-  query: "caching patterns",
-  // Automatically prioritizes memories from active flows
-})
+recall -
+  memories({
+    query: "caching patterns",
+    // Automatically prioritizes memories from active flows
+  });
 ```
 
 ## Performance Tips
@@ -260,12 +271,14 @@ If responses seem unfocused:
 # System Prompt
 
 When starting work on this project:
+
 1. Read README.md for project overview
 2. Check package.json for dependencies
 3. Review .nexus/config.json for project conventions
 4. Look for existing patterns in src/ before creating new ones
 
 Key conventions:
+
 - [Project-specific rules here]
 ```
 
@@ -275,6 +288,7 @@ Key conventions:
 # System Prompt
 
 When reviewing code:
+
 1. Check for type safety issues
 2. Verify error handling
 3. Look for performance concerns
@@ -282,6 +296,7 @@ When reviewing code:
 5. Validate test coverage
 
 Output format:
+
 - List issues by severity (Critical > High > Medium > Low)
 - Include line numbers
 - Provide fix suggestions
@@ -293,6 +308,7 @@ Output format:
 # System Prompt
 
 When writing documentation:
+
 1. Start with a one-line summary
 2. Include usage examples
 3. Document all parameters
@@ -300,6 +316,7 @@ When writing documentation:
 5. Include related functions/components
 
 Style:
+
 - Use present tense
 - Be concise but complete
 - Include TypeScript types in examples

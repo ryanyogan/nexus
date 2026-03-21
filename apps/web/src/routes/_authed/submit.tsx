@@ -54,7 +54,7 @@ function SubmitPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
-  
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -79,13 +79,12 @@ function SubmitPage() {
     setAnalysis(null);
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/analyze?url=${encodeURIComponent(repoUrl)}`,
-        { credentials: "include" }
-      );
+      const response = await fetch(`${API_URL}/api/analyze?url=${encodeURIComponent(repoUrl)}`, {
+        credentials: "include",
+      });
 
       if (!response.ok) {
-        const errorData = await response.json() as { error?: string };
+        const errorData = (await response.json()) as { error?: string };
         throw new Error(errorData.error || "Failed to analyze repository");
       }
 
@@ -118,7 +117,7 @@ function SubmitPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { message?: string };
+        const errorData = (await response.json()) as { message?: string };
         throw new Error(errorData.message || "Failed to submit library");
       }
 
@@ -131,10 +130,8 @@ function SubmitPage() {
   };
 
   const toggleCategory = (categoryId: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(categoryId)
-        ? prev.filter(c => c !== categoryId)
-        : [...prev, categoryId]
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId]
     );
   };
 
@@ -147,8 +144,8 @@ function SubmitPage() {
           </div>
           <h1 className="mb-2 text-2xl font-bold text-foreground">Submission Received!</h1>
           <p className="mb-6 text-muted-foreground">
-            We'll review your submission and add it to the index if it meets our criteria.
-            You'll receive an email notification when it's processed.
+            We'll review your submission and add it to the index if it meets our criteria. You'll
+            receive an email notification when it's processed.
           </p>
           <div className="flex justify-center gap-4">
             <Link
@@ -269,9 +266,7 @@ function SubmitPage() {
                       <GitFork className="h-4 w-4" />
                       {analysis.repo.forks.toLocaleString()}
                     </span>
-                    {analysis.repo.language && (
-                      <span>{analysis.repo.language}</span>
-                    )}
+                    {analysis.repo.language && <span>{analysis.repo.language}</span>}
                   </div>
                 </div>
               </div>
@@ -313,11 +308,12 @@ function SubmitPage() {
               ) : (
                 <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center">
                   <p className="text-sm text-muted-foreground">
-                    No documentation sources found. Consider adding a <code className="rounded bg-muted px-1">llms.txt</code> file.
+                    No documentation sources found. Consider adding a{" "}
+                    <code className="rounded bg-muted px-1">llms.txt</code> file.
                   </p>
                 </div>
               )}
-              
+
               {analysis.hasLlmsTxt && (
                 <div className="mt-3 flex items-center gap-2 text-sm text-green-500">
                   <CheckCircle2 className="h-4 w-4" />

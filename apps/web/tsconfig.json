@@ -20,7 +20,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
+
+    /* Path aliases - resolved by Vite at build time */
     "paths": {
       "@/*": ["./src/*"]
     }

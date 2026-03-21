@@ -15,7 +15,9 @@ interface Submission {
   processedAt: string | null;
 }
 
-export const Route = createFileRoute("/_authed/admin/submissions")({ component: AdminSubmissionsPage });
+export const Route = createFileRoute("/_authed/admin/submissions")({
+  component: AdminSubmissionsPage,
+});
 
 function AdminSubmissionsPage() {
   // Note: session available via Route.useRouteContext() if needed
@@ -28,12 +30,13 @@ function AdminSubmissionsPage() {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        const url = filter === "all"
-          ? `${API_URL}/api/submissions?limit=50`
-          : `${API_URL}/api/submissions?status=${filter}&limit=50`;
+        const url =
+          filter === "all"
+            ? `${API_URL}/api/submissions?limit=50`
+            : `${API_URL}/api/submissions?status=${filter}&limit=50`;
         const res = await fetch(url);
         if (res.ok) {
-          const data = await res.json() as { submissions: Submission[] };
+          const data = (await res.json()) as { submissions: Submission[] };
           setSubmissions(data.submissions || []);
         }
       } catch (error) {
@@ -51,11 +54,11 @@ function AdminSubmissionsPage() {
     try {
       const res = await adminFetch(`/api/admin/submissions/${id}/approve`, { method: "POST" });
       if (res.ok) {
-        setSubmissions(prev => prev.map(s => 
-          s.id === id ? { ...s, status: "approved" as const } : s
-        ));
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === id ? { ...s, status: "approved" as const } : s))
+        );
       } else {
-        const error = await res.json() as { error?: string };
+        const error = (await res.json()) as { error?: string };
         alert(error.error || "Failed to approve");
       }
     } catch (error) {
@@ -70,11 +73,11 @@ function AdminSubmissionsPage() {
     try {
       const res = await adminFetch(`/api/admin/submissions/${id}/reject`, { method: "POST" });
       if (res.ok) {
-        setSubmissions(prev => prev.map(s => 
-          s.id === id ? { ...s, status: "rejected" as const } : s
-        ));
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === id ? { ...s, status: "rejected" as const } : s))
+        );
       } else {
-        const error = await res.json() as { error?: string };
+        const error = (await res.json()) as { error?: string };
         alert(error.error || "Failed to reject");
       }
     } catch (error) {
@@ -135,15 +138,14 @@ function AdminSubmissionsPage() {
       ) : (
         <div className="space-y-4">
           {submissions.map((submission) => (
-            <div
-              key={submission.id}
-              className="rounded-xl border border-border bg-card p-4"
-            >
+            <div key={submission.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h3 className="font-semibold text-foreground">{submission.libraryName}</h3>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[submission.status]}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[submission.status]}`}
+                    >
                       {submission.status}
                     </span>
                   </div>
@@ -164,9 +166,7 @@ function AdminSubmissionsPage() {
                       <Clock className="h-3 w-3" />
                       {new Date(submission.createdAt).toLocaleString()}
                     </span>
-                    {submission.submitterEmail && (
-                      <span>by {submission.submitterEmail}</span>
-                    )}
+                    {submission.submitterEmail && <span>by {submission.submitterEmail}</span>}
                     {submission.libraryId && (
                       <Link
                         to="/libraries/$libraryId"
@@ -178,7 +178,7 @@ function AdminSubmissionsPage() {
                     )}
                   </div>
                 </div>
-                
+
                 {submission.status === "pending" && (
                   <div className="flex gap-2">
                     <button

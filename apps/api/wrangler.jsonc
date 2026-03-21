@@ -4,17 +4,15 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-02-18",
   "compatibility_flags": ["nodejs_compat"],
-  "routes": [
-    { "pattern": "api.nexus.yogan.dev", "custom_domain": true }
-  ],
+  "routes": [{ "pattern": "api.nexus.yogan.dev", "custom_domain": true }],
 
   // Full observability - logs, traces, source maps
   "observability": {
     "enabled": true,
     "logs": {
       "invocation_logs": true,
-      "head_sampling_rate": 1
-    }
+      "head_sampling_rate": 1,
+    },
   },
 
   // Upload source maps for readable stack traces
@@ -25,7 +23,7 @@
     "BETTER_AUTH_URL": "https://api.nexus.yogan.dev",
     "WEB_URL": "https://nexus.yogan.dev",
     "ACCOUNT_ID": "8ad084035b854467eb9d93ae3363d40b",
-    "MIN_GITHUB_STARS": "100"
+    "MIN_GITHUB_STARS": "100",
   },
 
   // D1 Database
@@ -34,40 +32,40 @@
       "binding": "DB",
       "database_name": "nexus-db",
       "database_id": "bf8148c0-b43e-4d09-bcee-d79d4760650e",
-      "migrations_dir": "../../packages/db/migrations"
-    }
+      "migrations_dir": "../../packages/db/migrations",
+    },
   ],
 
   // R2 Buckets
   "r2_buckets": [
     {
       "binding": "DOCS_BUCKET",
-      "bucket_name": "nexus-docs"
+      "bucket_name": "nexus-docs",
     },
     {
       "binding": "MEMORY_BUCKET",
-      "bucket_name": "nexus-memories"
-    }
+      "bucket_name": "nexus-memories",
+    },
   ],
 
   // KV Namespace for caching + rate limiting
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "3239a3d638544acfb41b93fc2296e38a"
-    }
+      "id": "3239a3d638544acfb41b93fc2296e38a",
+    },
   ],
 
   // Vectorize for semantic search
   "vectorize": [
     {
       "binding": "VECTORIZE",
-      "index_name": "nexus-docs"
+      "index_name": "nexus-docs",
     },
     {
       "binding": "MEMORY_VECTORIZE",
-      "index_name": "nexus-memories"
-    }
+      "index_name": "nexus-memories",
+    },
   ],
 
   // Queues for ingestion pipeline and stack learning
@@ -75,38 +73,38 @@
     "producers": [
       {
         "queue": "nexus-ingestion",
-        "binding": "INGESTION_QUEUE"
+        "binding": "INGESTION_QUEUE",
       },
       {
         "queue": "nexus-stack-learning",
-        "binding": "STACK_LEARNING_QUEUE"
-      }
+        "binding": "STACK_LEARNING_QUEUE",
+      },
     ],
     "consumers": [
       {
         "queue": "nexus-ingestion",
         "max_batch_size": 5,
-        "max_batch_timeout": 30
+        "max_batch_timeout": 30,
       },
       {
         "queue": "nexus-stack-learning",
         "max_batch_size": 3,
-        "max_batch_timeout": 60
-      }
-    ]
+        "max_batch_timeout": 60,
+      },
+    ],
   },
 
   // AI for embeddings
   "ai": {
-    "binding": "AI"
+    "binding": "AI",
   },
 
   // Analytics Engine for usage tracking
   "analytics_engine_datasets": [
     {
       "binding": "USAGE_ANALYTICS",
-      "dataset": "nexus_usage"
-    }
+      "dataset": "nexus_usage",
+    },
   ],
 
   // Rate limiting (GA syntax)
@@ -116,24 +114,24 @@
       "namespace_id": "1001",
       "simple": {
         "limit": 100,
-        "period": 60
-      }
+        "period": 60,
+      },
     },
     {
       "name": "AUTO_INDEX_LIMITER",
       "namespace_id": "1002",
       "simple": {
         "limit": 5,
-        "period": 60
-      }
-    }
+        "period": 60,
+      },
+    },
   ],
 
   // Cron Triggers for scheduled tasks
   // weekly-context7-sync: runs every Sunday at 2am UTC
   "triggers": {
-    "crons": ["0 2 * * sun"]
-  }
+    "crons": ["0 2 * * sun"],
+  },
 
   // Secrets (set via .dev.vars locally, wrangler secret put for production):
   // - ADMIN_API_KEY (for protecting /api/admin/* routes)

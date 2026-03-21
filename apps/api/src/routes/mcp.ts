@@ -1,179 +1,46 @@
 import { Hono } from "hono";
-import { eq, like, and, or, desc, sql, isNull } from "drizzle-orm";
-import { libraries, libraryStats, mcpServers, mcpServerStats, stacks, userStacks, STACK_CATEGORIES, type Database, type TokenBudget, type StackCategory } from "@nexus/db";
-import { generateQueryEmbedding } from "../lib/embeddings";
+import { eq, and, desc } from "drizzle-orm";
+import { libraries, mcpServers, PROMPT_CATEGORIES, type Database } from "@nexus/db";
+import type {
+  AppContext,
+  MCPRequest,
+  MCPResponse,
+  MCPToolDefinition,
+  ResponseFormat,
+  MCPSession,
+} from "../types";
+
+// Tool implementations (extracted to separate modules)
+import { formatToolResponse } from "./mcp/format";
 import {
-  saveMemory,
-  recallMemories,
-  getProjectContext,
-  listMemories,
-  updateMemory,
-  deleteMemory,
-  type SaveMemoryInput,
-  type RecallMemoriesInput,
-  type GetProjectContextInput,
-  type ListMemoriesInput,
-  type UpdateMemoryInput,
-  type DeleteMemoryInput,
-} from "../lib/memory";
-import type { AppContext, MCPRequest, MCPResponse, MCPToolDefinition, MemoryType, ResponseFormat, MCPSession } from "../types";
+  toolListPrompts,
+  toolGetPrompt,
+  toolSearchPrompts,
+  toolSavePrompt,
+} from "./mcp/tools/prompts";
+import {
+  toolSaveMemory,
+  toolRecallMemories,
+  toolGetProjectContext,
+  toolListMemories,
+  toolUpdateMemory,
+  toolDeleteMemory,
+} from "./mcp/tools/memories";
+import {
+  toolDiscoverServers,
+  toolGetServerInfo,
+  toolGetServerConfig,
+  toolListServerCategories,
+} from "./mcp/tools/servers";
+import { toolGetStack, toolListStacks } from "./mcp/tools/stacks";
+import {
+  toolResolveLibrary,
+  toolQueryDocs,
+  toolGetLibraryInfo,
+  toolListLibraries,
+} from "./mcp/tools/libraries";
 
 const mcpRouter = new Hono<AppContext>();
-
-// ============================================================================
-// Response Format Helpers
-// ============================================================================
-
-/**
- * Format tool response based on requested format for token efficiency.
- */
-function formatToolResponse(
-  result: unknown,
-  toolName: string,
-  format: ResponseFormat = "full"
-): unknown {
-  if (format === "full" || typeof result !== "object" || result === null) {
-    return result;
-  }
-
-  const obj = result as Record<string, unknown>;
-
-  switch (format) {
-    case "compact":
-      return formatCompact(obj, toolName);
-    case "code-only":
-      return formatCodeOnly(obj, toolName);
-    case "summary":
-      return formatSummary(obj, toolName);
-    default:
-      return result;
-  }
-}
-
-/**
- * Compact format - essential data only, no metadata.
- */
-function formatCompact(obj: Record<string, unknown>, toolName: string): unknown {
-  // Remove verbose fields while keeping essential data
-  const { success, message, recommendation, hints, suggestions, availableCategories, ...rest } = obj;
-  
-  // For query-docs, only keep essential result fields
-  if (toolName === "query-docs" && Array.isArray(rest.results)) {
-    return {
-      library: rest.libraryName,
-      results: (rest.results as Array<Record<string, unknown>>).map((r) => ({
-        title: r.title,
-        content: r.content,
-        source: r.sourceFile,
-      })),
-    };
-  }
-
-  // For resolve-library, simplify results
-  if (toolName === "resolve-library" && Array.isArray(rest.results)) {
-    return {
-      results: (rest.results as Array<Record<string, unknown>>).map((r) => ({
-        id: r.libraryId,
-        name: r.name,
-        chunks: (r.documentationCoverage as Record<string, unknown>)?.chunks,
-      })),
-    };
-  }
-
-  // For recall-memories, keep just memories
-  if (toolName === "recall-memories" && Array.isArray(rest.memories)) {
-    return {
-      memories: (rest.memories as Array<Record<string, unknown>>).map((m) => ({
-        id: m.memoryId,
-        title: m.title,
-        content: m.content,
-        project: m.project,
-      })),
-    };
-  }
-
-  return rest;
-}
-
-/**
- * Code-only format - extract code blocks and minimal context.
- */
-function formatCodeOnly(obj: Record<string, unknown>, toolName: string): unknown {
-  // For query-docs, extract only code content
-  if (toolName === "query-docs" && Array.isArray(obj.results)) {
-    const codeResults = (obj.results as Array<Record<string, unknown>>)
-      .filter((r) => r.contentType === "code" || (r.content as string)?.includes("```"))
-      .map((r) => {
-        const content = r.content as string;
-        // Extract code blocks if mixed content
-        const codeBlocks = content.match(/```[\s\S]*?```/g);
-        return {
-          title: r.title,
-          code: codeBlocks ? codeBlocks.join("\n\n") : content,
-          source: r.sourceFile,
-        };
-      });
-    
-    return {
-      library: obj.libraryName,
-      codeExamples: codeResults,
-    };
-  }
-
-  // For other tools, return compact format
-  return formatCompact(obj, toolName);
-}
-
-/**
- * Summary format - brief overview with key points.
- */
-function formatSummary(obj: Record<string, unknown>, toolName: string): unknown {
-  // For query-docs, provide a brief summary
-  if (toolName === "query-docs" && Array.isArray(obj.results)) {
-    const results = obj.results as Array<Record<string, unknown>>;
-    return {
-      library: obj.libraryName,
-      query: obj.query,
-      found: results.length,
-      topics: results.slice(0, 3).map((r) => r.title).filter(Boolean),
-      hint: results.length > 0 
-        ? "Use 'compact' or 'full' format for complete content."
-        : "No results found. Try different search terms.",
-    };
-  }
-
-  // For resolve-library, summarize matches
-  if (toolName === "resolve-library" && Array.isArray(obj.results)) {
-    const results = obj.results as Array<Record<string, unknown>>;
-    const best = results[0];
-    return {
-      found: results.length,
-      bestMatch: best ? { id: best.libraryId, name: best.name } : null,
-      otherMatches: results.slice(1, 4).map((r) => r.name),
-    };
-  }
-
-  // For list-libraries, just show count and categories
-  if (toolName === "list-libraries" && Array.isArray(obj.libraries)) {
-    const libs = obj.libraries as Array<Record<string, unknown>>;
-    return {
-      total: libs.length,
-      featured: libs.filter((l) => l.isFeatured).map((l) => l.name),
-      categories: obj.availableCategories,
-    };
-  }
-
-  // Default: return key fields only
-  const { success, results, libraries, memories, ...rest } = obj;
-  return {
-    status: success ? "ok" : "error",
-    count: Array.isArray(results) ? results.length 
-         : Array.isArray(libraries) ? libraries.length
-         : Array.isArray(memories) ? memories.length
-         : undefined,
-    ...rest,
-  };
-}
 
 // ============================================================================
 // Tool Definitions
@@ -337,7 +204,8 @@ const TOOLS: MCPToolDefinition[] = [
         },
         type: {
           type: "string",
-          description: "Filter by memory type: project_context, session_summary, decision, correction",
+          description:
+            "Filter by memory type: project_context, session_summary, decision, correction",
         },
         project: {
           type: "string",
@@ -409,7 +277,8 @@ const TOOLS: MCPToolDefinition[] = [
   },
   {
     name: "update-memory",
-    description: "Update an existing memory. Can modify content, title, tags, importance, or summary.",
+    description:
+      "Update an existing memory. Can modify content, title, tags, importance, or summary.",
     inputSchema: {
       type: "object",
       properties: {
@@ -471,8 +340,7 @@ const TOOLS: MCPToolDefinition[] = [
       properties: {
         query: {
           type: "string",
-          description:
-            "What you're looking for (e.g., 'database access', 'file system', 'github')",
+          description: "What you're looking for (e.g., 'database access', 'file system', 'github')",
         },
         capabilities: {
           type: "array",
@@ -599,6 +467,140 @@ const TOOLS: MCPToolDefinition[] = [
       },
     },
   },
+
+  // ============================================================================
+  // Prompt Tools
+  // ============================================================================
+
+  {
+    name: "list-prompts",
+    description:
+      "List available prompts (system prompts, starter packs). Returns prompts with their " +
+      "system instructions, skills, libraries, and MCP servers. Use this to discover " +
+      "pre-built prompt configurations for different use cases.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "Filter by category: " + PROMPT_CATEGORIES.join(", "),
+        },
+        starterOnly: {
+          type: "boolean",
+          description: "Only show starter pack prompts (default: true)",
+        },
+        search: {
+          type: "string",
+          description: "Search prompts by name or description",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum results (1-20, default 10)",
+        },
+      },
+    },
+  },
+  {
+    name: "get-prompt",
+    description:
+      "Get detailed information about a specific prompt by ID or slug. Returns the full " +
+      "system prompt, skills, libraries, MCP servers, and preferences. Use this to " +
+      "retrieve a prompt configuration to apply to your session.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        promptId: {
+          type: "string",
+          description: "The prompt ID or slug (e.g., 'typescript-expert', 'react-developer')",
+        },
+        resolve: {
+          type: "boolean",
+          description: "Resolve inheritance chain and merge parent prompts (default: true)",
+        },
+      },
+      required: ["promptId"],
+    },
+  },
+  {
+    name: "search-prompts",
+    description:
+      "Search for prompts by keywords in name, description, or system prompt content. " +
+      "Returns matching prompts ranked by relevance.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search query (keywords to find in prompts)",
+        },
+        category: {
+          type: "string",
+          description: "Filter by category: " + PROMPT_CATEGORIES.join(", "),
+        },
+        limit: {
+          type: "number",
+          description: "Maximum results (1-10, default 5)",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "save-prompt",
+    description:
+      "Create or update a user prompt. Requires authentication. Use this to save " +
+      "custom prompt configurations for reuse across sessions.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Prompt name (e.g., 'My TypeScript Config')",
+        },
+        description: {
+          type: "string",
+          description: "Short description of what this prompt is for",
+        },
+        systemPrompt: {
+          type: "string",
+          description: "The system prompt / instructions content",
+        },
+        parentPromptId: {
+          type: "string",
+          description: "Optional parent prompt ID to inherit from",
+        },
+        skills: {
+          type: "array",
+          description: "Skill identifiers to include (e.g., ['typescript', 'react'])",
+        },
+        libraries: {
+          type: "array",
+          description: "Library identifiers for documentation (e.g., ['hono', 'drizzle'])",
+        },
+        mcpServers: {
+          type: "array",
+          description: "MCP server identifiers (e.g., ['filesystem', 'postgres'])",
+        },
+        category: {
+          type: "string",
+          description: "Category: " + PROMPT_CATEGORIES.join(", "),
+        },
+        tags: {
+          type: "array",
+          description: "Tags for organization (e.g., ['backend', 'api'])",
+        },
+        isPublic: {
+          type: "boolean",
+          description: "Make this prompt publicly discoverable (default: false)",
+        },
+        promptId: {
+          type: "string",
+          description: "If updating an existing prompt, provide its ID",
+        },
+      },
+      required: ["name", "systemPrompt"],
+    },
+  },
 ];
 
 // ============================================================================
@@ -656,7 +658,8 @@ async function deleteSession(kv: KVNamespace, sessionId: string): Promise<boolea
 // Friendly error message for missing API key
 const API_KEY_REQUIRED_ERROR = {
   code: -32001,
-  message: "API key required. Get your free API key at https://nexus.yogan.dev/dashboard/keys or run 'npx @nexus/cli login' to authenticate.",
+  message:
+    "API key required. Get your free API key at https://nexus.yogan.dev/dashboard/keys or run 'npx @nexus/cli login' to authenticate.",
   data: {
     docsUrl: "https://docs.nexus.yogan.dev/getting-started",
     dashboardUrl: "https://nexus.yogan.dev/dashboard/keys",
@@ -678,11 +681,14 @@ mcpRouter.post("/", async (c) => {
   const requiresAuth = !publicMethods.includes(request.method);
 
   if (requiresAuth && authType === "anonymous") {
-    return c.json({
-      jsonrpc: "2.0",
-      id: request.id,
-      error: API_KEY_REQUIRED_ERROR,
-    } satisfies MCPResponse, 401);
+    return c.json(
+      {
+        jsonrpc: "2.0",
+        id: request.id,
+        error: API_KEY_REQUIRED_ERROR,
+      } satisfies MCPResponse,
+      401
+    );
   }
 
   // Session management using KV
@@ -705,12 +711,12 @@ mcpRouter.post("/", async (c) => {
 
   try {
     const response = await handleMCPRequest(request, db, c.env);
-    
+
     // Add session ID to response headers for new sessions
     if (isNewSession && sessionId) {
       c.header("Mcp-Session-Id", sessionId);
     }
-    
+
     return c.json(response);
   } catch (error) {
     console.error("MCP request error:", error);
@@ -729,28 +735,34 @@ mcpRouter.post("/", async (c) => {
 mcpRouter.get("/", async (c) => {
   const sessionId = c.req.header("Mcp-Session-Id");
   const kv = c.env.KV;
-  
+
   if (!sessionId) {
-    return c.json({
-      jsonrpc: "2.0",
-      id: null,
-      error: {
-        code: -32000,
-        message: "Missing session ID. Initialize a session first with POST.",
+    return c.json(
+      {
+        jsonrpc: "2.0",
+        id: null,
+        error: {
+          code: -32000,
+          message: "Missing session ID. Initialize a session first with POST.",
+        },
       },
-    }, 400);
+      400
+    );
   }
 
   const session = await getSession(kv, sessionId);
   if (!session) {
-    return c.json({
-      jsonrpc: "2.0",
-      id: null,
-      error: {
-        code: -32000,
-        message: "Invalid or expired session ID. Initialize a new session with POST.",
+    return c.json(
+      {
+        jsonrpc: "2.0",
+        id: null,
+        error: {
+          code: -32000,
+          message: "Invalid or expired session ID. Initialize a new session with POST.",
+        },
       },
-    }, 400);
+      400
+    );
   }
 
   // For now, return a simple status. Full SSE streaming can be added later.
@@ -770,14 +782,14 @@ mcpRouter.get("/", async (c) => {
 mcpRouter.delete("/", async (c) => {
   const sessionId = c.req.header("Mcp-Session-Id");
   const kv = c.env.KV;
-  
+
   if (sessionId) {
     const deleted = await deleteSession(kv, sessionId);
     if (deleted) {
       return c.json({ success: true, message: "Session closed" });
     }
   }
-  
+
   return c.json({ success: false, message: "Session not found" }, 404);
 });
 
@@ -785,11 +797,7 @@ mcpRouter.delete("/", async (c) => {
 // Request Handler
 // ============================================================================
 
-async function handleMCPRequest(
-  request: MCPRequest,
-  db: Database,
-  env: Env
-): Promise<MCPResponse> {
+async function handleMCPRequest(request: MCPRequest, db: Database, env: Env): Promise<MCPResponse> {
   switch (request.method) {
     case "initialize":
       return handleInitialize(request);
@@ -842,7 +850,8 @@ function handleInitialize(request: MCPRequest): MCPResponse {
       serverInfo: {
         name: "Nexus Documentation Oracle",
         version: "1.0.0",
-        description: "AI-powered documentation search, MCP server registry, and persistent memory for coding assistants.",
+        description:
+          "AI-powered documentation search, MCP server registry, and persistent memory for coding assistants.",
       },
     },
   };
@@ -856,11 +865,7 @@ function handleToolsList(request: MCPRequest): MCPResponse {
   };
 }
 
-async function handleToolsCall(
-  request: MCPRequest,
-  db: Database,
-  env: Env
-): Promise<MCPResponse> {
+async function handleToolsCall(request: MCPRequest, db: Database, env: Env): Promise<MCPResponse> {
   const params = request.params as {
     name: string;
     arguments?: Record<string, unknown>;
@@ -878,7 +883,7 @@ async function handleToolsCall(
   }
 
   const args = params.arguments || {};
-  
+
   // Extract response format from args (defaults to "full")
   const responseFormat = (args.tokens as ResponseFormat) || "full";
 
@@ -953,6 +958,23 @@ async function handleToolsCall(
         result = await toolListStacks(args, db, env);
         break;
 
+      // Prompt tools
+      case "list-prompts":
+        result = await toolListPrompts(args, db);
+        break;
+
+      case "get-prompt":
+        result = await toolGetPrompt(args, db);
+        break;
+
+      case "search-prompts":
+        result = await toolSearchPrompts(args, db);
+        break;
+
+      case "save-prompt":
+        result = await toolSavePrompt(args, db);
+        break;
+
       default:
         return {
           jsonrpc: "2.0",
@@ -966,7 +988,7 @@ async function handleToolsCall(
 
     // Apply response format transformation
     const formattedResult = formatToolResponse(result, params.name, responseFormat);
-    
+
     // Use compact JSON for non-full formats
     const jsonIndent = responseFormat === "full" ? 2 : undefined;
 
@@ -977,9 +999,10 @@ async function handleToolsCall(
         content: [
           {
             type: "text",
-            text: typeof formattedResult === "string" 
-              ? formattedResult 
-              : JSON.stringify(formattedResult, null, jsonIndent),
+            text:
+              typeof formattedResult === "string"
+                ? formattedResult
+                : JSON.stringify(formattedResult, null, jsonIndent),
           },
         ],
       },
@@ -1000,10 +1023,7 @@ async function handleToolsCall(
 // Resources Handlers
 // ============================================================================
 
-async function handleResourcesList(
-  request: MCPRequest,
-  db: Database
-): Promise<MCPResponse> {
+async function handleResourcesList(request: MCPRequest, db: Database): Promise<MCPResponse> {
   // List indexed libraries as resources
   const indexedLibraries = await db
     .select({
@@ -1080,11 +1100,7 @@ async function handleResourcesRead(
 
   if (libraryMatch) {
     const libraryId = libraryMatch[1];
-    const [library] = await db
-      .select()
-      .from(libraries)
-      .where(eq(libraries.id, libraryId))
-      .limit(1);
+    const [library] = await db.select().from(libraries).where(eq(libraries.id, libraryId)).limit(1);
 
     if (!library) {
       return {
@@ -1141,11 +1157,7 @@ Example:
 
   if (serverMatch) {
     const serverId = serverMatch[1];
-    const [server] = await db
-      .select()
-      .from(mcpServers)
-      .where(eq(mcpServers.id, serverId))
-      .limit(1);
+    const [server] = await db.select().from(mcpServers).where(eq(mcpServers.id, serverId)).limit(1);
 
     if (!server) {
       return {
@@ -1275,11 +1287,7 @@ function handlePromptsList(request: MCPRequest): MCPResponse {
   };
 }
 
-async function handlePromptsGet(
-  request: MCPRequest,
-  db: Database,
-  env: Env
-): Promise<MCPResponse> {
+async function handlePromptsGet(request: MCPRequest, db: Database, env: Env): Promise<MCPResponse> {
   const params = request.params as { name?: string; arguments?: Record<string, string> };
   const promptName = params?.name;
   const promptArgs = params?.arguments || {};
@@ -1394,1152 +1402,6 @@ Include code examples from the documentation where helpful.`,
       description: PROMPTS.find((p) => p.name === promptName)?.description,
       messages,
     },
-  };
-}
-
-// ============================================================================
-// Tool Implementations
-// ============================================================================
-
-interface ResolveLibraryArgs {
-  libraryName?: string;
-  query?: string;
-}
-
-async function toolResolveLibrary(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const { libraryName, query } = args as ResolveLibraryArgs;
-
-  if (!libraryName) {
-    throw new Error("libraryName is required");
-  }
-
-  // Search by name (fuzzy match)
-  const searchTerm = `%${libraryName.toLowerCase()}%`;
-
-  const results = await db
-    .select({
-      id: libraries.id,
-      name: libraries.name,
-      description: libraries.description,
-      version: libraries.version,
-      totalChunks: libraries.totalChunks,
-      totalTokens: libraries.totalTokens,
-      categories: libraries.categories,
-      homepageUrl: libraries.homepageUrl,
-      repositoryUrl: libraries.repositoryUrl,
-    })
-    .from(libraries)
-    .where(
-      and(
-        eq(libraries.isActive, true),
-        eq(libraries.indexStatus, "indexed"),
-        like(sql`lower(${libraries.name})`, searchTerm)
-      )
-    )
-    .orderBy(desc(libraries.isFeatured), desc(libraries.totalChunks))
-    .limit(10);
-
-  if (results.length === 0) {
-    // Try to resolve and queue the library for indexing
-    const { resolveAndQueueLibrary } = await import("../lib/library-resolver");
-    const resolved = await resolveAndQueueLibrary(libraryName, db, env);
-
-    switch (resolved.status) {
-      case "queued":
-        return {
-          success: false,
-          status: "indexing",
-          message: `We don't have docs for "${libraryName}" yet, but we're fetching them now! Try again in ~${resolved.estimatedReadyIn} seconds.`,
-          libraryId: resolved.libraryId,
-          libraryName: resolved.libraryName,
-          repositoryUrl: resolved.repositoryUrl,
-          description: resolved.description,
-          estimatedReadyIn: resolved.estimatedReadyIn,
-        };
-
-      case "indexing":
-        return {
-          success: false,
-          status: "indexing",
-          message: `Documentation for "${libraryName}" is currently being indexed. Try again in ~${resolved.estimatedReadyIn} seconds.`,
-          libraryId: resolved.libraryId,
-          libraryName: resolved.libraryName,
-          estimatedReadyIn: resolved.estimatedReadyIn,
-        };
-
-      case "indexed":
-        // Race condition: library was indexed between our search and resolve
-        return {
-          success: true,
-          libraryId: resolved.libraryId,
-          libraryName: resolved.libraryName,
-          message: "Library is now available!",
-          recommendation: `Use libraryId "${resolved.libraryId}" with query-docs to search this library's documentation.`,
-        };
-
-      case "rejected":
-      default:
-        return {
-          success: false,
-          status: "not_found",
-          message: resolved.reason || `No libraries found matching "${libraryName}".`,
-          submitUrl: "https://nexus.yogan.dev/submit",
-        };
-    }
-  }
-
-  // Format results
-  const formattedResults = results.map((lib) => ({
-    libraryId: lib.id,
-    name: lib.name,
-    description: lib.description,
-    version: lib.version,
-    documentationCoverage: {
-      chunks: lib.totalChunks,
-      estimatedTokens: lib.totalTokens,
-    },
-    categories: lib.categories,
-    links: {
-      homepage: lib.homepageUrl,
-      repository: lib.repositoryUrl,
-    },
-  }));
-
-  return {
-    success: true,
-    query: libraryName,
-    results: formattedResults,
-    recommendation:
-      results.length > 0
-        ? `Use libraryId "${results[0].id}" with query-docs to search this library's documentation.`
-        : null,
-  };
-}
-
-interface QueryDocsArgs {
-  libraryId?: string;
-  query?: string;
-  limit?: number;
-}
-
-async function toolQueryDocs(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const { libraryId, query, limit = 5 } = args as QueryDocsArgs;
-
-  if (!libraryId) {
-    throw new Error("libraryId is required. Use resolve-library first to find the library ID.");
-  }
-
-  if (!query) {
-    throw new Error("query is required. Describe what you're looking for.");
-  }
-
-  // Verify library exists and is indexed
-  const [library] = await db
-    .select({
-      id: libraries.id,
-      name: libraries.name,
-      version: libraries.version,
-      indexStatus: libraries.indexStatus,
-    })
-    .from(libraries)
-    .where(eq(libraries.id, libraryId))
-    .limit(1);
-
-  if (!library) {
-    // Try to resolve and queue the library
-    const { resolveAndQueueLibrary } = await import("../lib/library-resolver");
-    const resolved = await resolveAndQueueLibrary(libraryId, db, env);
-
-    if (resolved.status === "queued" || resolved.status === "indexing") {
-      return {
-        success: false,
-        status: "indexing",
-        message: `Documentation for "${libraryId}" is being indexed. Try again in ~${resolved.estimatedReadyIn || 30} seconds.`,
-        libraryId: resolved.libraryId,
-        estimatedReadyIn: resolved.estimatedReadyIn || 30,
-      };
-    }
-
-    throw new Error(
-      resolved.reason || `Library "${libraryId}" not found. Use resolve-library to search for available libraries.`
-    );
-  }
-
-  if (library.indexStatus !== "indexed") {
-    // Return a helpful response instead of throwing
-    return {
-      success: false,
-      status: library.indexStatus,
-      message:
-        library.indexStatus === "indexing" || library.indexStatus === "pending"
-          ? `Documentation for "${libraryId}" is being indexed. Try again in ~30 seconds.`
-          : `Library "${libraryId}" indexing failed. Use resolve-library to check status or submit for re-indexing.`,
-      libraryId: library.id,
-      libraryName: library.name,
-      estimatedReadyIn: library.indexStatus === "indexing" || library.indexStatus === "pending" ? 30 : undefined,
-    };
-  }
-
-  // Generate query embedding
-  const queryEmbedding = await generateQueryEmbedding(query, env.AI);
-
-  // Search Vectorize with library filter
-  const clampedLimit = Math.min(Math.max(1, limit), 10);
-  const matches = await env.VECTORIZE.query(queryEmbedding, {
-    topK: clampedLimit,
-    filter: { libraryId },
-    returnMetadata: "all",
-  });
-
-  if (matches.matches.length === 0) {
-    return {
-      success: true,
-      libraryId,
-      libraryName: library.name,
-      query,
-      results: [],
-      message: "No relevant documentation found for this query. Try rephrasing or being more specific.",
-    };
-  }
-
-  // Fetch chunk content from R2
-  const results = await Promise.all(
-    matches.matches.map(async (match) => {
-      const r2Key = `${libraryId}/${match.id}`;
-      const object = await env.DOCS_BUCKET.get(r2Key);
-      const content = object ? await object.text() : null;
-
-      return {
-        title: match.metadata?.title as string | null,
-        content: content || "[Content unavailable]",
-        contentType: match.metadata?.contentType as string,
-        sourceFile: match.metadata?.sourceFile as string | null,
-        relevanceScore: match.score,
-      };
-    })
-  );
-
-  // Update stats (non-blocking)
-  updateQueryStats(db, libraryId, results.length).catch(console.error);
-
-  return {
-    success: true,
-    libraryId,
-    libraryName: library.name,
-    version: library.version,
-    query,
-    resultCount: results.length,
-    results,
-  };
-}
-
-interface GetLibraryInfoArgs {
-  libraryId?: string;
-}
-
-async function toolGetLibraryInfo(
-  args: Record<string, unknown>,
-  db: Database
-): Promise<object> {
-  const { libraryId } = args as GetLibraryInfoArgs;
-
-  if (!libraryId) {
-    throw new Error("libraryId is required");
-  }
-
-  const [library] = await db
-    .select()
-    .from(libraries)
-    .where(eq(libraries.id, libraryId))
-    .limit(1);
-
-  if (!library) {
-    throw new Error(
-      `Library "${libraryId}" not found. Use resolve-library to search for available libraries.`
-    );
-  }
-
-  // Get stats
-  const [stats] = await db
-    .select()
-    .from(libraryStats)
-    .where(eq(libraryStats.libraryId, libraryId))
-    .limit(1);
-
-  return {
-    libraryId: library.id,
-    name: library.name,
-    description: library.description,
-    version: library.version,
-    categories: library.categories,
-    source: {
-      type: library.sourceType,
-      url: library.sourceUrl,
-      repository: library.repositoryUrl,
-      homepage: library.homepageUrl,
-    },
-    documentation: {
-      status: library.indexStatus,
-      totalChunks: library.totalChunks,
-      totalTokens: library.totalTokens,
-      lastIndexedAt: library.lastIndexedAt,
-    },
-    usage: stats
-      ? {
-          totalQueries: stats.totalQueries,
-          totalChunkHits: stats.totalChunkHits,
-          lastQueriedAt: stats.lastQueriedAt,
-        }
-      : null,
-    isFeatured: library.isFeatured,
-  };
-}
-
-interface ListLibrariesArgs {
-  category?: string;
-  limit?: number;
-}
-
-async function toolListLibraries(
-  args: Record<string, unknown>,
-  db: Database
-): Promise<object> {
-  const { category, limit = 20 } = args as ListLibrariesArgs;
-
-  const clampedLimit = Math.min(Math.max(1, limit), 50);
-
-  const results = await db
-    .select({
-      id: libraries.id,
-      name: libraries.name,
-      description: libraries.description,
-      categories: libraries.categories,
-      version: libraries.version,
-      totalChunks: libraries.totalChunks,
-      isFeatured: libraries.isFeatured,
-    })
-    .from(libraries)
-    .where(and(eq(libraries.isActive, true), eq(libraries.indexStatus, "indexed")))
-    .orderBy(desc(libraries.isFeatured), desc(libraries.totalChunks))
-    .limit(clampedLimit);
-
-  // Filter by category if specified
-  const filtered = category
-    ? results.filter((lib) => lib.categories.includes(category))
-    : results;
-
-  const formattedResults = filtered.map((lib) => ({
-    libraryId: lib.id,
-    name: lib.name,
-    description: lib.description,
-    categories: lib.categories,
-    version: lib.version,
-    documentationChunks: lib.totalChunks,
-    isFeatured: lib.isFeatured,
-  }));
-
-  return {
-    success: true,
-    category: category || "all",
-    count: formattedResults.length,
-    libraries: formattedResults,
-    availableCategories: [
-      "frontend",
-      "backend",
-      "fullstack",
-      "database",
-      "cloud",
-      "devops",
-      "ai",
-      "testing",
-      "mobile",
-      "utilities",
-    ],
-  };
-}
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-async function updateQueryStats(
-  db: Database,
-  libraryId: string,
-  chunkHits: number
-): Promise<void> {
-  const now = new Date().toISOString();
-
-  try {
-    // Try to update existing stats
-    const result = await db
-      .update(libraryStats)
-      .set({
-        totalQueries: sql`${libraryStats.totalQueries} + 1`,
-        totalChunkHits: sql`${libraryStats.totalChunkHits} + ${chunkHits}`,
-        lastQueriedAt: now,
-      })
-      .where(eq(libraryStats.libraryId, libraryId));
-
-    // If no rows updated, insert new stats
-    // Check if result has meta.changes (D1-specific)
-    const changes = (result as { meta?: { changes?: number } }).meta?.changes;
-    if (changes === 0) {
-      await db.insert(libraryStats).values({
-        libraryId,
-        totalQueries: 1,
-        totalChunkHits: chunkHits,
-        lastQueriedAt: now,
-      });
-    }
-  } catch (error) {
-    console.warn(`Failed to update stats for ${libraryId}:`, error);
-  }
-}
-
-// ============================================================================
-// Memory Tool Implementations
-// ============================================================================
-
-interface SaveMemoryArgs {
-  content?: string;
-  title?: string;
-  type?: string;
-  tags?: string[];
-  project?: string;
-  summary?: string;
-  importance?: number;
-}
-
-async function toolSaveMemory(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const { content, title, type, tags, project, summary, importance } = args as SaveMemoryArgs;
-
-  if (!content) {
-    throw new Error("content is required");
-  }
-
-  if (!title) {
-    throw new Error("title is required");
-  }
-
-  if (!type) {
-    throw new Error("type is required (project_context, session_summary, decision, correction)");
-  }
-
-  const validTypes: MemoryType[] = ["project_context", "session_summary", "decision", "correction"];
-  if (!validTypes.includes(type as MemoryType)) {
-    throw new Error(`Invalid type: ${type}. Must be one of: ${validTypes.join(", ")}`);
-  }
-
-  const input: SaveMemoryInput = {
-    content,
-    title,
-    type: type as MemoryType,
-    tags,
-    project,
-    summary,
-    importance,
-    // Note: userId would come from auth header in future
-  };
-
-  return saveMemory(input, db, env);
-}
-
-interface RecallMemoriesArgs {
-  query?: string;
-  type?: string;
-  project?: string;
-  tags?: string[];
-  limit?: number;
-}
-
-async function toolRecallMemories(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const { query, type, project, tags, limit } = args as RecallMemoriesArgs;
-
-  if (!query) {
-    throw new Error("query is required");
-  }
-
-  const input: RecallMemoriesInput = {
-    query,
-    type: type as MemoryType | undefined,
-    project,
-    tags,
-    limit,
-    scope: "all", // Default to showing global memories (anonymous access)
-  };
-
-  return recallMemories(input, db, env);
-}
-
-interface GetProjectContextArgs {
-  project?: string;
-  includeTypes?: string[];
-  limit?: number;
-}
-
-async function toolGetProjectContext(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const { project, includeTypes, limit } = args as GetProjectContextArgs;
-
-  if (!project) {
-    throw new Error("project is required");
-  }
-
-  const input: GetProjectContextInput = {
-    project,
-    includeTypes: includeTypes as MemoryType[] | undefined,
-    limit,
-  };
-
-  return getProjectContext(input, db, env);
-}
-
-interface ListMemoriesArgs {
-  type?: string;
-  project?: string;
-  limit?: number;
-  offset?: number;
-}
-
-async function toolListMemories(
-  args: Record<string, unknown>,
-  db: Database
-): Promise<object> {
-  const { type, project, limit, offset } = args as ListMemoriesArgs;
-
-  const input: ListMemoriesInput = {
-    type: type as MemoryType | undefined,
-    project,
-    scope: "all", // Default to showing global memories
-    limit,
-    offset,
-  };
-
-  return listMemories(input, db);
-}
-
-interface UpdateMemoryArgs {
-  memoryId?: string;
-  content?: string;
-  title?: string;
-  tags?: string[];
-  importance?: number;
-  summary?: string;
-}
-
-async function toolUpdateMemory(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const { memoryId, content, title, tags, importance, summary } = args as UpdateMemoryArgs;
-
-  if (!memoryId) {
-    throw new Error("memoryId is required");
-  }
-
-  const input: UpdateMemoryInput = {
-    memoryId,
-    content,
-    title,
-    tags,
-    importance,
-    summary,
-  };
-
-  return updateMemory(input, db, env);
-}
-
-interface DeleteMemoryArgs {
-  memoryId?: string;
-}
-
-async function toolDeleteMemory(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const { memoryId } = args as DeleteMemoryArgs;
-
-  if (!memoryId) {
-    throw new Error("memoryId is required");
-  }
-
-  const input: DeleteMemoryInput = {
-    memoryId,
-  };
-
-  return deleteMemory(input, db, env);
-}
-
-// ============================================================================
-// MCP Server Registry Tool Implementations
-// ============================================================================
-
-interface DiscoverServersArgs {
-  query?: string;
-  capabilities?: string[];
-  category?: string;
-  official?: boolean;
-  limit?: number;
-}
-
-async function toolDiscoverServers(
-  args: Record<string, unknown>,
-  db: Database
-): Promise<object> {
-  const { query, capabilities, category, official, limit = 10 } = args as DiscoverServersArgs;
-
-  const conditions = [eq(mcpServers.isActive, true)];
-
-  // Search by query
-  if (query) {
-    const searchTerm = `%${query.toLowerCase()}%`;
-    conditions.push(
-      or(
-        like(sql`lower(${mcpServers.name})`, searchTerm),
-        like(sql`lower(${mcpServers.displayName})`, searchTerm),
-        like(sql`lower(${mcpServers.description})`, searchTerm)
-      )!
-    );
-  }
-
-  // Filter by capabilities
-  if (capabilities?.includes("tools")) {
-    conditions.push(eq(mcpServers.hasTools, true));
-  }
-  if (capabilities?.includes("resources")) {
-    conditions.push(eq(mcpServers.hasResources, true));
-  }
-  if (capabilities?.includes("prompts")) {
-    conditions.push(eq(mcpServers.hasPrompts, true));
-  }
-
-  // Filter by official
-  if (official) {
-    conditions.push(eq(mcpServers.isOfficial, true));
-  }
-
-  const clampedLimit = Math.min(Math.max(1, limit), 20);
-
-  const results = await db
-    .select({
-      id: mcpServers.id,
-      namespace: mcpServers.namespace,
-      name: mcpServers.name,
-      displayName: mcpServers.displayName,
-      description: mcpServers.description,
-      transportType: mcpServers.transportType,
-      packageType: mcpServers.packageType,
-      packageName: mcpServers.packageName,
-      hasTools: mcpServers.hasTools,
-      hasResources: mcpServers.hasResources,
-      hasPrompts: mcpServers.hasPrompts,
-      categories: mcpServers.categories,
-      isOfficial: mcpServers.isOfficial,
-      isVerified: mcpServers.isVerified,
-      // Security
-      securityRiskLevel: mcpServers.securityRiskLevel,
-      isSecurityAudited: mcpServers.isSecurityAudited,
-    })
-    .from(mcpServers)
-    .where(and(...conditions))
-    .orderBy(desc(mcpServers.isOfficial), desc(mcpServers.isFeatured), desc(mcpServers.githubStars))
-    .limit(clampedLimit);
-
-  // Filter by category in JS (since categories is JSON)
-  const filteredResults = category
-    ? results.filter((s) => s.categories?.includes(category))
-    : results;
-
-  // Format for better readability
-  const formattedResults = filteredResults.map((server) => ({
-    serverId: server.id,
-    name: server.displayName || server.name,
-    description: server.description,
-    namespace: server.namespace,
-    transport: server.transportType,
-    package: server.packageName,
-    capabilities: {
-      tools: server.hasTools,
-      resources: server.hasResources,
-      prompts: server.hasPrompts,
-    },
-    categories: server.categories,
-    securityRiskLevel: server.securityRiskLevel || "medium",
-    badges: [
-      server.isOfficial && "official",
-      server.isVerified && "verified",
-      server.isSecurityAudited && "security-audited",
-    ].filter(Boolean),
-  }));
-
-  return {
-    success: true,
-    query: query || null,
-    filters: { capabilities, category, official },
-    resultCount: formattedResults.length,
-    results: formattedResults,
-    hint: formattedResults.length > 0
-      ? `Use get-server-config with serverId "${formattedResults[0].serverId}" to get installation instructions.`
-      : "No servers found. Try a different search or use list-server-categories to see available categories.",
-  };
-}
-
-interface GetServerInfoArgs {
-  serverId?: string;
-}
-
-async function toolGetServerInfo(
-  args: Record<string, unknown>,
-  db: Database
-): Promise<object> {
-  const { serverId } = args as GetServerInfoArgs;
-
-  if (!serverId) {
-    throw new Error("serverId is required");
-  }
-
-  const [server] = await db
-    .select()
-    .from(mcpServers)
-    .where(eq(mcpServers.id, serverId))
-    .limit(1);
-
-  if (!server) {
-    throw new Error(`Server "${serverId}" not found. Use discover-servers to find available servers.`);
-  }
-
-  // Update discovery stats (non-blocking)
-  updateServerDiscoveryStats(db, serverId).catch(console.error);
-
-  return {
-    serverId: server.id,
-    name: server.displayName || server.name,
-    namespace: server.namespace,
-    description: server.description,
-    version: server.version,
-    
-    installation: {
-      transport: server.transportType,
-      packageType: server.packageType,
-      package: server.packageName,
-      command: server.installCommand,
-      args: server.installArgs,
-      requiredEnvVars: server.envVars,
-    },
-    
-    capabilities: {
-      hasTools: server.hasTools,
-      hasResources: server.hasResources,
-      hasPrompts: server.hasPrompts,
-      tools: server.tools,
-      resources: server.resources,
-      prompts: server.prompts,
-    },
-    
-    links: {
-      repository: server.repositoryUrl,
-      documentation: server.documentationUrl,
-      homepage: server.homepageUrl,
-    },
-    
-    metadata: {
-      author: server.author,
-      license: server.license,
-      categories: server.categories,
-      keywords: server.keywords,
-    },
-    
-    stats: {
-      githubStars: server.githubStars,
-      weeklyDownloads: server.weeklyDownloads,
-    },
-    
-    security: {
-      riskLevel: server.securityRiskLevel || "medium",
-      capabilities: server.securityCapabilities || [],
-      notes: server.securityNotes,
-      isAudited: server.isSecurityAudited || false,
-      auditedAt: server.securityAuditedAt,
-    },
-    
-    badges: [
-      server.isOfficial && "official",
-      server.isVerified && "verified",
-      server.isFeatured && "featured",
-      server.isSecurityAudited && "security-audited",
-    ].filter(Boolean),
-    
-    hint: `Use get-server-config with serverId "${server.id}" to get ready-to-use installation config.`,
-  };
-}
-
-interface GetServerConfigArgs {
-  serverId?: string;
-  format?: string;
-}
-
-async function toolGetServerConfig(
-  args: Record<string, unknown>,
-  db: Database
-): Promise<object> {
-  const { serverId, format = "claude-desktop" } = args as GetServerConfigArgs;
-
-  if (!serverId) {
-    throw new Error("serverId is required");
-  }
-
-  const [server] = await db
-    .select()
-    .from(mcpServers)
-    .where(eq(mcpServers.id, serverId))
-    .limit(1);
-
-  if (!server) {
-    throw new Error(`Server "${serverId}" not found. Use discover-servers to find available servers.`);
-  }
-
-  // Generate config based on transport type
-  let config: Record<string, unknown>;
-  let instructions: string;
-
-  if (server.transportType === "http" || server.transportType === "sse") {
-    // Remote server config
-    config = {
-      [server.id]: {
-        url: server.packageName,
-        type: "http",
-      },
-    };
-    instructions = "Add this to your MCP client configuration.";
-  } else {
-    // STDIO server config
-    const args = [...(server.installArgs || [])];
-    if (server.packageName && !args.includes(server.packageName)) {
-      args.unshift("-y", server.packageName);
-    }
-
-    config = {
-      [server.id]: {
-        command: server.installCommand || "npx",
-        args,
-        ...(Object.keys(server.envVars || {}).length > 0 && { env: server.envVars }),
-      },
-    };
-
-    if (format === "claude-desktop") {
-      instructions = `Add this to your Claude Desktop config:
-- macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
-- Windows: %APPDATA%\\Claude\\claude_desktop_config.json
-
-Merge the "mcpServers" object with any existing servers.`;
-    } else if (format === "vscode") {
-      instructions = "Add this to your VS Code mcp.json settings file.";
-    } else {
-      instructions = "Use this configuration with your MCP client.";
-    }
-  }
-
-  // Format the full config for Claude Desktop
-  const fullConfig = format === "claude-desktop" 
-    ? { mcpServers: config }
-    : config;
-
-  // Note about env vars
-  const envVarNote = Object.keys(server.envVars || {}).length > 0
-    ? `\n\nRequired environment variables:\n${Object.entries(server.envVars || {}).map(([k, v]) => `- ${k}: ${v || "(your value)"}`).join("\n")}`
-    : "";
-
-  return {
-    success: true,
-    serverId: server.id,
-    serverName: server.displayName || server.name,
-    format,
-    config: fullConfig,
-    configJson: JSON.stringify(fullConfig, null, 2),
-    instructions: instructions + envVarNote,
-  };
-}
-
-async function toolListServerCategories(db: Database): Promise<object> {
-  const servers = await db
-    .select({ categories: mcpServers.categories })
-    .from(mcpServers)
-    .where(eq(mcpServers.isActive, true));
-
-  // Collect unique categories
-  const categorySet = new Set<string>();
-  for (const server of servers) {
-    for (const cat of server.categories || []) {
-      categorySet.add(cat);
-    }
-  }
-
-  const categories = Array.from(categorySet).sort();
-
-  return {
-    success: true,
-    categories,
-    count: categories.length,
-    hint: "Use discover-servers with category filter to find servers in a specific category.",
-  };
-}
-
-// Helper function to update discovery stats
-async function updateServerDiscoveryStats(db: Database, serverId: string): Promise<void> {
-  const now = new Date().toISOString();
-
-  try {
-    const result = await db
-      .update(mcpServerStats)
-      .set({
-        totalDiscoveries: sql`${mcpServerStats.totalDiscoveries} + 1`,
-        lastDiscoveredAt: now,
-      })
-      .where(eq(mcpServerStats.serverId, serverId));
-
-    const changes = (result as { meta?: { changes?: number } }).meta?.changes;
-    if (changes === 0) {
-      await db.insert(mcpServerStats).values({
-        serverId,
-        totalDiscoveries: 1,
-        totalConfigCopies: 0,
-        lastDiscoveredAt: now,
-      });
-    }
-  } catch (error) {
-    console.warn(`Failed to update discovery stats for ${serverId}:`, error);
-  }
-}
-
-// ============================================================================
-// Stack Tool Implementations
-// ============================================================================
-
-async function toolGetStack(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const stackId = args.stackId as string;
-  const tokenBudget = (args.tokenBudget as TokenBudget) || "standard";
-
-  if (!stackId) {
-    return {
-      success: false,
-      error: "stackId is required",
-    };
-  }
-
-  // Find stack by ID or slug
-  const [stack] = await db
-    .select()
-    .from(stacks)
-    .where(
-      and(
-        or(eq(stacks.id, stackId), eq(stacks.slug, stackId)),
-        eq(stacks.isActive, true),
-        or(eq(stacks.isPublic, true), eq(stacks.isStarter, true))
-      )
-    )
-    .limit(1);
-
-  if (!stack) {
-    return {
-      success: false,
-      error: `Stack not found: ${stackId}`,
-      hint: "Use list-stacks to discover available stacks.",
-    };
-  }
-
-  // Check if compiled prompt exists
-  if (!stack.compiledPrompt && stack.learningStatus !== "complete") {
-    return {
-      success: false,
-      error: "Stack has not been compiled yet",
-      stackId: stack.id,
-      stackName: stack.name,
-      learningStatus: stack.learningStatus,
-      hint: "The stack owner needs to compile this stack first.",
-    };
-  }
-
-  // Get compiled prompt - may be in R2 for large prompts
-  let compiledPrompt = stack.compiledPrompt;
-  
-  if (stack.r2Key && env.DOCS_BUCKET) {
-    try {
-      const object = await env.DOCS_BUCKET.get(stack.r2Key);
-      if (object) {
-        compiledPrompt = await object.text();
-      }
-    } catch (error) {
-      console.warn(`Failed to fetch stack prompt from R2: ${stack.r2Key}`, error);
-    }
-  }
-
-  // Apply token budget truncation if needed
-  const budgetLimits: Record<TokenBudget, number> = {
-    minimal: 2000,
-    standard: 5000,
-    comprehensive: 10000,
-  };
-  const maxTokens = budgetLimits[tokenBudget];
-  
-  // Rough token estimation (4 chars per token)
-  const estimatedTokens = Math.ceil((compiledPrompt?.length || 0) / 4);
-  let truncatedPrompt = compiledPrompt;
-  
-  if (estimatedTokens > maxTokens && compiledPrompt) {
-    // Truncate to fit budget
-    const maxChars = maxTokens * 4;
-    truncatedPrompt = compiledPrompt.slice(0, maxChars) + "\n\n[... truncated to fit token budget ...]";
-  }
-
-  // Update use count
-  await db
-    .update(stacks)
-    .set({
-      useCount: sql`${stacks.useCount} + 1`,
-      updatedAt: new Date().toISOString(),
-    })
-    .where(eq(stacks.id, stack.id));
-
-  return {
-    success: true,
-    stack: {
-      id: stack.id,
-      name: stack.name,
-      slug: stack.slug,
-      description: stack.description,
-      category: stack.category,
-      layer: stack.layer,
-      tokenBudget: tokenBudget,
-      estimatedTokens: Math.ceil((truncatedPrompt?.length || 0) / 4),
-    },
-    prompt: truncatedPrompt,
-    preferences: stack.cliPreferences,
-    hint: estimatedTokens > maxTokens
-      ? `Prompt truncated from ~${estimatedTokens} to ~${maxTokens} tokens. Use 'comprehensive' budget for full content.`
-      : undefined,
-  };
-}
-
-async function toolListStacks(
-  args: Record<string, unknown>,
-  db: Database,
-  env: Env
-): Promise<object> {
-  const filter = (args.filter as string) || "featured";
-  const category = args.category as string | undefined;
-  const query = args.query as string | undefined;
-  const limit = Math.min(Math.max(Number(args.limit) || 10, 1), 20);
-
-  // Build conditions based on filter
-  const conditions: ReturnType<typeof eq>[] = [eq(stacks.isActive, true)];
-
-  switch (filter) {
-    case "featured":
-      conditions.push(or(eq(stacks.isFeatured, true), eq(stacks.isStarter, true))!);
-      break;
-    case "all":
-      conditions.push(eq(stacks.isPublic, true));
-      break;
-    // 'installed' and 'mine' require auth - will return empty for now
-    case "installed":
-    case "mine":
-      return {
-        success: true,
-        stacks: [],
-        count: 0,
-        hint: "Authentication required to view installed or owned stacks. Use the web dashboard instead.",
-      };
-  }
-
-  // Add category filter
-  if (category && STACK_CATEGORIES.includes(category as StackCategory)) {
-    conditions.push(eq(stacks.category, category as StackCategory));
-  }
-
-  // Add search query
-  if (query) {
-    conditions.push(
-      or(
-        like(stacks.name, `%${query}%`),
-        like(stacks.description, `%${query}%`)
-      )!
-    );
-  }
-
-  const results = await db
-    .select({
-      id: stacks.id,
-      name: stacks.name,
-      slug: stacks.slug,
-      description: stacks.description,
-      category: stacks.category,
-      layer: stacks.layer,
-      icon: stacks.icon,
-      color: stacks.color,
-      isStarter: stacks.isStarter,
-      isFeatured: stacks.isFeatured,
-      useCount: stacks.useCount,
-      forkCount: stacks.forkCount,
-      tokenCount: stacks.tokenCount,
-      learningStatus: stacks.learningStatus,
-    })
-    .from(stacks)
-    .where(and(...conditions))
-    .orderBy(desc(stacks.isFeatured), desc(stacks.isStarter), desc(stacks.useCount))
-    .limit(limit);
-
-  return {
-    success: true,
-    filter,
-    category: category || "all",
-    query: query || undefined,
-    stacks: results.map((s) => ({
-      id: s.id,
-      name: s.name,
-      slug: s.slug,
-      description: s.description,
-      category: s.category,
-      layer: s.layer,
-      icon: s.icon,
-      isStarter: s.isStarter,
-      isFeatured: s.isFeatured,
-      stats: {
-        uses: s.useCount,
-        forks: s.forkCount,
-        tokens: s.tokenCount,
-      },
-      ready: s.learningStatus === "complete",
-    })),
-    count: results.length,
-    hint:
-      results.length === 0
-        ? "No stacks found. Try different filters or search terms."
-        : "Use get-stack with a stack ID or slug to retrieve the compiled prompt.",
   };
 }
 

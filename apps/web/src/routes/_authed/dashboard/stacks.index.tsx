@@ -215,7 +215,13 @@ function StacksPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "all" ? "All" : tab === "starter" ? "Starters" : tab === "my" ? "My Stacks" : "Installed"}
+              {tab === "all"
+                ? "All"
+                : tab === "starter"
+                  ? "Starters"
+                  : tab === "my"
+                    ? "My Stacks"
+                    : "Installed"}
             </button>
           ))}
         </div>
@@ -229,8 +235,8 @@ function StacksPage() {
                 {activeTab === "my"
                   ? "You haven't created any stacks yet"
                   : activeTab === "installed"
-                  ? "You haven't installed any stacks yet"
-                  : "No stacks found"}
+                    ? "You haven't installed any stacks yet"
+                    : "No stacks found"}
               </p>
               {activeTab === "my" && (
                 <Link
@@ -274,7 +280,8 @@ function StacksPage() {
                 <span className="font-mono text-xs font-bold uppercase">Create</span>
               </div>
               <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Build a stack visually or write instructions. Add repos, packages, and compose with other stacks.
+                Build a stack visually or write instructions. Add repos, packages, and compose with
+                other stacks.
               </p>
             </div>
             <div className="border border-border p-4">
@@ -296,7 +303,8 @@ function StacksPage() {
                 <span className="font-mono text-xs font-bold uppercase">Use</span>
               </div>
               <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Use via MCP with <code className="text-accent">get-stack</code> or download the compiled prompt.
+                Use via MCP with <code className="text-accent">get-stack</code> or download the
+                compiled prompt.
               </p>
             </div>
           </div>
@@ -394,15 +402,17 @@ function StackCard({
             ) : (
               <>
                 {/* Compile button for owned stacks */}
-                {isOwned && stack.learningStatus !== "researching" && stack.learningStatus !== "compiling" && (
-                  <button
-                    onClick={() => onCompile(stack.id)}
-                    className="flex h-8 w-8 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-accent hover:text-accent"
-                    title="Compile"
-                  >
-                    <Play className="h-4 w-4" />
-                  </button>
-                )}
+                {isOwned &&
+                  stack.learningStatus !== "researching" &&
+                  stack.learningStatus !== "compiling" && (
+                    <button
+                      onClick={() => onCompile(stack.id)}
+                      className="flex h-8 w-8 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-accent hover:text-accent"
+                      title="Compile"
+                    >
+                      <Play className="h-4 w-4" />
+                    </button>
+                  )}
 
                 {/* Fork button for public stacks */}
                 {!isOwned && (stack.isPublic || stack.isStarter) && (
@@ -416,8 +426,8 @@ function StackCard({
                 )}
 
                 {/* Install/Uninstall */}
-                {!isOwned && (
-                  stack.isInstalled ? (
+                {!isOwned &&
+                  (stack.isInstalled ? (
                     <button
                       onClick={() => onUninstall(stack.id)}
                       className="flex h-8 w-8 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
@@ -433,8 +443,7 @@ function StackCard({
                     >
                       <Download className="h-4 w-4" />
                     </button>
-                  )
-                )}
+                  ))}
 
                 {/* Edit/Delete for owned stacks */}
                 {isOwned && (
@@ -475,10 +484,10 @@ function StackCard({
                   stack.learningStatus === "complete"
                     ? "bg-green-500"
                     : stack.learningStatus === "researching" || stack.learningStatus === "compiling"
-                    ? "animate-pulse bg-amber-500"
-                    : stack.learningStatus === "failed"
-                    ? "bg-destructive"
-                    : "bg-muted-foreground"
+                      ? "animate-pulse bg-amber-500"
+                      : stack.learningStatus === "failed"
+                        ? "bg-destructive"
+                        : "bg-muted-foreground"
                 }`}
               />
               {stack.learningStatus}

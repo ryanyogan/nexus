@@ -95,8 +95,8 @@ function createListCommand(): Command {
           }
 
           // Group by starter vs custom
-          const starterFlows = result.flows.filter(f => f.isStarterPack);
-          const customFlows = result.flows.filter(f => !f.isStarterPack);
+          const starterFlows = result.flows.filter((f) => f.isStarterPack);
+          const customFlows = result.flows.filter((f) => !f.isStarterPack);
 
           if (starterFlows.length > 0 && !options.my) {
             logger.log(chalk.bold.cyan("  Starter Packs"));
@@ -170,7 +170,7 @@ function createGetCommand(): Command {
           outputJson(result);
         } else {
           logger.log(chalk.bold(`\n${flow.name}\n`));
-          
+
           if (flow.description) {
             logger.log(chalk.gray(flow.description));
             logger.newline();
@@ -245,7 +245,9 @@ function createActiveCommand(): Command {
           logger.log(chalk.bold("\nActive Flows\n"));
 
           for (const flow of result.flows) {
-            logger.log(`  ${chalk.green("●")} ${chalk.bold(flow.name)} ${chalk.gray(`(${flow.id})`)}`);
+            logger.log(
+              `  ${chalk.green("●")} ${chalk.bold(flow.name)} ${chalk.gray(`(${flow.id})`)}`
+            );
             if (flow.description) {
               logger.log(`    ${chalk.gray(flow.description)}`);
             }
@@ -285,7 +287,7 @@ function createActivateCommand(): Command {
 
       try {
         const client = getClient();
-        
+
         // Install first if needed
         try {
           await client.installFlow(id);
@@ -306,7 +308,10 @@ function createActivateCommand(): Command {
           logger.newline();
           logger.log(chalk.bold("System Prompt:"));
           logger.log(chalk.gray("─".repeat(60)));
-          logger.log(result.flow.systemPrompt.slice(0, 500) + (result.flow.systemPrompt.length > 500 ? "..." : ""));
+          logger.log(
+            result.flow.systemPrompt.slice(0, 500) +
+              (result.flow.systemPrompt.length > 500 ? "..." : "")
+          );
           logger.log(chalk.gray("─".repeat(60)));
           logger.newline();
         }
@@ -393,7 +398,7 @@ function createDownloadCommand(): Command {
       try {
         const client = getClient();
         const result = await client.downloadFlow(id);
-        
+
         const outputPath = options.output || "./FLOW.md";
         const absolutePath = path.resolve(outputPath);
 
@@ -459,9 +464,15 @@ function createCreateCommand(): Command {
           logger.log("  --parent <id>         Parent flow to extend");
           logger.newline();
           logger.log(chalk.gray("Example:"));
-          logger.log(chalk.cyan(`  nexus flow create --name "My Flow" --prompt "You are an expert..."`));
+          logger.log(
+            chalk.cyan(`  nexus flow create --name "My Flow" --prompt "You are an expert..."`)
+          );
           logger.newline();
-          logger.log(chalk.gray("Tip: For complex flows, use the dashboard at nexus.yogan.dev/dashboard/flows"));
+          logger.log(
+            chalk.gray(
+              "Tip: For complex flows, use the dashboard at nexus.yogan.dev/dashboard/flows"
+            )
+          );
           logger.newline();
         }
         return;

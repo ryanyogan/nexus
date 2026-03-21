@@ -23,6 +23,7 @@ Category: infrastructure
 Edge-first serverless applications with Cloudflare Workers, D1, R2, KV, and Queues.
 
 **Key Technologies:**
+
 - Cloudflare Workers for edge compute
 - D1 for SQLite database
 - R2 for object storage
@@ -40,6 +41,7 @@ Category: infrastructure
 Deploy to Vercel Edge Functions with Next.js or standalone edge functions.
 
 **Key Technologies:**
+
 - Vercel Edge Functions
 - Vercel KV / Postgres / Blob
 - Next.js App Router (optional)
@@ -57,6 +59,7 @@ Category: database
 Full backend with Supabase: Postgres, Auth, Storage, Realtime, and Edge Functions.
 
 **Key Technologies:**
+
 - PostgreSQL with Row Level Security
 - Built-in authentication
 - Realtime subscriptions
@@ -73,6 +76,7 @@ Category: database
 Edge-native SQLite with Turso (libSQL) - embedded replicas and global distribution.
 
 **Key Technologies:**
+
 - Distributed SQLite (libSQL)
 - Embedded replicas for local reads
 - Global edge distribution
@@ -88,6 +92,7 @@ Category: database
 Type-safe SQL with Drizzle ORM - zero dependencies, maximum type safety.
 
 **Key Technologies:**
+
 - 100% type-safe queries
 - SQL-like syntax
 - Zero runtime dependencies
@@ -105,6 +110,7 @@ Category: backend
 Ultra-fast web framework for the edge with Hono.
 
 **Key Technologies:**
+
 - Hono web framework
 - Edge-first design
 - Middleware system
@@ -120,6 +126,7 @@ Category: backend
 End-to-end type-safe APIs with tRPC.
 
 **Key Technologies:**
+
 - Type-safe API layer
 - No code generation
 - React Query integration
@@ -135,6 +142,7 @@ Category: backend
 High-performance APIs with Rust and Axum framework.
 
 **Key Technologies:**
+
 - Axum web framework
 - Tokio async runtime
 - Tower middleware
@@ -152,6 +160,7 @@ Category: fullstack
 Full-stack React framework with file-based routing, SSR, and streaming.
 
 **Key Technologies:**
+
 - React 19 with Server Components
 - File-based routing
 - TanStack Query
@@ -167,6 +176,7 @@ Category: fullstack
 React framework with App Router, Server Components, and Server Actions.
 
 **Key Technologies:**
+
 - Next.js 15
 - App Router
 - Server Components
@@ -182,6 +192,7 @@ Category: fullstack
 Ruby on Rails 8 with Hotwire, Turbo, and Stimulus.
 
 **Key Technologies:**
+
 - Rails 8
 - Hotwire / Turbo
 - Stimulus JS
@@ -197,6 +208,7 @@ Category: fullstack
 Real-time applications with Elixir and Phoenix LiveView.
 
 **Key Technologies:**
+
 - Phoenix Framework
 - LiveView for real-time UI
 - Ecto for database
@@ -212,6 +224,7 @@ Category: fullstack
 Full-stack Rust web framework with fine-grained reactivity.
 
 **Key Technologies:**
+
 - Leptos framework
 - Fine-grained reactivity
 - SSR and hydration
@@ -229,6 +242,7 @@ Category: frontend
 Modern React development with Vite bundler.
 
 **Key Technologies:**
+
 - React 19
 - Vite build tool
 - TypeScript
@@ -244,6 +258,7 @@ Category: frontend
 Compile-time framework with Svelte 5 runes and SvelteKit.
 
 **Key Technologies:**
+
 - Svelte 5 with runes
 - SvelteKit
 - TypeScript
@@ -259,6 +274,7 @@ Category: frontend
 Progressive framework with Vue 3 Composition API and Nuxt 3.
 
 **Key Technologies:**
+
 - Vue 3
 - Composition API
 - Nuxt 3
@@ -274,6 +290,7 @@ Category: frontend
 WebAssembly applications with Rust.
 
 **Key Technologies:**
+
 - Rust compiled to WASM
 - wasm-bindgen
 - web-sys
@@ -291,6 +308,7 @@ Category: desktop
 Cross-platform desktop apps with Tauri v2.
 
 **Key Technologies:**
+
 - Tauri v2
 - Rust backend
 - Web frontend
@@ -306,6 +324,7 @@ Category: desktop
 Linux desktop with Hyprland and custom configurations.
 
 **Key Technologies:**
+
 - Hyprland
 - Waybar
 - Alacritty/Kitty
@@ -323,6 +342,7 @@ Category: styling
 Utility-first CSS framework with Tailwind v4.
 
 **Key Technologies:**
+
 - Tailwind CSS v4
 - CSS variables
 - Lightning CSS
@@ -338,6 +358,7 @@ Category: styling
 Re-usable components built with Radix UI and Tailwind CSS.
 
 **Key Technologies:**
+
 - Radix UI primitives
 - Tailwind CSS
 - TypeScript
@@ -355,6 +376,7 @@ Category: tui
 Terminal user interfaces in Rust with Ratatui.
 
 **Key Technologies:**
+
 - Ratatui
 - Crossterm
 - Tokio async
@@ -370,6 +392,7 @@ Category: tui
 Elegant TUI framework for Go.
 
 **Key Technologies:**
+
 - Bubbletea
 - Bubbles components
 - Lip Gloss styling
@@ -385,6 +408,7 @@ Category: tui
 Build CLI applications with React and Ink.
 
 **Key Technologies:**
+
 - Ink
 - React components
 - TypeScript
@@ -402,6 +426,7 @@ Category: tooling
 Modern testing with Vitest and Testing Library.
 
 **Key Technologies:**
+
 - Vitest test runner
 - Testing Library
 - Mock Service Worker

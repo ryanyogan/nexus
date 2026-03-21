@@ -101,11 +101,7 @@ librariesRouter.get("/:id", async (c) => {
   const id = c.req.param("id");
   const db = c.get("db");
 
-  const [library] = await db
-    .select()
-    .from(libraries)
-    .where(eq(libraries.id, id))
-    .limit(1);
+  const [library] = await db.select().from(libraries).where(eq(libraries.id, id)).limit(1);
 
   if (!library) {
     return c.json({ error: "Library not found" }, 404);

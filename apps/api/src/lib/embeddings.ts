@@ -7,13 +7,10 @@ interface EmbeddingResult {
 
 /**
  * Generate embeddings for a batch of chunks using Workers AI.
- * 
+ *
  * Uses @cf/baai/bge-base-en-v1.5 which outputs 768-dimensional vectors.
  */
-export async function generateEmbeddings(
-  chunks: ChunkData[],
-  ai: Ai
-): Promise<EmbeddingResult[]> {
+export async function generateEmbeddings(chunks: ChunkData[], ai: Ai): Promise<EmbeddingResult[]> {
   const results: EmbeddingResult[] = [];
 
   // Process in batches of 100 (API limit)
@@ -21,7 +18,7 @@ export async function generateEmbeddings(
 
   for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
     const batch = chunks.slice(i, i + BATCH_SIZE);
-    
+
     // Prepare texts for embedding
     // Include title for better context
     const texts = batch.map((chunk) => {
@@ -50,7 +47,9 @@ export async function generateEmbeddings(
       });
     }
 
-    console.log(`Generated embeddings for batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(chunks.length / BATCH_SIZE)}`);
+    console.log(
+      `Generated embeddings for batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(chunks.length / BATCH_SIZE)}`
+    );
   }
 
   return results;
@@ -59,10 +58,7 @@ export async function generateEmbeddings(
 /**
  * Generate a single embedding for a query string.
  */
-export async function generateQueryEmbedding(
-  query: string,
-  ai: Ai
-): Promise<number[]> {
+export async function generateQueryEmbedding(query: string, ai: Ai): Promise<number[]> {
   const response = await ai.run("@cf/baai/bge-base-en-v1.5", {
     text: [query],
   });

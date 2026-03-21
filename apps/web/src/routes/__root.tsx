@@ -41,9 +41,7 @@ function RootComponent() {
   const { session } = Route.useRouteContext();
 
   // Check if we're on a code editor route - hide footer for full height
-  const isCodeEditor = matches.some((match) =>
-    match.pathname.startsWith("/code")
-  );
+  const isCodeEditor = matches.some((match) => match.pathname.startsWith("/code"));
 
   return (
     <html lang="en" className="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
@@ -53,10 +51,7 @@ function RootComponent() {
         {isCodeEditor && (
           <>
             <meta name="apple-mobile-web-app-capable" content="yes" />
-            <meta
-              name="apple-mobile-web-app-status-bar-style"
-              content="black-translucent"
-            />
+            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
           </>
         )}
         {/* Theme initialization script - runs before paint to prevent flash */}
@@ -84,10 +79,7 @@ function RootComponent() {
       <body className="flex min-h-screen flex-col overflow-x-hidden bg-background font-sans text-foreground antialiased">
         <Header session={session} />
         <main
-          className={cn(
-            "flex-grow pt-0",
-            isCodeEditor && "h-[calc(100vh-4rem)] overflow-hidden"
-          )}
+          className={cn("flex-grow pt-0", isCodeEditor && "h-[calc(100vh-4rem)] overflow-hidden")}
         >
           <Outlet />
         </main>

@@ -101,11 +101,7 @@ const LLM_TXT_FILES = [
   "LLM.txt",
 ];
 
-const LLM_TXT_PATTERNS = [
-  /llms?[-_]?full\.txt$/i,
-  /llms?\.txt$/i,
-  /\.llms?\.txt$/i,
-];
+const LLM_TXT_PATTERNS = [/llms?[-_]?full\.txt$/i, /llms?\.txt$/i, /\.llms?\.txt$/i];
 
 // File extensions we care about for documentation
 const DOC_EXTENSIONS = [".md", ".mdx", ".txt", ".rst"];
@@ -266,10 +262,7 @@ async function fetchFileContent(
 /**
  * Fetch all documentation from a GitHub repository.
  */
-export async function fetchGitHubDocs(
-  repoUrl: string,
-  token?: string
-): Promise<GitHubContent[]> {
+export async function fetchGitHubDocs(repoUrl: string, token?: string): Promise<GitHubContent[]> {
   const parsed = parseGitHubUrl(repoUrl);
   if (!parsed) {
     throw new Error(`Invalid GitHub URL: ${repoUrl}`);
@@ -286,9 +279,7 @@ export async function fetchGitHubDocs(
   const tree = await fetchRepoTree(owner, repo, branch, token);
 
   // Filter to documentation files only
-  const docFiles = tree.filter(
-    (item) => item.type === "blob" && isDocFile(item.path)
-  );
+  const docFiles = tree.filter((item) => item.type === "blob" && isDocFile(item.path));
 
   console.log(`Found ${docFiles.length} documentation files in ${owner}/${repo}`);
 
@@ -352,7 +343,7 @@ export async function getGitHubRepoMetadata(
  */
 function isLlmTxtFile(path: string): boolean {
   const filename = path.split("/").pop() || "";
-  return LLM_TXT_PATTERNS.some(pattern => pattern.test(filename));
+  return LLM_TXT_PATTERNS.some((pattern) => pattern.test(filename));
 }
 
 /**
@@ -361,15 +352,15 @@ function isLlmTxtFile(path: string): boolean {
  */
 function findLlmTxtFiles(tree: GitHubTreeItem[]): string[] {
   const llmFiles: Array<{ path: string; priority: number }> = [];
-  
+
   for (const item of tree) {
     if (item.type !== "blob") continue;
-    
+
     const filename = item.path.split("/").pop()?.toLowerCase() || "";
-    
+
     // Check root-level llm files first (highest priority)
     const isRootLevel = !item.path.includes("/");
-    
+
     // Prioritize llms-full.txt over llms.txt
     let priority = 100;
     if (filename.includes("full")) {
@@ -379,13 +370,11 @@ function findLlmTxtFiles(tree: GitHubTreeItem[]): string[] {
     } else {
       continue;
     }
-    
+
     llmFiles.push({ path: item.path, priority });
   }
-  
-  return llmFiles
-    .sort((a, b) => a.priority - b.priority)
-    .map(f => f.path);
+
+  return llmFiles.sort((a, b) => a.priority - b.priority).map((f) => f.path);
 }
 
 // ============================================================================
@@ -395,11 +384,7 @@ function findLlmTxtFiles(tree: GitHubTreeItem[]): string[] {
 /**
  * Fetch all tags from a repository.
  */
-async function fetchTags(
-  owner: string,
-  repo: string,
-  token?: string
-): Promise<GitHubTag[]> {
+async function fetchTags(owner: string, repo: string, token?: string): Promise<GitHubTag[]> {
   const url = `https://api.github.com/repos/${owner}/${repo}/tags?per_page=100`;
   const headers: Record<string, string> = {
     "User-Agent": USER_AGENT,
@@ -523,7 +508,9 @@ async function compareCommits(
       console.warn(`Failed to compare commits: ${response.status}`);
       return [];
     }
-    const data = await response.json() as { files?: Array<{ filename: string; status: string; sha: string }> };
+    const data = (await response.json()) as {
+      files?: Array<{ filename: string; status: string; sha: string }>;
+    };
     return data.files || [];
   } catch (error) {
     console.warn("Error comparing commits:", error);
@@ -564,8 +551,14 @@ export async function fetchIncrementalChanges(
   }
 
   // Get changed files between commits
-  const changedFilesList = await compareCommits(owner, repo, lastCommitSha, latestCommit.sha, token);
-  
+  const changedFilesList = await compareCommits(
+    owner,
+    repo,
+    lastCommitSha,
+    latestCommit.sha,
+    token
+  );
+
   const changedFiles: FetchedFile[] = [];
   const deletedPaths: string[] = [];
 
@@ -636,7 +629,7 @@ export async function fetchGitHubDocsEnhanced(
 
   // Get repository tree
   const tree = await fetchRepoTree(owner, repo, branch, token);
-  
+
   // Get latest commit SHA
   const latestCommit = await fetchLatestCommit(owner, repo, branch, token);
   const commitSha = latestCommit?.sha || "";
@@ -650,13 +643,13 @@ export async function fetchGitHubDocsEnhanced(
   // If we have LLM.txt and prefer it, fetch those first
   if (hasLlmTxt && preferLlmTxt) {
     console.log(`Found LLM.txt files in ${owner}/${repo}: ${llmTxtFiles.join(", ")}`);
-    
+
     // Fetch the best LLM.txt file (usually llms-full.txt if available)
     const primaryLlmFile = llmTxtFiles[0];
     const content = await fetchFileContent(owner, repo, primaryLlmFile, token);
-    
+
     if (content) {
-      const treeItem = tree.find(t => t.path === primaryLlmFile);
+      const treeItem = tree.find((t) => t.path === primaryLlmFile);
       files.push({
         path: primaryLlmFile,
         content,
@@ -670,7 +663,7 @@ export async function fetchGitHubDocsEnhanced(
     for (const llmFile of llmTxtFiles.slice(1)) {
       const llmContent = await fetchFileContent(owner, repo, llmFile, token);
       if (llmContent) {
-        const treeItem = tree.find(t => t.path === llmFile);
+        const treeItem = tree.find((t) => t.path === llmFile);
         files.push({
           path: llmFile,
           content: llmContent,
@@ -683,18 +676,18 @@ export async function fetchGitHubDocsEnhanced(
   }
 
   // Fetch regular documentation files
-  let docFiles = tree.filter(item => item.type === "blob" && isDocFile(item.path));
+  let docFiles = tree.filter((item) => item.type === "blob" && isDocFile(item.path));
 
   // If custom docs paths specified, filter to those
   if (options.docsPaths && options.docsPaths.length > 0) {
-    docFiles = docFiles.filter(item =>
-      options.docsPaths!.some(path => item.path.startsWith(path))
+    docFiles = docFiles.filter((item) =>
+      options.docsPaths!.some((path) => item.path.startsWith(path))
     );
   }
 
   // Skip files already fetched as LLM.txt
-  const fetchedPaths = new Set(files.map(f => f.path));
-  docFiles = docFiles.filter(item => !fetchedPaths.has(item.path));
+  const fetchedPaths = new Set(files.map((f) => f.path));
+  docFiles = docFiles.filter((item) => !fetchedPaths.has(item.path));
 
   console.log(`Fetching ${docFiles.length} documentation files from ${owner}/${repo}`);
 
@@ -734,9 +727,9 @@ export async function fetchGitHubDocsEnhanced(
     ]);
 
     // Create a map of releases for additional metadata
-    const releaseMap = new Map(releases.map(r => [r.tag_name, r]));
+    const releaseMap = new Map(releases.map((r) => [r.tag_name, r]));
 
-    versions = tags.map(tag => {
+    versions = tags.map((tag) => {
       const release = releaseMap.get(tag.name);
       return {
         version: parseVersionFromTag(tag.name),
@@ -781,7 +774,7 @@ export async function checkForLlmTxt(
     const targetBranch = branch || repoInfo.default_branch;
     const tree = await fetchRepoTree(owner, repo, targetBranch, token);
     const llmFiles = findLlmTxtFiles(tree);
-    
+
     return {
       hasLlmTxt: llmFiles.length > 0,
       files: llmFiles,

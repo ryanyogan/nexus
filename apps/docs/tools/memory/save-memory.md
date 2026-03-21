@@ -19,6 +19,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "title": "Authentication Architecture",
@@ -31,6 +32,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "id": "mem_abc123",
@@ -41,24 +43,24 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `title` | string | Yes | Short title (max 100 chars) |
-| `content` | string | Yes | Full content to store |
-| `type` | string | Yes | Memory type (see below) |
-| `project` | string | No | Project name for organization |
-| `tags` | string[] | No | Tags for filtering |
-| `importance` | number | No | Score 1-10 (default 5) |
-| `summary` | string | No | Brief summary (max 200 chars) |
+| Parameter    | Type     | Required | Description                   |
+| ------------ | -------- | -------- | ----------------------------- |
+| `title`      | string   | Yes      | Short title (max 100 chars)   |
+| `content`    | string   | Yes      | Full content to store         |
+| `type`       | string   | Yes      | Memory type (see below)       |
+| `project`    | string   | No       | Project name for organization |
+| `tags`       | string[] | No       | Tags for filtering            |
+| `importance` | number   | No       | Score 1-10 (default 5)        |
+| `summary`    | string   | No       | Brief summary (max 200 chars) |
 
 ## Memory Types
 
-| Type | Use For |
-|------|---------|
-| `project_context` | Tech stack, architecture, conventions |
-| `session_summary` | What was accomplished in a session |
-| `decision` | Architectural decisions with rationale |
-| `correction` | Lessons learned, things to avoid |
+| Type              | Use For                                |
+| ----------------- | -------------------------------------- |
+| `project_context` | Tech stack, architecture, conventions  |
+| `session_summary` | What was accomplished in a session     |
+| `decision`        | Architectural decisions with rationale |
+| `correction`      | Lessons learned, things to avoid       |
 
 ## Authentication
 

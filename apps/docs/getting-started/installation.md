@@ -271,19 +271,19 @@ Restart VS Code after saving.
 
 **If your client supports native remote mode** (like OpenCode), use:
 
-| Setting | Value |
-|---------|-------|
-| Type | `remote` |
-| URL | `https://api.nexus.yogan.dev/sse` |
+| Setting | Value                                 |
+| ------- | ------------------------------------- |
+| Type    | `remote`                              |
+| URL     | `https://api.nexus.yogan.dev/sse`     |
 | Headers | `{ "NEXUS_API_KEY": "nxs_your_key" }` |
 
 **Otherwise, use mcp-remote:**
 
-| Setting | Value |
-|---------|-------|
-| Command | `npx` |
-| Args | `["-y", "mcp-remote", "https://api.nexus.yogan.dev/sse", "--header", "NEXUS_API_KEY:${NEXUS_API_KEY}"]` |
-| Environment | `NEXUS_API_KEY=nxs_your_key` |
+| Setting     | Value                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| Command     | `npx`                                                                                                   |
+| Args        | `["-y", "mcp-remote", "https://api.nexus.yogan.dev/sse", "--header", "NEXUS_API_KEY:${NEXUS_API_KEY}"]` |
+| Environment | `NEXUS_API_KEY=nxs_your_key`                                                                            |
 
 Example for Cline (`~/.cline/mcp.json`):
 
@@ -309,10 +309,10 @@ Example for Cline (`~/.cline/mcp.json`):
 
 **Local Mode:**
 
-| Setting | Value |
-|---------|-------|
-| Command | `npx` |
-| Args | `["-y", "@nexus/cli", "serve"]` |
+| Setting     | Value                                           |
+| ----------- | ----------------------------------------------- |
+| Command     | `npx`                                           |
+| Args        | `["-y", "@nexus/cli", "serve"]`                 |
 | Environment | `NEXUS_API_KEY=nxs_your_key` (or use CLI login) |
 
   </Tab>
@@ -320,13 +320,13 @@ Example for Cline (`~/.cline/mcp.json`):
 
 ## Remote vs Local Mode
 
-| Feature | Native Remote | mcp-remote | Local Mode |
-|---------|---------------|------------|------------|
-| **Setup** | Just config | Config + bridge | CLI install |
-| **Dependencies** | None | `mcp-remote` | `@nexus/cli` |
-| **Client Support** | OpenCode | Most clients | All clients |
-| **Offline** | No | No | Yes (cached) |
-| **Best for** | OpenCode users | Most users | Offline access |
+| Feature            | Native Remote  | mcp-remote      | Local Mode     |
+| ------------------ | -------------- | --------------- | -------------- |
+| **Setup**          | Just config    | Config + bridge | CLI install    |
+| **Dependencies**   | None           | `mcp-remote`    | `@nexus/cli`   |
+| **Client Support** | OpenCode       | Most clients    | All clients    |
+| **Offline**        | No             | No              | Yes (cached)   |
+| **Best for**       | OpenCode users | Most users      | Offline access |
 
 ## Using the CLI Auto-Config
 

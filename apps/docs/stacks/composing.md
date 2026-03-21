@@ -27,6 +27,7 @@ Instead of creating one massive stack, compose smaller, focused stacks:
 ### Parent-Child Relationships
 
 When you add a child stack:
+
 1. The parent stack inherits all instructions from children
 2. Instructions are merged in layer order (0 → 3)
 3. Conflicts are resolved by parent override
@@ -35,12 +36,12 @@ When you add a child stack:
 
 Stacks have layers that determine merge order:
 
-| Layer | Type | Examples |
-|-------|------|----------|
-| 0 | Infrastructure/Database | Cloudflare, Supabase, Drizzle |
-| 1 | Backend/Fullstack | Hono, TanStack Start, Next.js |
-| 2 | Frontend/Styling | React, shadcn/ui, Tailwind |
-| 3 | Tooling | Vitest, ESLint |
+| Layer | Type                    | Examples                      |
+| ----- | ----------------------- | ----------------------------- |
+| 0     | Infrastructure/Database | Cloudflare, Supabase, Drizzle |
+| 1     | Backend/Fullstack       | Hono, TanStack Start, Next.js |
+| 2     | Frontend/Styling        | React, shadcn/ui, Tailwind    |
+| 3     | Tooling                 | Vitest, ESLint                |
 
 Lower layers are applied first, higher layers can override.
 
@@ -71,17 +72,21 @@ Instructions from child stacks are merged:
 
 ```markdown
 # Parent Stack
+
 - Always use TypeScript
 - Prefer functional patterns
 
 # Child Stack (Drizzle)
+
 - Use Drizzle ORM for database access
 - Define schema in schema.ts
 ```
 
 **Merged Result:**
+
 ```markdown
 # Combined Stack
+
 - Always use TypeScript
 - Prefer functional patterns
 - Use Drizzle ORM for database access
@@ -91,14 +96,18 @@ Instructions from child stacks are merged:
 ### Conflict Resolution
 
 When instructions conflict:
+
 1. Parent stack instructions take precedence
 2. Later layers override earlier layers
 3. Explicit overrides are noted
 
 Example:
+
 ```markdown
 # Parent: "Use Prisma for ORM"
+
 # Child: "Use Drizzle for ORM"
+
 # Result: Uses parent's "Prisma" instruction
 ```
 
@@ -117,6 +126,7 @@ Optimized/merged: ~8K tokens
 ```
 
 The compiler optimizes by:
+
 - Removing duplicate instructions
 - Condensing similar patterns
 - Respecting parent's token budget
@@ -151,6 +161,7 @@ Layer 3: Vitest (testing)
 ### 4. Test Compiled Output
 
 After composing, check the compiled prompt:
+
 1. Click **Compile** in the editor
 2. Review the merged instructions
 3. Verify token count is acceptable

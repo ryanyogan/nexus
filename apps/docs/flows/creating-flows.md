@@ -8,23 +8,23 @@ A flow consists of several components:
 
 ```typescript
 interface Flow {
-  name: string;           // Display name
-  slug: string;           // URL-friendly identifier
-  description: string;    // What this flow does
-  systemPrompt: string;   // AI instructions
-  parentFlowId?: string;  // Optional parent to extend
-  libraries: string[];    // Documentation to include
-  skills: string[];       // Skills to enable
-  mcpServers: string[];   // MCP servers to suggest
+  name: string; // Display name
+  slug: string; // URL-friendly identifier
+  description: string; // What this flow does
+  systemPrompt: string; // AI instructions
+  parentFlowId?: string; // Optional parent to extend
+  libraries: string[]; // Documentation to include
+  skills: string[]; // Skills to enable
+  mcpServers: string[]; // MCP servers to suggest
   preferences: {
-    verbosity: 'concise' | 'balanced' | 'detailed';
-    codeStyle: 'minimal' | 'documented' | 'verbose';
-    responseFormat: 'full' | 'compact' | 'code-only' | 'summary';
+    verbosity: "concise" | "balanced" | "detailed";
+    codeStyle: "minimal" | "documented" | "verbose";
+    responseFormat: "full" | "compact" | "code-only" | "summary";
     useEmojis: boolean;
     preferredLanguage?: string;
   };
-  category: string;       // For organization
-  tags: string[];         // Searchable tags
+  category: string; // For organization
+  tags: string[]; // Searchable tags
 }
 ```
 
@@ -79,24 +79,28 @@ A good system prompt includes:
 
 ```markdown
 You are an expert React and TypeScript developer with deep knowledge of:
+
 - React 18+ features (hooks, suspense, concurrent rendering)
 - TypeScript 5+ with strict type checking
 - Modern state management (Zustand, Jotai, React Query)
 - Testing with Vitest and React Testing Library
 
 ## Guidelines
+
 - Prefer functional components with hooks over class components
 - Always use TypeScript with explicit return types for exported functions
 - Suggest appropriate error boundaries for production code
-- Include accessibility attributes (aria-*, role) in UI components
+- Include accessibility attributes (aria-\*, role) in UI components
 
 ## Code Style
+
 - Use named exports over default exports
 - Destructure props in function parameters
 - Prefer early returns for guard clauses
 - Add JSDoc comments for public APIs
 
 ## Constraints
+
 - Do not suggest deprecated patterns (componentWillMount, etc.)
 - Avoid inline styles; prefer CSS modules or Tailwind
 - Do not use `any` type; prefer `unknown` with type guards
@@ -137,28 +141,28 @@ base-developer (Level 0)
 
 ### Verbosity
 
-| Level | Description |
-|-------|-------------|
-| `concise` | Minimal explanations, focus on code |
-| `balanced` | Moderate explanations with code |
-| `detailed` | Thorough explanations and context |
+| Level      | Description                         |
+| ---------- | ----------------------------------- |
+| `concise`  | Minimal explanations, focus on code |
+| `balanced` | Moderate explanations with code     |
+| `detailed` | Thorough explanations and context   |
 
 ### Code Style
 
-| Style | Description |
-|-------|-------------|
-| `minimal` | Just the essential code |
-| `documented` | Code with inline comments |
-| `verbose` | Extensive comments and examples |
+| Style        | Description                     |
+| ------------ | ------------------------------- |
+| `minimal`    | Just the essential code         |
+| `documented` | Code with inline comments       |
+| `verbose`    | Extensive comments and examples |
 
 ### Response Format
 
-| Format | Description |
-|--------|-------------|
-| `full` | Complete response with metadata |
-| `compact` | Essential information only |
-| `code-only` | Just code blocks |
-| `summary` | Brief overview |
+| Format      | Description                     |
+| ----------- | ------------------------------- |
+| `full`      | Complete response with metadata |
+| `compact`   | Essential information only      |
+| `code-only` | Just code blocks                |
+| `summary`   | Brief overview                  |
 
 ## Including Libraries
 
@@ -230,8 +234,8 @@ Add clear descriptions so others (or future you) understand:
 
 ```bash
 nexus flow create \
-  --description "For greenfield React projects using TypeScript 5+, 
-                 React Query for data, and Tailwind for styling. 
+  --description "For greenfield React projects using TypeScript 5+,
+                 React Query for data, and Tailwind for styling.
                  Assumes Vite as build tool."
 ```
 

@@ -13,9 +13,7 @@ export function Spinner({ label, type = "dots" }: SpinnerProps) {
       <Text color="cyan">
         <InkSpinner type={type} />
       </Text>
-      {label && (
-        <Text color="gray"> {label}</Text>
-      )}
+      {label && <Text color="gray"> {label}</Text>}
     </Box>
   );
 }

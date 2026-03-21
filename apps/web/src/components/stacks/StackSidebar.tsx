@@ -41,17 +41,16 @@ function DraggableNode({ type, label, description, icon, color, data }: Draggabl
       </div>
       <div
         className="flex h-8 w-8 shrink-0 items-center justify-center"
-        style={{ backgroundColor: color || "var(--color-muted)", color: color ? "white" : undefined }}
+        style={{
+          backgroundColor: color || "var(--color-muted)",
+          color: color ? "white" : undefined,
+        }}
       >
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-mono text-xs font-bold uppercase tracking-wide truncate">
-          {label}
-        </div>
-        <div className="font-mono text-[10px] text-muted-foreground truncate">
-          {description}
-        </div>
+        <div className="font-mono text-xs font-bold uppercase tracking-wide truncate">{label}</div>
+        <div className="font-mono text-[10px] text-muted-foreground truncate">{description}</div>
       </div>
     </div>
   );
@@ -226,9 +225,7 @@ export function StackSidebar({ starterStacks = [], onStackSelect }: StackSidebar
 
                 {filteredStacks.length === 0 && searchQuery && (
                   <div className="py-4 text-center">
-                    <p className="font-mono text-[10px] text-muted-foreground">
-                      No stacks found
-                    </p>
+                    <p className="font-mono text-[10px] text-muted-foreground">No stacks found</p>
                   </div>
                 )}
               </div>

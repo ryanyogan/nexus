@@ -95,13 +95,7 @@ export class ClaudeCodeAdapter implements EditorAdapter {
         }
       } else {
         // HTTP/SSE transport: claude mcp add --transport http <name> <url>
-        args = [
-          "mcp",
-          "add",
-          "--transport",
-          config.transport,
-          config.serverId,
-        ];
+        args = ["mcp", "add", "--transport", config.transport, config.serverId];
         if (config.url) {
           args.push(config.url);
         }

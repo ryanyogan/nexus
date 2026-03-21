@@ -14,6 +14,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "libraryName": "react",
@@ -22,6 +23,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "libraries": [
@@ -37,10 +39,10 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `libraryName` | string | Yes | The name of the library to search for |
-| `query` | string | No | Your task or question, used to rank results by relevance |
+| Parameter     | Type   | Required | Description                                              |
+| ------------- | ------ | -------- | -------------------------------------------------------- |
+| `libraryName` | string | Yes      | The name of the library to search for                    |
+| `query`       | string | No       | Your task or question, used to rank results by relevance |
 
 ## Returns
 

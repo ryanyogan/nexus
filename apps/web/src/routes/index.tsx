@@ -164,10 +164,12 @@ const getHomePageData = createServerFn({ method: "GET" })
       const [stackStats] = await db
         .select({ total: sql<number>`count(*)` })
         .from(schema.stacks)
-        .where(and(
-          eq(schema.stacks.isActive, true),
-          or(eq(schema.stacks.isPublic, true), eq(schema.stacks.isStarter, true))
-        ));
+        .where(
+          and(
+            eq(schema.stacks.isActive, true),
+            or(eq(schema.stacks.isPublic, true), eq(schema.stacks.isStarter, true))
+          )
+        );
 
       const stats = {
         libraries: Number(libraryStats?.indexed ?? 0),
@@ -178,37 +180,55 @@ const getHomePageData = createServerFn({ method: "GET" })
 
       // Build queries for all three content types
       const items: ContentItem[] = [];
-      
+
       // Determine sort order for each type
       const getLibraryOrder = () => {
         switch (sort) {
-          case "popular": return [desc(schema.libraries.totalChunks)];
-          case "trending": return [desc(schema.libraryStats.lastQueriedAt), desc(schema.libraryStats.totalQueries)];
-          case "recent": return [desc(schema.libraries.lastIndexedAt)];
+          case "popular":
+            return [desc(schema.libraries.totalChunks)];
+          case "trending":
+            return [
+              desc(schema.libraryStats.lastQueriedAt),
+              desc(schema.libraryStats.totalQueries),
+            ];
+          case "recent":
+            return [desc(schema.libraries.lastIndexedAt)];
         }
       };
-      
+
       const getServerOrder = () => {
         switch (sort) {
-          case "popular": return [desc(schema.mcpServers.weeklyDownloads), desc(schema.mcpServers.githubStars)];
-          case "trending": return [desc(schema.mcpServerStats.lastDiscoveredAt), desc(schema.mcpServerStats.totalDiscoveries)];
-          case "recent": return [desc(schema.mcpServers.updatedAt)];
+          case "popular":
+            return [desc(schema.mcpServers.weeklyDownloads), desc(schema.mcpServers.githubStars)];
+          case "trending":
+            return [
+              desc(schema.mcpServerStats.lastDiscoveredAt),
+              desc(schema.mcpServerStats.totalDiscoveries),
+            ];
+          case "recent":
+            return [desc(schema.mcpServers.updatedAt)];
         }
       };
-      
+
       const getSkillOrder = () => {
         switch (sort) {
-          case "popular": return [desc(schema.skills.installCount), desc(schema.skills.usageCount)];
-          case "trending": return [desc(schema.skills.lastQueriedAt), desc(schema.skills.usageCount)];
-          case "recent": return [desc(schema.skills.updatedAt)];
+          case "popular":
+            return [desc(schema.skills.installCount), desc(schema.skills.usageCount)];
+          case "trending":
+            return [desc(schema.skills.lastQueriedAt), desc(schema.skills.usageCount)];
+          case "recent":
+            return [desc(schema.skills.updatedAt)];
         }
       };
 
       const getStackOrder = () => {
         switch (sort) {
-          case "popular": return [desc(schema.stacks.useCount), desc(schema.stacks.forkCount)];
-          case "trending": return [desc(schema.stacks.useCount), desc(schema.stacks.updatedAt)];
-          case "recent": return [desc(schema.stacks.updatedAt)];
+          case "popular":
+            return [desc(schema.stacks.useCount), desc(schema.stacks.forkCount)];
+          case "trending":
+            return [desc(schema.stacks.useCount), desc(schema.stacks.updatedAt)];
+          case "recent":
+            return [desc(schema.stacks.updatedAt)];
         }
       };
 
@@ -216,13 +236,10 @@ const getHomePageData = createServerFn({ method: "GET" })
       const libraryConditions = [eq(schema.libraries.indexStatus, "indexed")];
       if (q) {
         libraryConditions.push(
-          or(
-            like(schema.libraries.name, `%${q}%`),
-            like(schema.libraries.description, `%${q}%`)
-          )!
+          or(like(schema.libraries.name, `%${q}%`), like(schema.libraries.description, `%${q}%`))!
         );
       }
-      
+
       const libraryResults = await db
         .select({
           id: schema.libraries.id,
@@ -265,7 +282,7 @@ const getHomePageData = createServerFn({ method: "GET" })
           sql`(${schema.mcpServers.name} LIKE ${"%" + q + "%"} OR ${schema.mcpServers.displayName} LIKE ${"%" + q + "%"} OR ${schema.mcpServers.description} LIKE ${"%" + q + "%"})`
         );
       }
-      
+
       const serverResults = await db
         .select({
           id: schema.mcpServers.id,
@@ -310,7 +327,7 @@ const getHomePageData = createServerFn({ method: "GET" })
           sql`(${schema.skills.name} LIKE ${"%" + q + "%"} OR ${schema.skills.description} LIKE ${"%" + q + "%"})`
         );
       }
-      
+
       const skillResults = await db
         .select({
           id: schema.skills.id,
@@ -396,7 +413,7 @@ const getHomePageData = createServerFn({ method: "GET" })
 
       // Sort combined results by normalized score
       const sortedItems = normalizeAndSort(items, sort);
-      
+
       // Calculate total
       const total = stats.libraries + stats.servers + stats.skills + stats.stacks;
 
@@ -416,14 +433,14 @@ function normalizeAndSort(items: ContentItem[], sort: SortMode): ContentItem[] {
   const servers = items.filter((i): i is ServerItem => i.type === "server");
   const skills = items.filter((i): i is SkillItem => i.type === "skill");
   const stacks = items.filter((i): i is StackItem => i.type === "stack");
-  
-  const maxDocScore = Math.max(...docs.map(d => getDocScore(d, sort)), 1);
-  const maxServerScore = Math.max(...servers.map(s => getServerScore(s, sort)), 1);
-  const maxSkillScore = Math.max(...skills.map(s => getSkillScore(s, sort)), 1);
-  const maxStackScore = Math.max(...stacks.map(s => getStackScore(s, sort)), 1);
-  
+
+  const maxDocScore = Math.max(...docs.map((d) => getDocScore(d, sort)), 1);
+  const maxServerScore = Math.max(...servers.map((s) => getServerScore(s, sort)), 1);
+  const maxSkillScore = Math.max(...skills.map((s) => getSkillScore(s, sort)), 1);
+  const maxStackScore = Math.max(...stacks.map((s) => getStackScore(s, sort)), 1);
+
   // Assign normalized scores
-  const scored = items.map(item => {
+  const scored = items.map((item) => {
     let normalizedScore = 0;
     if (item.type === "doc") {
       normalizedScore = getDocScore(item, sort) / maxDocScore;
@@ -436,34 +453,43 @@ function normalizeAndSort(items: ContentItem[], sort: SortMode): ContentItem[] {
     }
     return { item, score: normalizedScore };
   });
-  
+
   // Sort by normalized score
   scored.sort((a, b) => b.score - a.score);
-  
-  return scored.map(s => s.item);
+
+  return scored.map((s) => s.item);
 }
 
 function getDocScore(doc: LibraryItem, sort: SortMode): number {
   switch (sort) {
-    case "popular": return doc.totalChunks;
-    case "trending": return doc.totalQueries + (doc.lastQueriedAt ? 1000 : 0);
-    case "recent": return doc.lastIndexedAt ? new Date(doc.lastIndexedAt).getTime() : 0;
+    case "popular":
+      return doc.totalChunks;
+    case "trending":
+      return doc.totalQueries + (doc.lastQueriedAt ? 1000 : 0);
+    case "recent":
+      return doc.lastIndexedAt ? new Date(doc.lastIndexedAt).getTime() : 0;
   }
 }
 
 function getServerScore(server: ServerItem, sort: SortMode): number {
   switch (sort) {
-    case "popular": return server.weeklyDownloads + server.githubStars;
-    case "trending": return server.totalDiscoveries + (server.lastDiscoveredAt ? 1000 : 0);
-    case "recent": return new Date(server.updatedAt).getTime();
+    case "popular":
+      return server.weeklyDownloads + server.githubStars;
+    case "trending":
+      return server.totalDiscoveries + (server.lastDiscoveredAt ? 1000 : 0);
+    case "recent":
+      return new Date(server.updatedAt).getTime();
   }
 }
 
 function getSkillScore(skill: SkillItem, sort: SortMode): number {
   switch (sort) {
-    case "popular": return skill.installCount + skill.usageCount;
-    case "trending": return skill.usageCount + (skill.lastQueriedAt ? 1000 : 0);
-    case "recent": return new Date(skill.updatedAt).getTime();
+    case "popular":
+      return skill.installCount + skill.usageCount;
+    case "trending":
+      return skill.usageCount + (skill.lastQueriedAt ? 1000 : 0);
+    case "recent":
+      return new Date(skill.updatedAt).getTime();
   }
 }
 
@@ -471,13 +497,13 @@ function getStackScore(stack: StackItem, sort: SortMode): number {
   // Boost starter/featured stacks so they appear in mixed results
   const starterBoost = stack.isStarter ? 10000 : 0;
   const featuredBoost = stack.isFeatured ? 5000 : 0;
-  
+
   switch (sort) {
-    case "popular": 
+    case "popular":
       return stack.useCount + stack.forkCount + starterBoost + featuredBoost;
-    case "trending": 
+    case "trending":
       return stack.useCount + starterBoost + featuredBoost;
-    case "recent": 
+    case "recent":
       return new Date(stack.updatedAt).getTime();
   }
 }
@@ -555,13 +581,13 @@ function HomePage() {
     const trimmed = debouncedInputValue.trim();
     const currentUrlQuery = searchQuery || "";
     const currentInputTrimmed = inputValue.trim();
-    
+
     // Only update URL if:
     // 1. Debounced value differs from URL
     // 2. Debounced value matches current input (no pending changes)
     // 3. Not both empty (no-op)
     if (
-      trimmed !== currentUrlQuery && 
+      trimmed !== currentUrlQuery &&
       trimmed === currentInputTrimmed &&
       !(trimmed === "" && currentUrlQuery === "")
     ) {
@@ -584,7 +610,7 @@ function HomePage() {
   // Client-side sort and filter
   const sortedItems = useMemo(() => {
     let filtered = items;
-    
+
     // Apply content type filter
     if (activeFilter !== "all") {
       const typeMap: Record<ContentFilter, string> = {
@@ -594,9 +620,9 @@ function HomePage() {
         skills: "skill",
         stacks: "stack",
       };
-      filtered = items.filter(item => item.type === typeMap[activeFilter]);
+      filtered = items.filter((item) => item.type === typeMap[activeFilter]);
     }
-    
+
     if (isSearching) return filtered; // Search results come pre-sorted
     return normalizeAndSort([...filtered], activeSort);
   }, [items, activeSort, activeFilter, isSearching]);
@@ -663,24 +689,34 @@ function HomePage() {
   };
 
   // Tabs configuration - content type filters with icons
-  const tabs: { id: ContentFilter; label: string; icon: "docs" | "servers" | "skills" | "stacks" | "flows" | null; href?: string }[] = [
+  const tabs: {
+    id: ContentFilter;
+    label: string;
+    icon: "docs" | "servers" | "skills" | "stacks" | "prompts" | null;
+    href?: string;
+  }[] = [
     { id: "all", label: "ALL", icon: null },
     { id: "docs", label: "DOCS", icon: "docs" },
     { id: "servers", label: "SERVERS", icon: "servers" },
     { id: "skills", label: "SKILLS", icon: "skills" },
     { id: "stacks", label: "STACKS", icon: "stacks" },
-    { id: "all", label: "FLOWS", icon: "flows", href: "/dashboard/flows" },
+    { id: "all", label: "PROMPTS", icon: "prompts", href: "/dashboard/prompts" },
   ];
-  
-  const getTabIcon = (iconType: "docs" | "servers" | "skills" | "stacks" | "flows" | null) => {
+
+  const getTabIcon = (iconType: "docs" | "servers" | "skills" | "stacks" | "prompts" | null) => {
     if (!iconType) return null;
     const iconClass = "h-3 w-3 sm:h-3.5 sm:w-3.5";
     switch (iconType) {
-      case "docs": return <BookOpen className={iconClass} />;
-      case "servers": return <Server className={iconClass} />;
-      case "skills": return <Zap className={iconClass} />;
-      case "stacks": return <Layers className={iconClass} />;
-      case "flows": return <Zap className={iconClass} />;
+      case "docs":
+        return <BookOpen className={iconClass} />;
+      case "servers":
+        return <Server className={iconClass} />;
+      case "skills":
+        return <Zap className={iconClass} />;
+      case "stacks":
+        return <Layers className={iconClass} />;
+      case "prompts":
+        return <Zap className={iconClass} />;
     }
   };
 
@@ -693,19 +729,18 @@ function HomePage() {
           <h1 className="font-mono text-4xl font-black uppercase tracking-tight text-accent sm:text-5xl lg:text-6xl">
             Ship.
           </h1>
-          
+
           {/* Line 2 - Medium length, core value */}
           <p className="mt-3 font-mono text-xl font-bold uppercase tracking-tight text-foreground sm:text-2xl lg:text-3xl md:mt-4">
             Docs compressed. Stacks ready.
           </p>
-          
+
           {/* Line 3 - Longer, feature list */}
           <p className="mt-2 font-mono text-base uppercase tracking-wide text-foreground/80 sm:text-lg lg:text-xl md:mt-3">
-            MCP servers, starter stacks, persistent{" "}
-            <span className="text-accent">memory</span>
-            {" "}— pre-indexed.
+            MCP servers, starter stacks, persistent <span className="text-accent">memory</span> —
+            pre-indexed.
           </p>
-          
+
           {/* Line 4 - Longest, stats + PRO integrated */}
           <p className="mt-5 font-mono text-sm text-muted-foreground sm:text-sm md:mt-6">
             <span className="font-bold text-foreground">~5K tokens</span>
@@ -760,56 +795,56 @@ function HomePage() {
 
           {/* Tabs */}
           <div className="mt-8 mb-5 flex items-center gap-0 border-b border-border md:mt-8 md:mb-6 overflow-x-auto">
-          {tabs.map((t, idx) => {
-            const isActive = !isSearching && activeFilter === t.id && !t.href;
-            
-            // External link tab (e.g., Flows links to dashboard)
-            if (t.href) {
+            {tabs.map((t, idx) => {
+              const isActive = !isSearching && activeFilter === t.id && !t.href;
+
+              // External link tab (e.g., Flows links to dashboard)
+              if (t.href) {
+                return (
+                  <Link
+                    key={`${t.id}-${idx}`}
+                    to={t.href as "/dashboard/prompts"}
+                    className="flex items-center gap-1.5 border-b border-transparent px-3 py-2.5 font-mono text-xs font-bold tracking-wide text-muted-foreground hover:text-foreground transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-3"
+                  >
+                    {getTabIcon(t.icon)}
+                    <span>{t.label}</span>
+                  </Link>
+                );
+              }
+
               return (
                 <Link
-                  key={`${t.id}-${idx}`}
-                  to={t.href as "/dashboard/flows"}
-                  className="flex items-center gap-1.5 border-b border-transparent px-3 py-2.5 font-mono text-xs font-bold tracking-wide text-muted-foreground hover:text-foreground transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-3"
+                  key={t.id}
+                  to="."
+                  search={{ filter: t.id === "all" ? undefined : t.id }}
+                  resetScroll={false}
+                  onClick={() => {
+                    setSearchFocused(false);
+                    setInputValue("");
+                    inputRef.current?.blur();
+                  }}
+                  className={`flex items-center gap-1.5 border-b px-3 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-3 ${
+                    isActive
+                      ? "border-accent text-accent"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   {getTabIcon(t.icon)}
                   <span>{t.label}</span>
                 </Link>
               );
-            }
-            
-            return (
-              <Link
-                key={t.id}
-                to="."
-                search={{ filter: t.id === "all" ? undefined : t.id }}
-                resetScroll={false}
-                onClick={() => {
-                  setSearchFocused(false);
-                  setInputValue("");
-                  inputRef.current?.blur();
-                }}
-                className={`flex items-center gap-1.5 border-b px-3 py-2.5 font-mono text-xs font-bold tracking-wide transition-colors -mb-px sm:gap-1.5 sm:px-4 md:py-3 ${
-                  isActive
-                    ? "border-accent text-accent"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
+            })}
+            {/* Search tab - only visible when searching */}
+            {isSearching && (
+              <button
+                onClick={handleSearchTabClick}
+                className="flex items-center gap-1.5 border-b border-accent px-3 py-2.5 font-mono text-xs font-bold tracking-wide text-accent -mb-px sm:gap-1.5 sm:px-4 md:py-3"
               >
-                {getTabIcon(t.icon)}
-                <span>{t.label}</span>
-              </Link>
-            );
-          })}
-          {/* Search tab - only visible when searching */}
-          {isSearching && (
-            <button
-              onClick={handleSearchTabClick}
-              className="flex items-center gap-1.5 border-b border-accent px-3 py-2.5 font-mono text-xs font-bold tracking-wide text-accent -mb-px sm:gap-1.5 sm:px-4 md:py-3"
-            >
-              <Search className="h-3 w-3" />
-              <span>SEARCH</span>
-            </button>
-          )}
-        </div>
+                <Search className="h-3 w-3" />
+                <span>SEARCH</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Results */}
@@ -824,7 +859,11 @@ function HomePage() {
           {/* Content List */}
           <div>
             {sortedItems.map((item, idx) => (
-              <ContentRow key={`${item.type}-${item.id}`} item={item} isLast={idx === sortedItems.length - 1} />
+              <ContentRow
+                key={`${item.type}-${item.id}`}
+                item={item}
+                isLast={idx === sortedItems.length - 1}
+              />
             ))}
           </div>
 
@@ -882,7 +921,10 @@ function HomePage() {
                 <ArrowUpRight className="h-3 w-3" />
               </a>
               <span className="text-border">|</span>
-              <Link to="/submit" className="text-muted-foreground transition-colors hover:text-accent">
+              <Link
+                to="/submit"
+                className="text-muted-foreground transition-colors hover:text-accent"
+              >
                 Add Library
               </Link>
               <span className="text-border">|</span>
@@ -909,9 +951,9 @@ function HomePage() {
 
           <div className="mt-4 font-mono text-xs text-muted-foreground md:mt-6">
             <p>
-              Pre-indexed docs with vector embeddings <span className="text-border">|</span> ~5K tokens instead of
-              ~500K <span className="text-border">|</span> Free tier: 2,000 calls/month{" "}
-              <span className="text-border">|</span>{" "}
+              Pre-indexed docs with vector embeddings <span className="text-border">|</span> ~5K
+              tokens instead of ~500K <span className="text-border">|</span> Free tier: 2,000
+              calls/month <span className="text-border">|</span>{" "}
               <Link to="/dashboard/billing" className="font-bold text-accent hover:underline">
                 PRO FROM $5/MO
               </Link>
@@ -955,22 +997,38 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
         const color = item.color || undefined;
         const style = color ? { color } : undefined;
         switch (item.icon) {
-          case "cloud": return <Cloud className={iconClass} style={style} />;
-          case "triangle": return <Triangle className={iconClass} style={style} />;
-          case "database": return <Database className={iconClass} style={style} />;
-          case "flame": return <Flame className={iconClass} style={style} />;
-          case "zap": return <Zap className={iconClass} style={style} />;
-          case "cog": return <Cog className={iconClass} style={style} />;
-          case "layers": return <Layers className={iconClass} style={style} />;
-          case "box": return <Box className={iconClass} style={style} />;
-          case "gem": return <Gem className={iconClass} style={style} />;
-          case "bird": return <Bird className={iconClass} style={style} />;
-          case "monitor": return <Monitor className={iconClass} style={style} />;
-          case "palette": return <Palette className={iconClass} style={style} />;
-          case "component": return <Component className={iconClass} style={style} />;
-          case "terminal": return <Terminal className={iconClass} style={style} />;
-          case "test-tube": return <TestTube className={iconClass} style={style} />;
-          default: return <Layers className={iconClass} style={style} />;
+          case "cloud":
+            return <Cloud className={iconClass} style={style} />;
+          case "triangle":
+            return <Triangle className={iconClass} style={style} />;
+          case "database":
+            return <Database className={iconClass} style={style} />;
+          case "flame":
+            return <Flame className={iconClass} style={style} />;
+          case "zap":
+            return <Zap className={iconClass} style={style} />;
+          case "cog":
+            return <Cog className={iconClass} style={style} />;
+          case "layers":
+            return <Layers className={iconClass} style={style} />;
+          case "box":
+            return <Box className={iconClass} style={style} />;
+          case "gem":
+            return <Gem className={iconClass} style={style} />;
+          case "bird":
+            return <Bird className={iconClass} style={style} />;
+          case "monitor":
+            return <Monitor className={iconClass} style={style} />;
+          case "palette":
+            return <Palette className={iconClass} style={style} />;
+          case "component":
+            return <Component className={iconClass} style={style} />;
+          case "terminal":
+            return <Terminal className={iconClass} style={style} />;
+          case "test-tube":
+            return <TestTube className={iconClass} style={style} />;
+          default:
+            return <Layers className={iconClass} style={style} />;
         }
       }
     }
@@ -1042,7 +1100,9 @@ function ContentRow({ item, isLast }: { item: ContentItem; isLast: boolean }) {
         {stats.map((stat, idx) => (
           <span key={idx} className="tabular-nums">
             <span className="text-foreground/70">{stat.value}</span>
-            <span className="ml-1 text-[10px] text-muted-foreground/60 md:text-xs">{stat.label}</span>
+            <span className="ml-1 text-[10px] text-muted-foreground/60 md:text-xs">
+              {stat.label}
+            </span>
           </span>
         ))}
       </div>

@@ -184,24 +184,24 @@ npx @nexus/sdk tunnel --api-key=YOUR_KEY --server=http://localhost:4096
 
 Create a new Nexus client.
 
-| Option    | Type   | Default                        | Description          |
-| --------- | ------ | ------------------------------ | -------------------- |
-| `apiKey`  | string | required                       | Your Nexus API key   |
-| `baseUrl` | string | `https://api.nexus.yogan.dev`  | API base URL         |
-| `timeout` | number | `30000`                        | Request timeout (ms) |
+| Option    | Type   | Default                       | Description          |
+| --------- | ------ | ----------------------------- | -------------------- |
+| `apiKey`  | string | required                      | Your Nexus API key   |
+| `baseUrl` | string | `https://api.nexus.yogan.dev` | API base URL         |
+| `timeout` | number | `30000`                       | Request timeout (ms) |
 
 ### `new NexusTunnel(config)`
 
 Create a new tunnel client.
 
-| Option           | Type    | Default                          | Description              |
-| ---------------- | ------- | -------------------------------- | ------------------------ |
-| `apiKey`         | string  | required                         | Your Nexus API key       |
-| `serverUrl`      | string  | `http://localhost:4096`          | Local OpenCode server    |
-| `tunnelUrl`      | string  | `wss://tunnel.nexus.yogan.dev`   | Nexus tunnel service     |
-| `autoReconnect`  | boolean | `true`                           | Auto-reconnect on drop   |
-| `reconnectDelay` | number  | `3000`                           | Reconnect delay (ms)     |
-| `sessionName`    | string  | hostname                         | Session identifier       |
+| Option           | Type    | Default                        | Description            |
+| ---------------- | ------- | ------------------------------ | ---------------------- |
+| `apiKey`         | string  | required                       | Your Nexus API key     |
+| `serverUrl`      | string  | `http://localhost:4096`        | Local OpenCode server  |
+| `tunnelUrl`      | string  | `wss://tunnel.nexus.yogan.dev` | Nexus tunnel service   |
+| `autoReconnect`  | boolean | `true`                         | Auto-reconnect on drop |
+| `reconnectDelay` | number  | `3000`                         | Reconnect delay (ms)   |
+| `sessionName`    | string  | hostname                       | Session identifier     |
 
 ## Error Handling
 

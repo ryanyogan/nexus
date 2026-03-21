@@ -1,15 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Key,
-  Zap,
-  CreditCard,
-  ArrowRight,
-  Copy,
-  Check,
-  ArrowUpRight,
-  Layers,
-} from "lucide-react";
+import { Key, Zap, CreditCard, ArrowRight, Copy, Check, ArrowUpRight, Layers } from "lucide-react";
 import { authFetch } from "../../../lib/api";
 
 export const Route = createFileRoute("/_authed/dashboard/")({
@@ -18,7 +9,7 @@ export const Route = createFileRoute("/_authed/dashboard/")({
 
 interface DashboardStats {
   plan: "free" | "pro" | "team";
-  apiCalls: {
+  mcpQueries: {
     used: number;
     limit: number | null;
     percentUsed: number;
@@ -46,7 +37,7 @@ interface DashboardStats {
       color: string | null;
     }>;
   };
-  flows: {
+  prompts: {
     count: number;
     recent: Array<{
       id: string;
@@ -72,25 +63,27 @@ function DashboardPage() {
   async function fetchStats() {
     setLoading(true);
     try {
-      // Fetch user stats, tokens, stacks, and flows in parallel
-      const [statsRes, tokensRes, stacksRes, flowsRes] = await Promise.all([
+      // Fetch user stats, tokens, stacks, and prompts in parallel
+      const [statsRes, tokensRes, stacksRes, promptsRes] = await Promise.all([
         authFetch("/api/user/stats"),
         authFetch("/api/user/tokens"),
         authFetch("/api/stacks?filter=my&limit=3"),
-        authFetch("/api/flows?filter=my&limit=3"),
+        authFetch("/api/prompts?filter=my&limit=3"),
       ]);
 
-      const statsData = statsRes.ok ? await statsRes.json() : {};
-      const tokensData = tokensRes.ok ? await tokensRes.json() : { tokens: [] };
-      const stacksData = stacksRes.ok ? await stacksRes.json() : { stacks: [], total: 0 };
-      const flowsData = flowsRes.ok ? await flowsRes.json() : { flows: [], total: 0 };
+      const statsData = (statsRes.ok ? await statsRes.json() : {}) as any;
+      const tokensData = (tokensRes.ok ? await tokensRes.json() : { tokens: [] }) as any;
+      const stacksData = (stacksRes.ok ? await stacksRes.json() : { stacks: [], total: 0 }) as any;
+      const promptsData = (
+        promptsRes.ok ? await promptsRes.json() : { prompts: [], total: 0 }
+      ) as any;
 
       setStats({
         plan: statsData.plan || "free",
-        apiCalls: {
-          used: statsData.apiCalls?.used || 0,
-          limit: statsData.apiCalls?.limit || 2000,
-          percentUsed: statsData.apiCalls?.percentUsed || 0,
+        mcpQueries: {
+          used: statsData.mcpQueries?.used || 0,
+          limit: statsData.mcpQueries?.limit || 2000,
+          percentUsed: statsData.mcpQueries?.percentUsed || 0,
         },
         apiKeys: {
           count: statsData.apiKeys?.count || 0,
@@ -115,12 +108,12 @@ function DashboardPage() {
             color: s.color,
           })),
         },
-        flows: {
-          count: flowsData.total || flowsData.flows?.length || 0,
-          recent: (flowsData.flows || []).slice(0, 3).map((f: any) => ({
-            id: f.id,
-            name: f.name,
-            isActive: f.isActive,
+        prompts: {
+          count: promptsData.total || promptsData.prompts?.length || 0,
+          recent: (promptsData.prompts || []).slice(0, 3).map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            isActive: p.isActive,
           })),
         },
       });
@@ -129,11 +122,11 @@ function DashboardPage() {
       // Fallback to defaults on error
       setStats({
         plan: "free",
-        apiCalls: { used: 0, limit: 2000, percentUsed: 0 },
+        mcpQueries: { used: 0, limit: 2000, percentUsed: 0 },
         apiKeys: { count: 0, limit: 1, keys: [] },
         skills: { installed: 0 },
         stacks: { count: 0, recent: [] },
-        flows: { count: 0, recent: [] },
+        prompts: { count: 0, recent: [] },
       });
     } finally {
       setLoading(false);
@@ -188,32 +181,31 @@ function DashboardPage() {
               )}
             </div>
             <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {stats?.plan === "free"
-                ? "2,000 API calls/month"
-                : "Unlimited API calls"}
+              {stats?.plan === "free" ? "2,000 API calls/month" : "Unlimited API calls"}
             </p>
           </div>
 
           {/* API Calls */}
           <div className="bg-background p-4 sm:p-6">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              API Calls
+              MCP Queries
             </span>
             <div className="mt-2">
               <span className="font-mono text-2xl font-bold text-foreground sm:text-3xl">
-                {stats?.apiCalls.used.toLocaleString()}
+                {stats?.mcpQueries.used.toLocaleString()}
               </span>
-              {stats?.apiCalls.limit && (
+              {stats?.mcpQueries.limit && (
                 <span className="font-mono text-sm text-muted-foreground">
-                  {" "}/ {stats.apiCalls.limit.toLocaleString()}
+                  {" "}
+                  / {stats.mcpQueries.limit.toLocaleString()}
                 </span>
               )}
             </div>
-            {stats?.apiCalls.limit && (
+            {stats?.mcpQueries.limit && (
               <div className="mt-2 h-1 w-full bg-border">
                 <div
                   className="h-1 bg-accent transition-all"
-                  style={{ width: `${Math.min(stats.apiCalls.percentUsed, 100)}%` }}
+                  style={{ width: `${Math.min(stats.mcpQueries.percentUsed, 100)}%` }}
                 />
               </div>
             )}
@@ -229,7 +221,8 @@ function DashboardPage() {
                 {stats?.apiKeys.count}
               </span>
               <span className="font-mono text-sm text-muted-foreground">
-                {" "}/ {stats?.apiKeys.limit}
+                {" "}
+                / {stats?.apiKeys.limit}
               </span>
             </div>
             <p className="mt-1 font-mono text-xs text-muted-foreground">
@@ -265,9 +258,7 @@ function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <Key className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="font-mono text-sm font-bold text-foreground">
-                        {key.name}
-                      </p>
+                      <p className="font-mono text-sm font-bold text-foreground">{key.name}</p>
                       <p className="font-mono text-xs text-muted-foreground">
                         {key.prefix}••••••••
                       </p>
@@ -289,9 +280,7 @@ function DashboardPage() {
           ) : (
             <div className="border border-dashed border-border p-8 text-center">
               <Key className="mx-auto h-8 w-8 text-muted-foreground" />
-              <p className="mt-3 font-mono text-sm text-muted-foreground">
-                No API keys yet
-              </p>
+              <p className="mt-3 font-mono text-sm text-muted-foreground">No API keys yet</p>
               <Link
                 to="/dashboard/keys"
                 className="mt-4 inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90"
@@ -331,20 +320,23 @@ function DashboardPage() {
                 >
                   <div
                     className="flex h-8 w-8 shrink-0 items-center justify-center"
-                    style={{ backgroundColor: stack.color || "var(--color-accent)", color: "white" }}
+                    style={{
+                      backgroundColor: stack.color || "var(--color-accent)",
+                      color: "white",
+                    }}
                   >
                     <Layers className="h-4 w-4" />
                   </div>
-                  <span className="font-mono text-sm font-bold uppercase truncate">{stack.name}</span>
+                  <span className="font-mono text-sm font-bold uppercase truncate">
+                    {stack.name}
+                  </span>
                 </Link>
               ))}
             </div>
           ) : (
             <div className="border border-dashed border-border p-8 text-center">
               <Layers className="mx-auto h-8 w-8 text-muted-foreground" />
-              <p className="mt-3 font-mono text-sm text-muted-foreground">
-                No stacks yet
-              </p>
+              <p className="mt-3 font-mono text-sm text-muted-foreground">No stacks yet</p>
               <Link
                 to="/dashboard/stacks/new"
                 className="mt-4 inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90"
@@ -360,10 +352,10 @@ function DashboardPage() {
         <div className="mt-8 md:mt-12">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
-              My Flows
+              My Prompts
             </h2>
             <Link
-              to="/dashboard/flows"
+              to="/dashboard/prompts"
               className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-accent hover:underline"
             >
               View All
@@ -371,34 +363,36 @@ function DashboardPage() {
             </Link>
           </div>
 
-          {stats?.flows.recent && stats.flows.recent.length > 0 ? (
+          {stats?.prompts.recent && stats.prompts.recent.length > 0 ? (
             <div className="border border-border">
-              {stats.flows.recent.map((flow, idx) => (
+              {stats.prompts.recent.map((prompt, idx) => (
                 <Link
-                  key={flow.id}
-                  to="/dashboard/flows/$flowId"
-                  params={{ flowId: flow.id }}
+                  key={prompt.id}
+                  to="/dashboard/prompts/$promptId"
+                  params={{ promptId: prompt.id }}
                   className={`flex items-center gap-3 p-4 transition-colors hover:bg-muted/30 ${
-                    idx !== stats.flows.recent.length - 1 ? "border-b border-border" : ""
+                    idx !== stats.prompts.recent.length - 1 ? "border-b border-border" : ""
                   }`}
                 >
-                  {flow.isActive && <span className="h-2 w-2 shrink-0 rounded-full bg-accent animate-pulse" />}
+                  {prompt.isActive && (
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-accent animate-pulse" />
+                  )}
                   <Zap className="h-4 w-4 shrink-0 text-accent" />
-                  <span className="font-mono text-sm font-bold uppercase truncate">{flow.name}</span>
+                  <span className="font-mono text-sm font-bold uppercase truncate">
+                    {prompt.name}
+                  </span>
                 </Link>
               ))}
             </div>
           ) : (
             <div className="border border-dashed border-border p-8 text-center">
               <Zap className="mx-auto h-8 w-8 text-muted-foreground" />
-              <p className="mt-3 font-mono text-sm text-muted-foreground">
-                No flows yet
-              </p>
+              <p className="mt-3 font-mono text-sm text-muted-foreground">No prompts yet</p>
               <Link
-                to="/dashboard/flows/new"
+                to="/dashboard/prompts/new"
                 className="mt-4 inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-background transition-colors hover:bg-foreground/90"
               >
-                Create Your First Flow
+                Create Your First Prompt
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -438,13 +432,13 @@ function DashboardPage() {
           </Link>
 
           <Link
-            to="/dashboard/flows"
+            to="/dashboard/prompts"
             className="group bg-background p-4 sm:p-6 transition-colors hover:bg-muted/30"
           >
             <div className="flex items-center gap-3">
               <Zap className="h-4 w-4 text-accent" />
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-foreground">
-                Flows
+                Prompts
               </span>
             </div>
             <p className="mt-2 font-mono text-xs text-muted-foreground">

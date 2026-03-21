@@ -144,7 +144,7 @@ serversRouter.get("/categories", async (c) => {
   const categories = Array.from(categoryCounts.entries())
     .map(([id, count]) => ({
       id,
-      label: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+      label: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, " "),
       count,
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
@@ -160,11 +160,7 @@ serversRouter.get("/:id", async (c) => {
   const db = c.get("db");
   const serverId = c.req.param("id");
 
-  const [server] = await db
-    .select()
-    .from(mcpServers)
-    .where(eq(mcpServers.id, serverId))
-    .limit(1);
+  const [server] = await db.select().from(mcpServers).where(eq(mcpServers.id, serverId)).limit(1);
 
   if (!server) {
     return c.json({ error: "Server not found" }, 404);
@@ -199,11 +195,7 @@ serversRouter.get("/:id/config", async (c) => {
   const serverId = c.req.param("id");
   const format = c.req.query("format") || "claude-desktop";
 
-  const [server] = await db
-    .select()
-    .from(mcpServers)
-    .where(eq(mcpServers.id, serverId))
-    .limit(1);
+  const [server] = await db.select().from(mcpServers).where(eq(mcpServers.id, serverId)).limit(1);
 
   if (!server) {
     return c.json({ error: "Server not found" }, 404);

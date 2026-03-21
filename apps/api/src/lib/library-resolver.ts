@@ -161,14 +161,13 @@ export async function resolveAndQueueLibrary(
     return {
       found: false,
       status: "rejected",
-      reason: "Could not fetch repository information from GitHub. It may be private or rate limited.",
+      reason:
+        "Could not fetch repository information from GitHub. It may be private or rate limited.",
     };
   }
 
   // 6. Check minimum stars
-  const minStars = env.MIN_GITHUB_STARS
-    ? parseInt(env.MIN_GITHUB_STARS, 10)
-    : DEFAULT_MIN_STARS;
+  const minStars = env.MIN_GITHUB_STARS ? parseInt(env.MIN_GITHUB_STARS, 10) : DEFAULT_MIN_STARS;
 
   if (repoInfo.stars < minStars) {
     return {
@@ -274,10 +273,7 @@ async function findLibraryByRepoUrl(
  * Search GitHub for a repository by name.
  * Returns the URL of the top result by stars.
  */
-async function searchGitHubForRepo(
-  query: string,
-  env: Env
-): Promise<string | null> {
+async function searchGitHubForRepo(query: string, env: Env): Promise<string | null> {
   const searchUrl = `${GITHUB_API}/search/repositories?q=${encodeURIComponent(query)}&sort=stars&per_page=1`;
 
   const controller = new AbortController();
@@ -316,10 +312,7 @@ async function searchGitHubForRepo(
 /**
  * Fetch repository info from GitHub API.
  */
-async function getGitHubRepoInfo(
-  url: string,
-  env: Env
-): Promise<GitHubRepoInfo | null> {
+async function getGitHubRepoInfo(url: string, env: Env): Promise<GitHubRepoInfo | null> {
   // Extract owner/repo from URL
   const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
   if (!match) return null;
@@ -423,11 +416,7 @@ async function createLibraryRecord(
 /**
  * Queue an ingestion job for the library.
  */
-async function queueIngestionJob(
-  libraryId: string,
-  sourceUrl: string,
-  env: Env
-): Promise<void> {
+async function queueIngestionJob(libraryId: string, sourceUrl: string, env: Env): Promise<void> {
   const job: IngestionJob = {
     libraryId,
     sourceUrl,

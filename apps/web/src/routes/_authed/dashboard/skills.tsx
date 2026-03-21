@@ -1,14 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Zap,
-  ArrowLeft,
-  Search,
-  ExternalLink,
-  Trash2,
-  Clock,
-  Star,
-} from "lucide-react";
+import { Zap, ArrowLeft, Search, ExternalLink, Trash2, Clock, Star } from "lucide-react";
 import { authFetch } from "../../../lib/api";
 
 export const Route = createFileRoute("/_authed/dashboard/skills")({
@@ -56,7 +48,7 @@ function InstalledSkillsPage() {
     try {
       const res = await authFetch("/api/user/skills");
       if (!res.ok) throw new Error("Failed to fetch installed skills");
-      const data = await res.json() as { skills: InstalledSkill[] };
+      const data = (await res.json()) as { skills: InstalledSkill[] };
       setSkills(data.skills || []);
     } catch (err) {
       // For now, return empty - API endpoint doesn't exist yet
@@ -69,7 +61,7 @@ function InstalledSkillsPage() {
 
   async function uninstallSkill(skillId: string) {
     if (!confirm("Are you sure you want to uninstall this skill?")) return;
-    
+
     try {
       const res = await authFetch(`/api/skills/${skillId}/uninstall`, {
         method: "POST",
@@ -109,9 +101,7 @@ function InstalledSkillsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Installed Skills</h1>
-            <p className="mt-1 text-muted-foreground">
-              Manage your AI agent skills
-            </p>
+            <p className="mt-1 text-muted-foreground">Manage your AI agent skills</p>
           </div>
           <Link
             to="/"
@@ -170,10 +160,7 @@ function InstalledSkillsPage() {
       ) : (
         <div className="space-y-4">
           {filteredSkills.map((installed) => (
-            <div
-              key={installed.id}
-              className="rounded-lg border border-border bg-card p-5"
-            >
+            <div key={installed.id} className="rounded-lg border border-border bg-card p-5">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
@@ -181,9 +168,7 @@ function InstalledSkillsPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-foreground">
-                        {installed.skill.name}
-                      </h3>
+                      <h3 className="font-semibold text-foreground">{installed.skill.name}</h3>
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           typeColors[installed.skill.type] || typeColors.utility
@@ -207,9 +192,7 @@ function InstalledSkillsPage() {
                         </span>
                       )}
                       {installed.lastUsedAt && (
-                        <span>
-                          Last used {new Date(installed.lastUsedAt).toLocaleDateString()}
-                        </span>
+                        <span>Last used {new Date(installed.lastUsedAt).toLocaleDateString()}</span>
                       )}
                     </div>
                   </div>

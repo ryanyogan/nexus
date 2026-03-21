@@ -1,16 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Key,
-  Plus,
-  Trash2,
-  Copy,
-  Check,
-  Loader2,
-  AlertCircle,
-  ArrowLeft,
-  X,
-} from "lucide-react";
+import { Key, Plus, Trash2, Copy, Check, Loader2, AlertCircle, ArrowLeft, X } from "lucide-react";
 import { authFetch } from "../../../lib/api";
 
 export const Route = createFileRoute("/_authed/dashboard/keys")({
@@ -195,9 +185,7 @@ function ApiKeysPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-mono text-sm font-bold text-foreground">
-                        {key.name}
-                      </h3>
+                      <h3 className="font-mono text-sm font-bold text-foreground">{key.name}</h3>
                       {!key.isActive && (
                         <span className="border border-red-500/50 bg-red-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-red-500">
                           Inactive

@@ -32,9 +32,7 @@ export const Route = createFileRoute("/sign-in")({
     if (session?.user) {
       // Redirect to callback URL or dashboard
       const callbackURL =
-        getValidRedirectUrl(
-          (search as { redirect?: string })?.redirect
-        ) || "/dashboard";
+        getValidRedirectUrl((search as { redirect?: string })?.redirect) || "/dashboard";
       throw redirect({ to: callbackURL });
     }
   },
@@ -44,10 +42,7 @@ function SignInPage() {
   const { redirect: redirectParam } = Route.useSearch();
   const [isLoading, setIsLoading] = useState<"google" | "github" | null>(null);
 
-  const callbackURL = useMemo(
-    () => getValidRedirectUrl(redirectParam),
-    [redirectParam]
-  );
+  const callbackURL = useMemo(() => getValidRedirectUrl(redirectParam), [redirectParam]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading("google");

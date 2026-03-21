@@ -10,11 +10,11 @@ GET /libraries
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter  | Type   | Description        |
+| ---------- | ------ | ------------------ |
 | `category` | string | Filter by category |
-| `limit` | number | Max results (1-50) |
-| `offset` | number | Pagination offset |
+| `limit`    | number | Max results (1-50) |
+| `offset`   | number | Pagination offset  |
 
 ### Response
 

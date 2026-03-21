@@ -193,22 +193,38 @@ function StackNotFound() {
 
 function getStackIcon(iconName: string | null, className: string) {
   switch (iconName) {
-    case "cloud": return <Cloud className={className} />;
-    case "triangle": return <Triangle className={className} />;
-    case "database": return <Database className={className} />;
-    case "flame": return <Flame className={className} />;
-    case "zap": return <Zap className={className} />;
-    case "cog": return <Cog className={className} />;
-    case "layers": return <Layers className={className} />;
-    case "box": return <Box className={className} />;
-    case "gem": return <Gem className={className} />;
-    case "bird": return <Bird className={className} />;
-    case "monitor": return <Monitor className={className} />;
-    case "palette": return <Palette className={className} />;
-    case "component": return <Component className={className} />;
-    case "terminal": return <Terminal className={className} />;
-    case "test-tube": return <TestTube className={className} />;
-    default: return <Layers className={className} />;
+    case "cloud":
+      return <Cloud className={className} />;
+    case "triangle":
+      return <Triangle className={className} />;
+    case "database":
+      return <Database className={className} />;
+    case "flame":
+      return <Flame className={className} />;
+    case "zap":
+      return <Zap className={className} />;
+    case "cog":
+      return <Cog className={className} />;
+    case "layers":
+      return <Layers className={className} />;
+    case "box":
+      return <Box className={className} />;
+    case "gem":
+      return <Gem className={className} />;
+    case "bird":
+      return <Bird className={className} />;
+    case "monitor":
+      return <Monitor className={className} />;
+    case "palette":
+      return <Palette className={className} />;
+    case "component":
+      return <Component className={className} />;
+    case "terminal":
+      return <Terminal className={className} />;
+    case "test-tube":
+      return <TestTube className={className} />;
+    default:
+      return <Layers className={className} />;
   }
 }
 
@@ -302,9 +318,7 @@ function StackDetailPage() {
               </div>
 
               {stack.description && (
-                <p className="mt-2 font-mono text-sm text-muted-foreground">
-                  {stack.description}
-                </p>
+                <p className="mt-2 font-mono text-sm text-muted-foreground">{stack.description}</p>
               )}
 
               {/* Meta */}
@@ -384,11 +398,7 @@ function StackDetailPage() {
                 onClick={() => copyToClipboard(stack.compiledPrompt!, "prompt")}
                 className="flex items-center gap-2 border border-accent bg-accent px-3 py-2 font-mono text-xs font-bold uppercase text-accent-foreground transition-colors hover:bg-accent/90"
               >
-                {copied === "prompt" ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+                {copied === "prompt" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 Copy Prompt
               </button>
             )}
@@ -410,9 +420,7 @@ function StackDetailPage() {
             <div className="font-mono text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
               Token Budget
             </div>
-            <div className="mt-1 font-mono text-lg font-bold uppercase">
-              {stack.tokenBudget}
-            </div>
+            <div className="mt-1 font-mono text-lg font-bold uppercase">{stack.tokenBudget}</div>
             <div className="mt-1 font-mono text-xs text-muted-foreground">
               {stack.tokenCount ? `~${stack.tokenCount.toLocaleString()} tokens` : "Not compiled"}
             </div>
@@ -427,8 +435,8 @@ function StackDetailPage() {
                 stack.learningStatus === "complete"
                   ? "text-green-500"
                   : stack.learningStatus === "failed"
-                  ? "text-red-500"
-                  : "text-amber-500"
+                    ? "text-red-500"
+                    : "text-amber-500"
               }`}
             >
               {stack.learningStatus}
@@ -437,8 +445,8 @@ function StackDetailPage() {
               {stack.learningStatus === "complete"
                 ? "Ready to use"
                 : stack.learningStatus === "failed"
-                ? "Compilation failed"
-                : "Processing..."}
+                  ? "Compilation failed"
+                  : "Processing..."}
             </div>
           </div>
 
@@ -446,9 +454,7 @@ function StackDetailPage() {
             <div className="font-mono text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
               MCP Tool
             </div>
-            <div className="mt-1 font-mono text-sm font-bold">
-              get-stack
-            </div>
+            <div className="mt-1 font-mono text-sm font-bold">get-stack</div>
             <div className="mt-1 font-mono text-xs text-muted-foreground">
               Use with stackId: "{stack.slug}"
             </div>

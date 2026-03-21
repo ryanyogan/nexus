@@ -4,12 +4,12 @@ Configure Nexus behavior with environment variables.
 
 ## Available Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXUS_API_URL` | API endpoint URL | `https://api.nexus.yogan.dev` |
-| `NEXUS_AUTH_TOKEN` | Authentication token | None |
-| `NEXUS_VERBOSE` | Enable verbose logging | `false` |
-| `NEXUS_TIMEOUT` | Request timeout (ms) | `30000` |
+| Variable           | Description            | Default                       |
+| ------------------ | ---------------------- | ----------------------------- |
+| `NEXUS_API_URL`    | API endpoint URL       | `https://api.nexus.yogan.dev` |
+| `NEXUS_AUTH_TOKEN` | Authentication token   | None                          |
+| `NEXUS_VERBOSE`    | Enable verbose logging | `false`                       |
+| `NEXUS_TIMEOUT`    | Request timeout (ms)   | `30000`                       |
 
 ## Setting Environment Variables
 
@@ -32,11 +32,13 @@ Configure Nexus behavior with environment variables.
 ### System-wide
 
 **macOS/Linux:**
+
 ```bash
 export NEXUS_VERBOSE=true
 ```
 
 **Windows:**
+
 ```powershell
 $env:NEXUS_VERBOSE = "true"
 ```

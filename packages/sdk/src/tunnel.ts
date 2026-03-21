@@ -50,12 +50,7 @@ export interface TunnelStatus {
   messagesRelayed: number;
 }
 
-export type TunnelEventType =
-  | "connected"
-  | "disconnected"
-  | "error"
-  | "message"
-  | "activity";
+export type TunnelEventType = "connected" | "disconnected" | "error" | "message" | "activity";
 
 export interface TunnelEvent {
   type: TunnelEventType;
@@ -84,8 +79,7 @@ export class NexusTunnel {
   private lastActivity: Date | null = null;
   private messagesRelayed = 0;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
-  private eventHandlers: Map<TunnelEventType, Set<TunnelEventHandler>> =
-    new Map();
+  private eventHandlers: Map<TunnelEventType, Set<TunnelEventHandler>> = new Map();
 
   constructor(config: TunnelConfig) {
     this.apiKey = config.apiKey;

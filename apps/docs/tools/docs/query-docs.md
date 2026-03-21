@@ -16,6 +16,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "libraryId": "react",
@@ -25,6 +26,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "results": [
@@ -40,21 +42,21 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `libraryId` | string | Yes | Library ID from `resolve-library` |
-| `query` | string | Yes | What you're looking for |
-| `limit` | number | No | Max results 1-10, default 5 |
-| `tokens` | string | No | Response format: `full`, `compact`, `code-only`, `summary` |
+| Parameter   | Type   | Required | Description                                                |
+| ----------- | ------ | -------- | ---------------------------------------------------------- |
+| `libraryId` | string | Yes      | Library ID from `resolve-library`                          |
+| `query`     | string | Yes      | What you're looking for                                    |
+| `limit`     | number | No       | Max results 1-10, default 5                                |
+| `tokens`    | string | No       | Response format: `full`, `compact`, `code-only`, `summary` |
 
 ### Token Formats
 
-| Format | Description |
-|--------|-------------|
-| `full` | Complete response with metadata (default) |
-| `compact` | Essential data only |
-| `code-only` | Only code blocks |
-| `summary` | Brief overview |
+| Format      | Description                               |
+| ----------- | ----------------------------------------- |
+| `full`      | Complete response with metadata (default) |
+| `compact`   | Essential data only                       |
+| `code-only` | Only code blocks                          |
+| `summary`   | Brief overview                            |
 
 ## Returns
 

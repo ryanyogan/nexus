@@ -1,6 +1,6 @@
 /**
  * NPM Registry API Client
- * 
+ *
  * Resolves package names to GitHub repository URLs by querying
  * the npm registry for package metadata.
  */
@@ -42,9 +42,7 @@ export interface NpmResolveResult {
  * Resolve an npm package name to its metadata including GitHub URL.
  * Handles scoped packages like @tanstack/query.
  */
-export async function resolvePackageFromNpm(
-  packageName: string
-): Promise<NpmResolveResult | null> {
+export async function resolvePackageFromNpm(packageName: string): Promise<NpmResolveResult | null> {
   // Encode package name (handles scoped packages like @scope/name)
   const encodedName = encodeURIComponent(packageName).replace("%40", "@");
   const url = `${NPM_REGISTRY}/${encodedName}`;
@@ -91,7 +89,7 @@ export async function resolvePackageFromNpm(
 
 /**
  * Normalize various git URL formats to https://github.com/owner/repo
- * 
+ *
  * Handles:
  * - git://github.com/owner/repo.git
  * - git+https://github.com/owner/repo.git

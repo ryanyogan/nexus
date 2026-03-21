@@ -30,7 +30,7 @@ export function Select<T = string>({
     if (key.upArrow) {
       const newCursor = cursor > 0 ? cursor - 1 : items.length - 1;
       setCursor(newCursor);
-      
+
       if (newCursor < scrollOffset) {
         setScrollOffset(newCursor);
       } else if (newCursor >= scrollOffset + maxVisible) {
@@ -41,7 +41,7 @@ export function Select<T = string>({
     if (key.downArrow) {
       const newCursor = cursor < items.length - 1 ? cursor + 1 : 0;
       setCursor(newCursor);
-      
+
       if (newCursor >= scrollOffset + maxVisible) {
         setScrollOffset(newCursor - maxVisible + 1);
       } else if (newCursor < scrollOffset) {
@@ -62,13 +62,15 @@ export function Select<T = string>({
     <Box flexDirection="column">
       {title && (
         <Box marginBottom={1}>
-          <Text bold color="cyan">{title}</Text>
+          <Text bold color="cyan">
+            {title}
+          </Text>
         </Box>
       )}
 
       {showScrollUp && (
         <Box>
-          <Text color="gray">  {figures.arrowUp} more items above</Text>
+          <Text color="gray"> {figures.arrowUp} more items above</Text>
         </Box>
       )}
 
@@ -79,14 +81,14 @@ export function Select<T = string>({
         return (
           <Box key={String(item.value)} flexDirection="column">
             <Box>
-              <Text color={isCursor ? "cyan" : undefined}>
-                {isCursor ? figures.pointer : " "}{" "}
-              </Text>
+              <Text color={isCursor ? "cyan" : undefined}>{isCursor ? figures.pointer : " "} </Text>
               <Text color={isCursor ? "cyan" : undefined}>{item.label}</Text>
             </Box>
             {item.description && isCursor && (
               <Box marginLeft={4}>
-                <Text color="gray" dimColor>{item.description}</Text>
+                <Text color="gray" dimColor>
+                  {item.description}
+                </Text>
               </Box>
             )}
           </Box>
@@ -95,12 +97,14 @@ export function Select<T = string>({
 
       {showScrollDown && (
         <Box>
-          <Text color="gray">  {figures.arrowDown} more items below</Text>
+          <Text color="gray"> {figures.arrowDown} more items below</Text>
         </Box>
       )}
 
       <Box marginTop={1}>
-        <Text color="gray" dimColor>{hint}</Text>
+        <Text color="gray" dimColor>
+          {hint}
+        </Text>
       </Box>
     </Box>
   );

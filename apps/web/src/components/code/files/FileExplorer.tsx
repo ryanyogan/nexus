@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { 
-  Folder, 
-  FolderOpen, 
-  FileCode, 
-  FileJson, 
-  FileText, 
+import {
+  Folder,
+  FolderOpen,
+  FileCode,
+  FileJson,
+  FileText,
   File,
   ChevronRight,
   ChevronDown,
   Search,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { useEditorStore } from "@/stores/editor-store";
 import { Input } from "@nexus/ui/components/input";
@@ -23,15 +23,9 @@ export function FileExplorer({ onFileSelect }: FileExplorerProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<string[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  
-  const {
-    fileTree,
-    expandedFolders,
-    loadFileTree,
-    toggleFolder,
-    openFile,
-    client,
-  } = useEditorStore();
+
+  const { fileTree, expandedFolders, loadFileTree, toggleFolder, openFile, client } =
+    useEditorStore();
 
   // Load file tree on mount
   useEffect(() => {
@@ -47,7 +41,7 @@ export function FileExplorer({ onFileSelect }: FileExplorerProps) {
 
     const timer = setTimeout(async () => {
       if (!client) return;
-      
+
       setIsSearching(true);
       try {
         const results = await client.find.files(searchQuery, { limit: 20 });
@@ -92,9 +86,7 @@ export function FileExplorer({ onFileSelect }: FileExplorerProps) {
           // Search Results
           <div className="space-y-1">
             {searchResults.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No files found
-              </p>
+              <p className="text-sm text-muted-foreground text-center py-4">No files found</p>
             ) : (
               searchResults.map((path) => (
                 <button
@@ -166,7 +158,13 @@ interface FileTreeNodeProps {
   level: number;
 }
 
-function FileTreeNode({ node, expandedFolders, onToggleFolder, onFileClick, level }: FileTreeNodeProps) {
+function FileTreeNode({
+  node,
+  expandedFolders,
+  onToggleFolder,
+  onFileClick,
+  level,
+}: FileTreeNodeProps) {
   const [children, setChildren] = useState<FileNode[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isExpanded = expandedFolders.has(node.path);
@@ -178,7 +176,7 @@ function FileTreeNode({ node, expandedFolders, onToggleFolder, onFileClick, leve
 
     const loadChildren = async () => {
       if (!client) return;
-      
+
       setIsLoading(true);
       try {
         const files = await client.file.list(node.path);
@@ -215,11 +213,14 @@ function FileTreeNode({ node, expandedFolders, onToggleFolder, onFileClick, leve
           )}
           <span className="text-sm truncate">{node.name}</span>
         </button>
-        
+
         {isExpanded && (
           <div>
             {isLoading ? (
-              <div className="flex items-center gap-2 px-2 py-1.5" style={{ paddingLeft: `${level * 12 + 32}px` }}>
+              <div
+                className="flex items-center gap-2 px-2 py-1.5"
+                style={{ paddingLeft: `${level * 12 + 32}px` }}
+              >
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">Loading...</span>
               </div>
@@ -252,7 +253,7 @@ function FileTreeNode({ node, expandedFolders, onToggleFolder, onFileClick, leve
 
 function FileIcon({ path }: { path: string }) {
   const ext = path.split(".").pop()?.toLowerCase();
-  
+
   const iconMap: Record<string, typeof FileCode> = {
     ts: FileCode,
     tsx: FileCode,
@@ -262,8 +263,8 @@ function FileIcon({ path }: { path: string }) {
     md: FileText,
     txt: FileText,
   };
-  
+
   const Icon = iconMap[ext || ""] || File;
-  
+
   return <Icon className="h-4 w-4 text-muted-foreground shrink-0" />;
 }

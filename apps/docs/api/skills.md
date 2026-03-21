@@ -10,11 +10,11 @@ GET /skills
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter  | Type   | Description        |
+| ---------- | ------ | ------------------ |
 | `category` | string | Filter by category |
-| `q` | string | Search query |
-| `limit` | number | Max results |
+| `q`        | string | Search query       |
+| `limit`    | number | Max results        |
 
 ### Response
 

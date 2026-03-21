@@ -110,7 +110,7 @@ function BillingPage() {
       // });
       // const { url } = await res.json();
       // window.location.href = url;
-      
+
       // For now, show a coming soon message
       alert("Stripe integration coming soon! Pro plan will be $5/month.");
     } catch (err) {
@@ -152,9 +152,7 @@ function BillingPage() {
           Back to Dashboard
         </Link>
         <h1 className="text-2xl font-bold text-foreground">Billing</h1>
-        <p className="mt-1 text-muted-foreground">
-          Manage your subscription and billing
-        </p>
+        <p className="mt-1 text-muted-foreground">Manage your subscription and billing</p>
       </div>
 
       {/* Current Plan Status */}
@@ -170,12 +168,11 @@ function BillingPage() {
                   {subscription.plan === "pro" ? "Pro Plan" : "Team Plan"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {subscription.cancelAtPeriodEnd 
+                  {subscription.cancelAtPeriodEnd
                     ? `Cancels on ${new Date(subscription.currentPeriodEnd!).toLocaleDateString()}`
-                    : subscription.currentPeriodEnd 
+                    : subscription.currentPeriodEnd
                       ? `Renews on ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
-                      : "Active subscription"
-                  }
+                      : "Active subscription"}
                 </p>
               </div>
             </div>
@@ -187,7 +184,7 @@ function BillingPage() {
               <ExternalLink className="h-4 w-4" />
             </button>
           </div>
-          
+
           {subscription.status === "past_due" && (
             <div className="mt-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 dark:bg-red-900/20">
               <AlertCircle className="h-5 w-5 text-red-600" />
@@ -203,14 +200,12 @@ function BillingPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {plans.map((plan) => {
           const isCurrentPlan = subscription?.plan === plan.id;
-          
+
           return (
             <div
               key={plan.id}
               className={`relative rounded-lg border p-6 ${
-                plan.highlighted
-                  ? "border-primary bg-primary/5 shadow-lg"
-                  : "border-border bg-card"
+                plan.highlighted ? "border-primary bg-primary/5 shadow-lg" : "border-border bg-card"
               }`}
             >
               {plan.highlighted && (
@@ -270,25 +265,29 @@ function BillingPage() {
           <div className="rounded-lg border border-border bg-card p-4">
             <h3 className="font-medium text-foreground">What payment methods do you accept?</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              We accept all major credit cards via Stripe, including Visa, Mastercard, and American Express.
+              We accept all major credit cards via Stripe, including Visa, Mastercard, and American
+              Express.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
             <h3 className="font-medium text-foreground">Can I cancel anytime?</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Yes! You can cancel your subscription at any time. You'll retain access until the end of your billing period.
+              Yes! You can cancel your subscription at any time. You'll retain access until the end
+              of your billing period.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
             <h3 className="font-medium text-foreground">What happens if I exceed my limits?</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              On the free plan, API calls will be rate limited once you reach your monthly limit. Upgrade to Pro for unlimited usage.
+              On the free plan, API calls will be rate limited once you reach your monthly limit.
+              Upgrade to Pro for unlimited usage.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
             <h3 className="font-medium text-foreground">Is memory storage included?</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Yes! Memory storage is included in all plans. Free users get 5 memories, while Pro and Team users get unlimited memories.
+              Yes! Memory storage is included in all plans. Free users get 5 memories, while Pro and
+              Team users get unlimited memories.
             </p>
           </div>
         </div>

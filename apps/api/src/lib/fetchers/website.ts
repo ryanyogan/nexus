@@ -287,9 +287,7 @@ function parseHtml(
   let contentHtml = cleanHtml;
 
   // Look for content selector if provided, otherwise try common selectors
-  const selectors = options.contentSelector
-    ? [options.contentSelector]
-    : CONTENT_SELECTORS;
+  const selectors = options.contentSelector ? [options.contentSelector] : CONTENT_SELECTORS;
 
   for (const selector of selectors) {
     const selectorContent = extractBySelector(cleanHtml, selector);
@@ -346,10 +344,7 @@ function extractBySelector(html: string, selector: string): string | null {
   const idMatch = selector.match(/^#([a-z0-9_-]+)$/i);
   if (idMatch) {
     const id = idMatch[1];
-    const regex = new RegExp(
-      `<([a-z]+)[^>]*id="${id}"[^>]*>[\\s\\S]*?<\\/\\1>`,
-      "i"
-    );
+    const regex = new RegExp(`<([a-z]+)[^>]*id="${id}"[^>]*>[\\s\\S]*?<\\/\\1>`, "i");
     const match = html.match(regex);
     return match ? match[0] : null;
   }
@@ -358,10 +353,7 @@ function extractBySelector(html: string, selector: string): string | null {
   const roleMatch = selector.match(/^\[role=['"]([^'"]+)['"]\]$/i);
   if (roleMatch) {
     const role = roleMatch[1];
-    const regex = new RegExp(
-      `<([a-z]+)[^>]*role="${role}"[^>]*>[\\s\\S]*?<\\/\\1>`,
-      "i"
-    );
+    const regex = new RegExp(`<([a-z]+)[^>]*role="${role}"[^>]*>[\\s\\S]*?<\\/\\1>`, "i");
     const match = html.match(regex);
     return match ? match[0] : null;
   }
@@ -385,7 +377,10 @@ function removeBySelector(html: string, selector: string): string {
   if (classMatch) {
     const className = classMatch[1];
     return html.replace(
-      new RegExp(`<([a-z]+)[^>]*class="[^"]*\\b${className}\\b[^"]*"[^>]*>[\\s\\S]*?<\\/\\1>`, "gi"),
+      new RegExp(
+        `<([a-z]+)[^>]*class="[^"]*\\b${className}\\b[^"]*"[^>]*>[\\s\\S]*?<\\/\\1>`,
+        "gi"
+      ),
       ""
     );
   }
@@ -407,7 +402,10 @@ function htmlToText(html: string): string {
       .replace(/<h5[^>]*>([\s\S]*?)<\/h5>/gi, "\n##### $1\n")
       .replace(/<h6[^>]*>([\s\S]*?)<\/h6>/gi, "\n###### $1\n")
       // Convert code blocks
-      .replace(/<pre[^>]*><code[^>]*class="[^"]*language-([^"]+)[^"]*"[^>]*>([\s\S]*?)<\/code><\/pre>/gi, "\n```$1\n$2\n```\n")
+      .replace(
+        /<pre[^>]*><code[^>]*class="[^"]*language-([^"]+)[^"]*"[^>]*>([\s\S]*?)<\/code><\/pre>/gi,
+        "\n```$1\n$2\n```\n"
+      )
       .replace(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi, "\n```\n$1\n```\n")
       .replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, "\n```\n$1\n```\n")
       // Convert inline code
@@ -451,7 +449,12 @@ function extractLinks(html: string, baseUrl: string): string[] {
 
   while ((match = linkRegex.exec(html)) !== null) {
     const href = match[1];
-    if (href && !href.startsWith("#") && !href.startsWith("javascript:") && !href.startsWith("mailto:")) {
+    if (
+      href &&
+      !href.startsWith("#") &&
+      !href.startsWith("javascript:") &&
+      !href.startsWith("mailto:")
+    ) {
       const absoluteUrl = resolveUrl(baseUrl, href);
       if (absoluteUrl) {
         links.push(absoluteUrl);
@@ -491,13 +494,13 @@ function normalizeUrl(url: string): string {
     parsed.searchParams.delete("utm_medium");
     parsed.searchParams.delete("utm_campaign");
     parsed.searchParams.delete("ref");
-    
+
     let pathname = parsed.pathname;
     if (pathname.endsWith("/") && pathname !== "/") {
       pathname = pathname.slice(0, -1);
     }
     parsed.pathname = pathname;
-    
+
     return parsed.toString();
   } catch {
     return url;
@@ -575,11 +578,7 @@ function sleep(ms: number): Promise<void> {
 export async function checkWebsiteForLlmTxt(
   baseUrl: string
 ): Promise<{ hasLlmTxt: boolean; files: string[] }> {
-  const llmTxtPaths = [
-    "/llms.txt",
-    "/llms-full.txt",
-    "/.well-known/llms.txt",
-  ];
+  const llmTxtPaths = ["/llms.txt", "/llms-full.txt", "/.well-known/llms.txt"];
 
   const files: string[] = [];
 
@@ -648,10 +647,7 @@ export async function fetchWebsiteLlmTxt(
 /**
  * Fetch and parse sitemap to get documentation URLs.
  */
-export async function fetchSitemapUrls(
-  baseUrl: string,
-  filterPattern?: RegExp
-): Promise<string[]> {
+export async function fetchSitemapUrls(baseUrl: string, filterPattern?: RegExp): Promise<string[]> {
   const sitemapPaths = ["/sitemap.xml", "/sitemap_index.xml", "/docs/sitemap.xml"];
   const urls: string[] = [];
 

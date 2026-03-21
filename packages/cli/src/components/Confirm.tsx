@@ -27,10 +27,17 @@ export function Confirm({ message, onConfirm, defaultValue = false }: ConfirmPro
   return (
     <Box>
       <Text>{message} </Text>
-      <Text color={value ? "green" : "gray"} bold={value}>Yes</Text>
+      <Text color={value ? "green" : "gray"} bold={value}>
+        Yes
+      </Text>
       <Text color="gray"> / </Text>
-      <Text color={!value ? "red" : "gray"} bold={!value}>No</Text>
-      <Text color="gray" dimColor> (y/n)</Text>
+      <Text color={!value ? "red" : "gray"} bold={!value}>
+        No
+      </Text>
+      <Text color="gray" dimColor>
+        {" "}
+        (y/n)
+      </Text>
     </Box>
   );
 }

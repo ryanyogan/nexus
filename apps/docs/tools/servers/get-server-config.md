@@ -14,6 +14,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "serverId": "postgres",
@@ -22,6 +23,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "format": "claude-desktop",
@@ -42,18 +44,18 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `serverId` | string | Yes | Server ID |
-| `format` | string | No | `claude-desktop` (default), `vscode`, `generic` |
+| Parameter  | Type   | Required | Description                                     |
+| ---------- | ------ | -------- | ----------------------------------------------- |
+| `serverId` | string | Yes      | Server ID                                       |
+| `format`   | string | No       | `claude-desktop` (default), `vscode`, `generic` |
 
 ## Config Formats
 
-| Format | Description |
-|--------|-------------|
-| `claude-desktop` | Claude Desktop configuration |
-| `vscode` | VS Code / Copilot configuration |
-| `generic` | Generic MCP configuration |
+| Format           | Description                     |
+| ---------------- | ------------------------------- |
+| `claude-desktop` | Claude Desktop configuration    |
+| `vscode`         | VS Code / Copilot configuration |
+| `generic`        | Generic MCP configuration       |
 
 ## Returns
 

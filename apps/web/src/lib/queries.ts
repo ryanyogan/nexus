@@ -31,14 +31,7 @@ export const getLibraries = createServerFn({ method: "GET" })
     try {
       logger.debug(`${fnName} started`, { input: params });
 
-      const {
-        category,
-        search,
-        status,
-        featured,
-        limit = 50,
-        offset = 0,
-      } = params;
+      const { category, search, status, featured, limit = 50, offset = 0 } = params;
 
       const db = getDb();
 
@@ -124,11 +117,7 @@ export const getLibrary = createServerFn({ method: "GET" })
 
       const db = getDb();
 
-      const [library] = await db
-        .select()
-        .from(libraries)
-        .where(eq(libraries.id, id))
-        .limit(1);
+      const [library] = await db.select().from(libraries).where(eq(libraries.id, id)).limit(1);
 
       if (!library) {
         const durationMs = Date.now() - startTime;
@@ -213,7 +202,12 @@ export const getLibraryChunks = createServerFn({ method: "GET" })
       const total = countResult[0]?.count || 0;
 
       const durationMs = Date.now() - startTime;
-      logger.info(`${fnName} completed`, { durationMs, count: chunkResults.length, total, libraryId });
+      logger.info(`${fnName} completed`, {
+        durationMs,
+        count: chunkResults.length,
+        total,
+        libraryId,
+      });
 
       return {
         chunks: chunkResults,

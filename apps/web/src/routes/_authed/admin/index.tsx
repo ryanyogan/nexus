@@ -45,7 +45,7 @@ export const Route = createFileRoute("/_authed/admin/")({
 
 function AdminPage() {
   // Note: session available via Route.useRouteContext() if needed
-  
+
   // Local state
   const [seeding, setSeeding] = useState(false);
   const [indexing, setIndexing] = useState(false);
@@ -69,7 +69,7 @@ function AdminPage() {
   const [pendingSubmissions, setPendingSubmissions] = useState<Submission[]>([]);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const hasIndexingLibraries = stats?.libraries?.indexing ? stats.libraries.indexing > 0 : false;
-  
+
   // Suppress unused setters warning - these will be used when server functions are implemented
   void setStats;
   void setStatsLoading;
@@ -84,7 +84,8 @@ function AdminPage() {
     setConfirmModal({
       open: true,
       title: "Seed Libraries?",
-      description: "This will add any new libraries from the seed list that don't already exist. Existing libraries will not be affected.",
+      description:
+        "This will add any new libraries from the seed list that don't already exist. Existing libraries will not be affected.",
       confirmText: "Seed Libraries",
       action: async () => {
         setSeeding(true);
@@ -209,7 +210,11 @@ function AdminPage() {
             disabled={seeding}
             className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
           >
-            {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+            {seeding ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Database className="h-4 w-4" />
+            )}
             Seed Libraries
           </button>
           <button
@@ -217,7 +222,11 @@ function AdminPage() {
             disabled={indexing || (stats?.libraries?.pending ?? 0) === 0}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            {indexing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {indexing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
             Index All Pending
           </button>
         </div>
@@ -246,7 +255,11 @@ function AdminPage() {
             icon={<Users className="h-5 w-5" />}
             label="Pending"
             value={stats.libraries.pending ?? 0}
-            detail={(stats.libraries.indexing ?? 0) > 0 ? `${stats.libraries.indexing} indexing` : undefined}
+            detail={
+              (stats.libraries.indexing ?? 0) > 0
+                ? `${stats.libraries.indexing} indexing`
+                : undefined
+            }
           />
         </div>
       )}
@@ -259,7 +272,9 @@ function AdminPage() {
         >
           <BookOpen className="mb-3 h-6 w-6 text-primary" />
           <h3 className="mb-2 text-lg font-semibold text-foreground">Library Submissions</h3>
-          <p className="mb-4 text-sm text-muted-foreground">Review and approve pending library submissions</p>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Review and approve pending library submissions
+          </p>
           {pendingSubmissions.length > 0 && (
             <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
               {pendingSubmissions.length} pending
@@ -280,7 +295,9 @@ function AdminPage() {
         >
           <Database className="mb-3 h-6 w-6 text-primary" />
           <h3 className="mb-2 text-lg font-semibold text-foreground">Libraries</h3>
-          <p className="text-sm text-muted-foreground">Manage indexed libraries, trigger re-indexing, delete</p>
+          <p className="text-sm text-muted-foreground">
+            Manage indexed libraries, trigger re-indexing, delete
+          </p>
         </Link>
         <div className="rounded-xl border border-dashed border-border bg-card/50 p-6">
           <Settings className="mb-3 h-6 w-6 text-muted-foreground" />

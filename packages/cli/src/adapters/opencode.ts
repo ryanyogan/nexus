@@ -53,9 +53,7 @@ export class OpenCodeAdapter extends BaseAdapter {
     config.mcp = servers;
   }
 
-  protected formatServerConfig(
-    config: McpServerConfig
-  ): Record<string, unknown> {
+  protected formatServerConfig(config: McpServerConfig): Record<string, unknown> {
     if (config.transport === "stdio") {
       const serverConfig: Record<string, unknown> = {
         type: "local",

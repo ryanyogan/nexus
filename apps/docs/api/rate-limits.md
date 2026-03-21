@@ -4,11 +4,11 @@ The API enforces rate limits to ensure fair usage.
 
 ## Limits by Plan
 
-| Plan | Requests/minute | Requests/day |
-|------|-----------------|--------------|
-| Free | 20 | 1,000 |
-| Pro | 100 | 10,000 |
-| Enterprise | Unlimited | Unlimited |
+| Plan       | Requests/minute | Requests/day |
+| ---------- | --------------- | ------------ |
+| Free       | 20              | 1,000        |
+| Pro        | 100             | 10,000       |
+| Enterprise | Unlimited       | Unlimited    |
 
 ## Rate Limit Headers
 

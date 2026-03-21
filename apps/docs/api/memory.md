@@ -10,12 +10,12 @@ GET /memories
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter | Type   | Description       |
+| --------- | ------ | ----------------- |
 | `project` | string | Filter by project |
-| `type` | string | Filter by type |
-| `limit` | number | Max results |
-| `offset` | number | Pagination |
+| `type`    | string | Filter by type    |
+| `limit`   | number | Max results       |
+| `offset`  | number | Pagination        |
 
 ### Response
 

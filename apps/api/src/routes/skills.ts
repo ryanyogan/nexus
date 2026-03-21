@@ -206,11 +206,7 @@ skillsRouter.get("/:id", async (c) => {
   const db = c.get("db");
   const skillId = c.req.param("id");
 
-  const [skill] = await db
-    .select()
-    .from(skills)
-    .where(eq(skills.id, skillId))
-    .limit(1);
+  const [skill] = await db.select().from(skills).where(eq(skills.id, skillId)).limit(1);
 
   if (!skill) {
     return c.json({ error: "Skill not found" }, 404);

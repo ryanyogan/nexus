@@ -15,6 +15,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "project": "my-saas"
@@ -22,6 +23,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "project": "my-saas",
@@ -36,11 +38,11 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `project` | string | Yes | Project name |
-| `includeTypes` | string[] | No | Filter to specific types |
-| `limit` | number | No | Max memories per type, default 5 |
+| Parameter      | Type     | Required | Description                      |
+| -------------- | -------- | -------- | -------------------------------- |
+| `project`      | string   | Yes      | Project name                     |
+| `includeTypes` | string[] | No       | Filter to specific types         |
+| `limit`        | number   | No       | Max memories per type, default 5 |
 
 ## Tip
 

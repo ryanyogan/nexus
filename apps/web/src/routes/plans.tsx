@@ -1,15 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Check,
-  X,
-  ArrowRight,
-  Search,
-  Brain,
-  Server,
-  Zap,
-  Sparkles,
-  Layers,
-} from "lucide-react";
+import { Check, X, ArrowRight, Search, Brain, Server, Zap, Sparkles, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
@@ -133,9 +123,7 @@ function PlansPage() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`bg-background p-8 ${
-                plan.highlighted ? "relative" : ""
-              }`}
+              className={`bg-background p-8 ${plan.highlighted ? "relative" : ""}`}
             >
               {plan.highlighted && (
                 <div className="absolute -top-px left-8 right-8 h-px bg-accent" />
@@ -155,16 +143,10 @@ function PlansPage() {
                   )}
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-mono text-4xl font-bold text-foreground">
-                    {plan.price}
-                  </span>
-                  <span className="font-mono text-sm text-muted-foreground">
-                    {plan.period}
-                  </span>
+                  <span className="font-mono text-4xl font-bold text-foreground">{plan.price}</span>
+                  <span className="font-mono text-sm text-muted-foreground">{plan.period}</span>
                 </div>
-                <p className="mt-3 font-mono text-xs text-muted-foreground">
-                  {plan.description}
-                </p>
+                <p className="mt-3 font-mono text-xs text-muted-foreground">{plan.description}</p>
               </div>
 
               {/* Features List */}
@@ -173,9 +155,7 @@ function PlansPage() {
                   <li
                     key={idx}
                     className={`flex items-center gap-3 font-mono text-xs ${
-                      feature.included
-                        ? "text-foreground"
-                        : "text-muted-foreground/50"
+                      feature.included ? "text-foreground" : "text-muted-foreground/50"
                     }`}
                   >
                     {feature.included ? (
@@ -222,10 +202,7 @@ function PlansPage() {
 
         <div className="grid grid-cols-1 gap-px bg-border border border-border md:grid-cols-2 mb-24">
           {features.map((feature) => (
-            <div
-              key={feature.id}
-              className="bg-background p-6 transition-colors hover:bg-muted/30"
-            >
+            <div key={feature.id} className="bg-background p-6 transition-colors hover:bg-muted/30">
               <div className="flex items-center gap-3 mb-3">
                 <span className="font-mono text-[10px] font-bold text-muted-foreground">
                   {feature.id}

@@ -180,11 +180,7 @@ export interface GitHubContent {
 // Memory Types
 // ============================================================================
 
-export type MemoryType =
-  | "project_context"
-  | "session_summary"
-  | "decision"
-  | "correction";
+export type MemoryType = "project_context" | "session_summary" | "decision" | "correction";
 
 export type MemoryScope = "global" | "user";
 

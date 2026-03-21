@@ -109,9 +109,9 @@ If you authenticated with `npx @nexus/cli auth login`, the CLI automatically use
 
 Nexus accepts API keys via either header format:
 
-| Header | Format | Example |
-|--------|--------|---------|
-| `NEXUS_API_KEY` | Raw key | `nxs_abc123...` |
+| Header          | Format       | Example                |
+| --------------- | ------------ | ---------------------- |
+| `NEXUS_API_KEY` | Raw key      | `nxs_abc123...`        |
 | `Authorization` | Bearer token | `Bearer nxs_abc123...` |
 
 Native remote clients typically use `NEXUS_API_KEY`. The `Authorization: Bearer` format is also supported for standard HTTP clients.
@@ -138,22 +138,22 @@ Headers:
 
 API keys can have specific scopes for fine-grained access:
 
-| Scope | Description |
-|-------|-------------|
-| `read:docs` | Query documentation |
-| `read:memories` | Read stored memories |
+| Scope            | Description                |
+| ---------------- | -------------------------- |
+| `read:docs`      | Query documentation        |
+| `read:memories`  | Read stored memories       |
 | `write:memories` | Create and update memories |
-| `read:servers` | Discover MCP servers |
+| `read:servers`   | Discover MCP servers       |
 
 By default, CLI-generated keys include all scopes.
 
 ## Rate Limits
 
 | Plan | Requests/Month | Keys Allowed |
-|------|----------------|--------------|
-| Free | 2,000 | 1 |
-| Pro | Unlimited | 10 |
-| Team | Unlimited | 100 |
+| ---- | -------------- | ------------ |
+| Free | 2,000          | 1            |
+| Pro  | Unlimited      | 10           |
+| Team | Unlimited      | 100          |
 
 ## Error Messages
 

@@ -49,9 +49,7 @@ export class VSCodeAdapter extends BaseAdapter {
     config.servers = servers;
   }
 
-  protected formatServerConfig(
-    config: McpServerConfig
-  ): Record<string, unknown> {
+  protected formatServerConfig(config: McpServerConfig): Record<string, unknown> {
     if (config.transport === "stdio") {
       const serverConfig: Record<string, unknown> = {
         type: "stdio",

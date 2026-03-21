@@ -10,11 +10,11 @@ nexus serve [options]
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `--port <n>` | HTTP port (default: none, uses stdio) |
-| `--host <host>` | Host to bind (default: localhost) |
-| `--verbose` | Verbose logging |
+| Option          | Description                           |
+| --------------- | ------------------------------------- |
+| `--port <n>`    | HTTP port (default: none, uses stdio) |
+| `--host <host>` | Host to bind (default: localhost)     |
+| `--verbose`     | Verbose logging                       |
 
 ## Examples
 
@@ -46,7 +46,7 @@ Add to your MCP configuration:
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
+| Variable        | Description                                         |
+| --------------- | --------------------------------------------------- |
 | `NEXUS_API_URL` | API endpoint (default: https://api.nexus.yogan.dev) |
-| `NEXUS_VERBOSE` | Enable verbose logging |
+| `NEXUS_VERBOSE` | Enable verbose logging                              |

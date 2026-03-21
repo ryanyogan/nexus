@@ -553,7 +553,7 @@ await server.connect(transport);
 // Generate placeholder content for remaining skills
 const PLACEHOLDER_SKILLS = [
   "docx-extraction",
-  "xlsx-analysis", 
+  "xlsx-analysis",
   "csv-processing",
   "performance-optimization",
   "tailwind-styling",
@@ -579,7 +579,10 @@ const PLACEHOLDER_SKILLS = [
 
 for (const skill of PLACEHOLDER_SKILLS) {
   if (!SKILLS_CONTENT[skill]) {
-    const name = skill.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const name = skill
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
     SKILLS_CONTENT[skill] = `# ${name} Skill
 
 Use this skill for ${name.toLowerCase()} tasks.
@@ -605,14 +608,14 @@ Apply this skill when working on related tasks.
 
 async function uploadSkillContent() {
   console.log("Uploading skill content to R2...\n");
-  
+
   // This would upload to R2 via wrangler or API
   // For now, output the content that needs to be uploaded
-  
+
   for (const [skillId, content] of Object.entries(SKILLS_CONTENT)) {
     console.log(`📝 skills/${skillId}.md (${content.length} bytes)`);
   }
-  
+
   console.log(`\n✅ ${Object.keys(SKILLS_CONTENT).length} skills ready for upload`);
   console.log("\nTo upload, run:");
   console.log("  wrangler r2 object put nexus-docs/skills/<skill-id>.md --file <content>");

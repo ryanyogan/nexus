@@ -18,7 +18,7 @@ import { compileStackPrompt } from "./stack-compiler";
 
 /**
  * Process a stack learning job.
- * 
+ *
  * Jobs can be:
  * 1. analyze_repo - Analyze a GitHub repository for patterns/paradigms
  * 2. research_package - Research a package using existing library docs
@@ -50,7 +50,7 @@ export async function processStackLearningJob(
     }
   } catch (error) {
     console.error(`Stack learning job failed: ${taskType} for stack ${stackId}`, error);
-    
+
     // Update stack with error
     await db
       .update(stacks)
@@ -60,7 +60,7 @@ export async function processStackLearningJob(
         updatedAt: now,
       })
       .where(eq(stacks.id, stackId));
-    
+
     throw error;
   }
 }
@@ -68,13 +68,9 @@ export async function processStackLearningJob(
 /**
  * Analyze a GitHub repository for patterns, structure, and paradigms.
  */
-async function processRepoAnalysis(
-  job: StackLearningJob,
-  env: Env,
-  db: Database
-): Promise<void> {
+async function processRepoAnalysis(job: StackLearningJob, env: Env, db: Database): Promise<void> {
   const { stackId, repoId, githubUrl, isPrivate, branch, paths } = job;
-  
+
   if (!repoId || !githubUrl) {
     throw new Error("repoId and githubUrl are required for repo analysis");
   }
@@ -82,10 +78,7 @@ async function processRepoAnalysis(
   const now = new Date().toISOString();
 
   // Update repo status
-  await db
-    .update(stackRepos)
-    .set({ status: "analyzing" })
-    .where(eq(stackRepos.id, repoId));
+  await db.update(stackRepos).set({ status: "analyzing" }).where(eq(stackRepos.id, repoId));
 
   // Update stack progress
   await db
@@ -99,7 +92,7 @@ async function processRepoAnalysis(
 
   try {
     // Get GitHub token for API access
-    const token = isPrivate 
+    const token = isPrivate
       ? await getPrivateRepoToken(job.userId, env, db)
       : (env as any).GITHUB_TOKEN;
 
@@ -136,9 +129,9 @@ async function processRepoAnalysis(
         .select({ name: stackPackages.name })
         .from(stackPackages)
         .where(eq(stackPackages.stackId, stackId));
-      
-      const existingNames = new Set(existingPackages.map(p => p.name));
-      
+
+      const existingNames = new Set(existingPackages.map((p) => p.name));
+
       const newPackages = analysis.packages
         .filter((pkg: string) => !existingNames.has(pkg))
         .slice(0, 20); // Limit to 20 packages
@@ -148,7 +141,7 @@ async function processRepoAnalysis(
         const registry = PACKAGE_REGISTRIES.includes(analysis.registry as PackageRegistry)
           ? (analysis.registry as PackageRegistry)
           : "npm";
-        
+
         await db.insert(stackPackages).values(
           newPackages.map((name: string) => ({
             id: `pkg_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
@@ -164,7 +157,6 @@ async function processRepoAnalysis(
 
     // Check if all repos are analyzed
     await checkAndAdvanceProgress(stackId, db, env);
-
   } catch (error) {
     await db
       .update(stackRepos)
@@ -173,7 +165,7 @@ async function processRepoAnalysis(
         error: error instanceof Error ? error.message : String(error),
       })
       .where(eq(stackRepos.id, repoId));
-    
+
     throw error;
   }
 }
@@ -187,7 +179,7 @@ async function processPackageResearch(
   db: Database
 ): Promise<void> {
   const { stackId, packageId, packageName, registry } = job;
-  
+
   if (!packageId || !packageName) {
     throw new Error("packageId and packageName are required for package research");
   }
@@ -215,7 +207,7 @@ async function processPackageResearch(
     if (library && library.indexStatus === "indexed") {
       libraryId = library.id;
       documentationSummary = library.description || null;
-      
+
       // TODO: Query vectorize for key APIs/patterns
       // For now, just mark as linked to library
     } else {
@@ -237,7 +229,6 @@ async function processPackageResearch(
 
     // Check if all packages are researched
     await checkAndAdvanceProgress(stackId, db, env);
-
   } catch (error) {
     await db
       .update(stackPackages)
@@ -246,7 +237,7 @@ async function processPackageResearch(
         error: error instanceof Error ? error.message : String(error),
       })
       .where(eq(stackPackages.id, packageId));
-    
+
     throw error;
   }
 }
@@ -274,11 +265,7 @@ async function processPromptCompilation(
 
   try {
     // Get the stack with all related data
-    const [stack] = await db
-      .select()
-      .from(stacks)
-      .where(eq(stacks.id, stackId))
-      .limit(1);
+    const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId)).limit(1);
 
     if (!stack) {
       throw new Error(`Stack not found: ${stackId}`);
@@ -288,19 +275,13 @@ async function processPromptCompilation(
     const repos = await db
       .select()
       .from(stackRepos)
-      .where(and(
-        eq(stackRepos.stackId, stackId),
-        eq(stackRepos.status, "complete")
-      ));
+      .where(and(eq(stackRepos.stackId, stackId), eq(stackRepos.status, "complete")));
 
     // Get packages with research
     const packages = await db
       .select()
       .from(stackPackages)
-      .where(and(
-        eq(stackPackages.stackId, stackId),
-        eq(stackPackages.status, "complete")
-      ));
+      .where(and(eq(stackPackages.stackId, stackId), eq(stackPackages.status, "complete")));
 
     // Get composed child stacks
     const compositions = await db
@@ -318,7 +299,7 @@ async function processPromptCompilation(
         try {
           const obj = await env.DOCS_BUCKET.get(repo.r2Key);
           if (obj) {
-            const analysis = await obj.json() as RepoAnalysis;
+            const analysis = (await obj.json()) as RepoAnalysis;
             repoAnalyses.push(analysis);
           }
         } catch (e) {
@@ -332,7 +313,7 @@ async function processPromptCompilation(
       stack,
       repos: repoAnalyses,
       packages,
-      childStacks: compositions.map(c => c.childStack),
+      childStacks: compositions.map((c) => c.childStack),
       tokenBudget: tokenBudget || stack.tokenBudget || "standard",
       ai: env.AI,
     });
@@ -362,7 +343,6 @@ async function processPromptCompilation(
       .where(eq(stacks.id, stackId));
 
     console.log(`Stack ${stackId} compiled successfully: ${compiled.tokenCount} tokens`);
-
   } catch (error) {
     await db
       .update(stacks)
@@ -372,7 +352,7 @@ async function processPromptCompilation(
         updatedAt: now,
       })
       .where(eq(stacks.id, stackId));
-    
+
     throw error;
   }
 }
@@ -380,11 +360,7 @@ async function processPromptCompilation(
 /**
  * Check progress and advance to next stage if ready.
  */
-async function checkAndAdvanceProgress(
-  stackId: string,
-  db: Database,
-  env: Env
-): Promise<void> {
+async function checkAndAdvanceProgress(stackId: string, db: Database, env: Env): Promise<void> {
   // Count pending repos and packages
   const [repoStatus] = await db
     .select({
@@ -406,9 +382,7 @@ async function checkAndAdvanceProgress(
   const completeTasks = (repoStatus?.complete || 0) + (pkgStatus?.complete || 0);
 
   // Calculate progress (reserving 20% for compilation)
-  const progress = totalTasks > 0 
-    ? Math.round((completeTasks / totalTasks) * 80)
-    : 50;
+  const progress = totalTasks > 0 ? Math.round((completeTasks / totalTasks) * 80) : 50;
 
   await db
     .update(stacks)
@@ -478,10 +452,7 @@ export async function queueStackLearning(
   const repos = await db
     .select()
     .from(stackRepos)
-    .where(and(
-      eq(stackRepos.stackId, stackId),
-      eq(stackRepos.status, "pending")
-    ));
+    .where(and(eq(stackRepos.stackId, stackId), eq(stackRepos.status, "pending")));
 
   // Queue repo analysis jobs
   for (const repo of repos) {
@@ -502,10 +473,7 @@ export async function queueStackLearning(
   const packages = await db
     .select()
     .from(stackPackages)
-    .where(and(
-      eq(stackPackages.stackId, stackId),
-      eq(stackPackages.status, "pending")
-    ));
+    .where(and(eq(stackPackages.stackId, stackId), eq(stackPackages.status, "pending")));
 
   // Queue package research jobs
   for (const pkg of packages) {
@@ -532,7 +500,7 @@ export async function queueStackLearning(
       stackId,
       userId,
       taskType: "compile_prompt",
-      tokenBudget: stack?.tokenBudget as any || "standard",
+      tokenBudget: (stack?.tokenBudget as any) || "standard",
     };
     await env.STACK_LEARNING_QUEUE.send(compilationJob);
   }

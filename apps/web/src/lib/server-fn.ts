@@ -1,12 +1,12 @@
 /**
  * Logging utilities for TanStack Start server functions.
- * 
+ *
  * Provides:
  * - Structured JSON logging for Cloudflare Workers Logs
  * - Request context extraction (path, method)
  * - Duration tracking
  * - Sensitive data redaction
- * 
+ *
  * For server functions with input, use inline logging pattern:
  * @example
  * ```ts
@@ -55,7 +55,7 @@ export function getRequestContext(): { path: string; method: string } | undefine
 /**
  * Wrap an existing handler function with logging.
  * Best for simple server functions without input validation.
- * 
+ *
  * @example
  * ```ts
  * const getHomePageData = createServerFn({ method: "GET" }).handler(
@@ -72,7 +72,7 @@ export function withLogging<TOutput>(
   return async (): Promise<TOutput> => {
     const startTime = Date.now();
     const requestContext = getRequestContext();
-    
+
     const fnLogger = logger.child({
       serverFn: name,
       ...requestContext,
@@ -80,19 +80,19 @@ export function withLogging<TOutput>(
 
     try {
       fnLogger.debug(`${name} started`);
-      
+
       const result = await handler();
-      
+
       const durationMs = Date.now() - startTime;
       fnLogger.info(`${name} completed`, { durationMs });
-      
+
       return result;
     } catch (error) {
       const durationMs = Date.now() - startTime;
       const err = error instanceof Error ? error : new Error(String(error));
-      
+
       fnLogger.error(`${name} failed`, { durationMs }, err);
-      
+
       throw error;
     }
   };
@@ -101,7 +101,7 @@ export function withLogging<TOutput>(
 /**
  * Wrap an existing handler with input with logging.
  * Use this when your handler receives a `{ data }` parameter.
- * 
+ *
  * @example
  * ```ts
  * const getUser = createServerFn({ method: "GET" })
@@ -118,7 +118,7 @@ export function withLoggingInput<TInput, TOutput>(
   return async (ctx: { data: TInput }): Promise<TOutput> => {
     const startTime = Date.now();
     const requestContext = getRequestContext();
-    
+
     const fnLogger = logger.child({
       serverFn: name,
       ...requestContext,
@@ -126,19 +126,19 @@ export function withLoggingInput<TInput, TOutput>(
 
     try {
       fnLogger.debug(`${name} started`, { input: ctx.data });
-      
+
       const result = await handler(ctx);
-      
+
       const durationMs = Date.now() - startTime;
       fnLogger.info(`${name} completed`, { durationMs });
-      
+
       return result;
     } catch (error) {
       const durationMs = Date.now() - startTime;
       const err = error instanceof Error ? error : new Error(String(error));
-      
+
       fnLogger.error(`${name} failed`, { durationMs, input: ctx.data }, err);
-      
+
       throw error;
     }
   };

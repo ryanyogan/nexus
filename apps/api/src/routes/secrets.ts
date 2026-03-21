@@ -56,17 +56,11 @@ async function encryptValue(
   };
 }
 
-async function decryptValue(
-  encrypted: string,
-  iv: string,
-  secret: string
-): Promise<string> {
+async function decryptValue(encrypted: string, iv: string, secret: string): Promise<string> {
   const key = await getEncryptionKey(secret);
   const decoder = new TextDecoder();
 
-  const encryptedBytes = Uint8Array.from(atob(encrypted), (c) =>
-    c.charCodeAt(0)
-  );
+  const encryptedBytes = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(0));
   const ivBytes = Uint8Array.from(atob(iv), (c) => c.charCodeAt(0));
 
   const decrypted = await crypto.subtle.decrypt(
@@ -271,35 +265,31 @@ secretsRouter.get("/:id", async (c) => {
 });
 
 // Update a secret
-secretsRouter.patch(
-  "/:id",
-  zValidator("json", updateSecretSchema),
-  async (c) => {
-    const db = c.get("db");
-    const user = c.get("user") as AuthUser;
-    const { id } = c.req.param();
-    const updates = c.req.valid("json");
+secretsRouter.patch("/:id", zValidator("json", updateSecretSchema), async (c) => {
+  const db = c.get("db");
+  const user = c.get("user") as AuthUser;
+  const { id } = c.req.param();
+  const updates = c.req.valid("json");
 
-    const [existing] = await db
-      .select()
-      .from(userSecrets)
-      .where(and(eq(userSecrets.id, id), eq(userSecrets.userId, user.id)));
+  const [existing] = await db
+    .select()
+    .from(userSecrets)
+    .where(and(eq(userSecrets.id, id), eq(userSecrets.userId, user.id)));
 
-    if (!existing) {
-      return c.json({ error: "Secret not found" }, 404);
-    }
-
-    await db
-      .update(userSecrets)
-      .set({
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(userSecrets.id, id));
-
-    return c.json({ success: true });
+  if (!existing) {
+    return c.json({ error: "Secret not found" }, 404);
   }
-);
+
+  await db
+    .update(userSecrets)
+    .set({
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(userSecrets.id, id));
+
+  return c.json({ success: true });
+});
 
 // Delete a secret
 secretsRouter.delete("/:id", async (c) => {
@@ -344,10 +334,7 @@ secretsRouter.post("/:id/rotate", async (c) => {
   }
 
   // Encrypt the new value
-  const { encrypted, iv } = await encryptValue(
-    newValue,
-    c.env.BETTER_AUTH_SECRET
-  );
+  const { encrypted, iv } = await encryptValue(newValue, c.env.BETTER_AUTH_SECRET);
 
   // Extract new prefix
   let keyPrefix = newValue.slice(0, 4) + "...";

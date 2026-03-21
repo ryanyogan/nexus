@@ -2,10 +2,7 @@ import { Command } from "commander";
 import chalk from "chalk";
 import { logger } from "../utils/logger.js";
 import { outputJson, isJsonOutput } from "../utils/json.js";
-import {
-  isAuthenticated,
-  getEditors,
-} from "../services/config.js";
+import { isAuthenticated, getEditors } from "../services/config.js";
 import { runInit } from "../components/index.js";
 
 interface InitOptions {
@@ -63,8 +60,16 @@ function showSimpleInit() {
   logger.newline();
   logger.log(chalk.bold.cyan("  ╭──────────────────────────────────────────╮"));
   logger.log(chalk.bold.cyan("  │                                          │"));
-  logger.log(chalk.bold.cyan("  │   Welcome to ") + chalk.bold.white("Nexus") + chalk.bold.cyan("!                      │"));
-  logger.log(chalk.bold.cyan("  │   ") + chalk.gray("The AI Documentation & Skills Hub") + chalk.bold.cyan("     │"));
+  logger.log(
+    chalk.bold.cyan("  │   Welcome to ") +
+      chalk.bold.white("Nexus") +
+      chalk.bold.cyan("!                      │")
+  );
+  logger.log(
+    chalk.bold.cyan("  │   ") +
+      chalk.gray("The AI Documentation & Skills Hub") +
+      chalk.bold.cyan("     │")
+  );
   logger.log(chalk.bold.cyan("  │                                          │"));
   logger.log(chalk.bold.cyan("  ╰──────────────────────────────────────────╯"));
   logger.newline();
@@ -84,11 +89,17 @@ function showSimpleInit() {
   logger.newline();
 
   logger.log(`  ${chalk.cyan("Cursor")} (add to ~/.cursor/mcp.json):`);
-  logger.log(chalk.gray(`  { "mcpServers": { "nexus": { "url": "https://mcp.nexus.yogan.dev" } } }`));
+  logger.log(
+    chalk.gray(`  { "mcpServers": { "nexus": { "url": "https://mcp.nexus.yogan.dev" } } }`)
+  );
   logger.newline();
 
   logger.log(`  ${chalk.cyan("OpenCode")} (add to opencode.json):`);
-  logger.log(chalk.gray(`  { "mcp": { "nexus": { "type": "remote", "url": "https://mcp.nexus.yogan.dev", "enabled": true } } }`));
+  logger.log(
+    chalk.gray(
+      `  { "mcp": { "nexus": { "type": "remote", "url": "https://mcp.nexus.yogan.dev", "enabled": true } } }`
+    )
+  );
   logger.newline();
 
   logger.log(chalk.gray("─".repeat(40)));

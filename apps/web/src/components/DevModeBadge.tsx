@@ -1,6 +1,6 @@
 /**
  * Visual indicator that dev auth bypass is active.
- * 
+ *
  * Only shows when VITE_DEV_BYPASS_AUTH is set and running on localhost.
  */
 export function DevModeBadge() {

@@ -73,9 +73,7 @@ function LibraryNotFound() {
         <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-destructive/10">
           <BookOpen className="h-8 w-8 text-destructive" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Library not found
-        </h1>
+        <h1 className="text-2xl font-bold text-foreground">Library not found</h1>
         <p className="text-muted-foreground">
           The library "{libraryId}" doesn't exist or has been removed.
         </p>
@@ -166,9 +164,7 @@ function LibraryDetailPage() {
               )}
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-foreground">
-                    {library.name}
-                  </h1>
+                  <h1 className="text-2xl font-bold text-foreground">{library.name}</h1>
                   {library.version && (
                     <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                       v{library.version}
@@ -300,21 +296,15 @@ function LibraryDetailPage() {
                     onClick={() => setExpandedChunks(!expandedChunks)}
                     className="mt-4 w-full rounded-lg border border-border py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
-                    {expandedChunks
-                      ? "Show less"
-                      : `Show ${chunks.length - 10} more chunks`}
+                    {expandedChunks ? "Show less" : `Show ${chunks.length - 10} more chunks`}
                   </button>
                 )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
                 <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
-                <p className="text-lg font-medium text-foreground">
-                  No chunks indexed yet
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  This library is still being processed
-                </p>
+                <p className="text-lg font-medium text-foreground">No chunks indexed yet</p>
+                <p className="mt-1 text-muted-foreground">This library is still being processed</p>
               </div>
             )}
           </div>
@@ -328,8 +318,7 @@ function LibraryDetailPage() {
                 Use with MCP
               </h3>
               <p className="mb-4 text-sm text-muted-foreground">
-                Query this library's documentation directly from your AI coding
-                assistant.
+                Query this library's documentation directly from your AI coding assistant.
               </p>
               <div className="space-y-4">
                 <div>
@@ -405,9 +394,7 @@ function LibraryDetailPage() {
                     {"\n"}
                     <span className="text-muted-foreground">{"})"}</span>
                     {"\n\n"}
-                    <span className="text-muted-foreground">
-                      {"// Then query the docs"}
-                    </span>
+                    <span className="text-muted-foreground">{"// Then query the docs"}</span>
                     {"\n"}
                     <span className="text-primary">nexus</span>
                     <span className="text-muted-foreground">.</span>
@@ -440,9 +427,7 @@ function LibraryDetailPage() {
               <div className="space-y-2 text-sm">
                 <div className="rounded-lg bg-muted p-3">
                   <code className="text-primary">resolve_library</code>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Search for a library by name
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">Search for a library by name</p>
                 </div>
                 <div className="rounded-lg bg-muted p-3">
                   <code className="text-primary">query_docs</code>
@@ -452,15 +437,11 @@ function LibraryDetailPage() {
                 </div>
                 <div className="rounded-lg bg-muted p-3">
                   <code className="text-primary">get_library_info</code>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Get library metadata
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">Get library metadata</p>
                 </div>
                 <div className="rounded-lg bg-muted p-3">
                   <code className="text-primary">list_libraries</code>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    List all indexed libraries
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">List all indexed libraries</p>
                 </div>
               </div>
             </div>
@@ -487,14 +468,10 @@ function ChunkItem({ chunk }: { chunk: Chunk }) {
             {chunk.contentType}
           </span>
         </div>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          {chunk.sourceFile}
-        </p>
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">{chunk.sourceFile}</p>
       </div>
       <div className="ml-4 flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="whitespace-nowrap">
-          {chunk.tokenCount.toLocaleString()} tokens
-        </span>
+        <span className="whitespace-nowrap">{chunk.tokenCount.toLocaleString()} tokens</span>
         <ChevronRight className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
     </div>
@@ -505,15 +482,7 @@ function ChunkItem({ chunk }: { chunk: Chunk }) {
 // Stat Card Component
 // ============================================================================
 
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4 transition-colors hover:bg-muted/50">
       <div className="mb-2 text-primary">{icon}</div>

@@ -402,10 +402,7 @@ export class Nexus {
     this.timeout = config.timeout || 30000;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -423,8 +420,7 @@ export class Nexus {
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new NexusError(
-          (error as { error?: string }).error ||
-            `Request failed with status ${response.status}`,
+          (error as { error?: string }).error || `Request failed with status ${response.status}`,
           response.status
         );
       }
@@ -448,10 +444,7 @@ export class Nexus {
    * console.log(libraries[0].id); // "zustand"
    * ```
    */
-  async searchLibrary(
-    query: string,
-    options?: { limit?: number }
-  ): Promise<LibrarySearchResult[]> {
+  async searchLibrary(query: string, options?: { limit?: number }): Promise<LibrarySearchResult[]> {
     const params = new URLSearchParams({
       query,
       ...(options?.limit && { limit: String(options.limit) }),
@@ -507,9 +500,7 @@ export class Nexus {
    * Get library information by ID
    */
   async getLibrary(libraryId: string): Promise<Library> {
-    return this.request<Library>(
-      `/api/libraries/${encodeURIComponent(libraryId)}`
-    );
+    return this.request<Library>(`/api/libraries/${encodeURIComponent(libraryId)}`);
   }
 
   /**
@@ -574,9 +565,7 @@ export class Nexus {
     if (options.tags) params.set("tags", options.tags.join(","));
     if (options.limit) params.set("limit", String(options.limit));
 
-    const result = await this.request<{ memories: Memory[] }>(
-      `/mcp/memory/recall?${params}`
-    );
+    const result = await this.request<{ memories: Memory[] }>(`/mcp/memory/recall?${params}`);
     return result.memories;
   }
 
@@ -622,10 +611,7 @@ export class Nexus {
   async updateMemory(
     memoryId: string,
     updates: Partial<
-      Pick<
-        SaveMemoryOptions,
-        "title" | "content" | "summary" | "tags" | "importance"
-      >
+      Pick<SaveMemoryOptions, "title" | "content" | "summary" | "tags" | "importance">
     >
   ): Promise<Memory> {
     return this.request<Memory>(`/mcp/memory/${memoryId}`, {
@@ -670,9 +656,7 @@ export class Nexus {
     if (options?.official) params.set("official", "true");
     if (options?.limit) params.set("limit", String(options.limit));
 
-    const result = await this.request<{ servers: McpServer[] }>(
-      `/mcp/servers?${params}`
-    );
+    const result = await this.request<{ servers: McpServer[] }>(`/mcp/servers?${params}`);
     return result.servers;
   }
 
@@ -760,7 +744,9 @@ export class Nexus {
    * console.log(result.flowId);
    * ```
    */
-  async createFlow(options: CreateFlowOptions): Promise<{ success: boolean; flowId: string; slug: string }> {
+  async createFlow(
+    options: CreateFlowOptions
+  ): Promise<{ success: boolean; flowId: string; slug: string }> {
     return this.request("/api/flows", {
       method: "POST",
       body: JSON.stringify(options),
@@ -815,7 +801,10 @@ export class Nexus {
    * console.log(result.flow.systemPrompt);
    * ```
    */
-  async activateFlow(flowId: string, options?: { project?: string }): Promise<{
+  async activateFlow(
+    flowId: string,
+    options?: { project?: string }
+  ): Promise<{
     success: boolean;
     sessionId: string;
     flow: Flow;
@@ -860,10 +849,13 @@ export class Nexus {
   /**
    * Customize a flow (add custom prompt or preferences)
    */
-  async customizeFlow(flowId: string, options: {
-    customPrompt?: string | null;
-    customPreferences?: FlowPreferences | null;
-  }): Promise<{ success: boolean }> {
+  async customizeFlow(
+    flowId: string,
+    options: {
+      customPrompt?: string | null;
+      customPreferences?: FlowPreferences | null;
+    }
+  ): Promise<{ success: boolean }> {
     return this.request(`/api/flows/${encodeURIComponent(flowId)}/customize`, {
       method: "PUT",
       body: JSON.stringify(options),
@@ -891,29 +883,28 @@ export class Nexus {
   }): Promise<{ flows: Flow[] }> {
     // Get all flows and filter based on matches
     const { flows } = await this.listFlows({ starter: true, limit: 50 });
-    
-    const matches = flows.filter(flow => {
+
+    const matches = flows.filter((flow) => {
       // Check if any libraries match dependencies
       if (options.dependencies?.length) {
-        const hasMatch = flow.libraries.some(lib => 
-          options.dependencies!.some(dep => 
-            dep.toLowerCase().includes(lib.toLowerCase()) ||
-            lib.toLowerCase().includes(dep.toLowerCase())
+        const hasMatch = flow.libraries.some((lib) =>
+          options.dependencies!.some(
+            (dep) =>
+              dep.toLowerCase().includes(lib.toLowerCase()) ||
+              lib.toLowerCase().includes(dep.toLowerCase())
           )
         );
         if (hasMatch) return true;
       }
-      
+
       // Check tags against dependencies
       if (options.dependencies?.length) {
-        const hasTagMatch = flow.tags.some(tag =>
-          options.dependencies!.some(dep =>
-            dep.toLowerCase().includes(tag.toLowerCase())
-          )
+        const hasTagMatch = flow.tags.some((tag) =>
+          options.dependencies!.some((dep) => dep.toLowerCase().includes(tag.toLowerCase()))
         );
         if (hasTagMatch) return true;
       }
-      
+
       return false;
     });
 
@@ -934,7 +925,10 @@ export class Nexus {
   /**
    * Get XP event history
    */
-  async getXpHistory(options?: { limit?: number; offset?: number }): Promise<{ events: XpEvent[] }> {
+  async getXpHistory(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<{ events: XpEvent[] }> {
     const params = new URLSearchParams();
     if (options?.limit) params.set("limit", String(options.limit));
     if (options?.offset) params.set("offset", String(options.offset));
@@ -990,7 +984,10 @@ export class Nexus {
   /**
    * Update a learning
    */
-  async updateLearning(learningId: string, options: Partial<CreateLearningOptions>): Promise<{ success: boolean }> {
+  async updateLearning(
+    learningId: string,
+    options: Partial<CreateLearningOptions>
+  ): Promise<{ success: boolean }> {
     return this.request(`/api/brain/learnings/${learningId}`, {
       method: "PUT",
       body: JSON.stringify(options),
@@ -1077,7 +1074,9 @@ export class Nexus {
   /**
    * Adopt a community learning
    */
-  async adoptCommunityLearning(communityLearningId: string): Promise<{ success: boolean; learningId: string }> {
+  async adoptCommunityLearning(
+    communityLearningId: string
+  ): Promise<{ success: boolean; learningId: string }> {
     return this.request(`/api/brain/community/${communityLearningId}/adopt`, {
       method: "POST",
     });
@@ -1086,7 +1085,10 @@ export class Nexus {
   /**
    * Vote on a community learning
    */
-  async voteCommunityLearning(communityLearningId: string, vote: "up" | "down"): Promise<{ success: boolean }> {
+  async voteCommunityLearning(
+    communityLearningId: string,
+    vote: "up" | "down"
+  ): Promise<{ success: boolean }> {
     return this.request(`/api/brain/community/${communityLearningId}/vote`, {
       method: "POST",
       body: JSON.stringify({ vote }),
@@ -1184,11 +1186,14 @@ export class Nexus {
   /**
    * Update repository settings
    */
-  async updateRepoSettings(repoId: string, options: {
-    autoSync?: boolean;
-    includePatterns?: string[];
-    excludePatterns?: string[];
-  }): Promise<{ success: boolean }> {
+  async updateRepoSettings(
+    repoId: string,
+    options: {
+      autoSync?: boolean;
+      includePatterns?: string[];
+      excludePatterns?: string[];
+    }
+  ): Promise<{ success: boolean }> {
     return this.request(`/api/repos/${repoId}/settings`, {
       method: "PUT",
       body: JSON.stringify(options),
@@ -1198,7 +1203,10 @@ export class Nexus {
   /**
    * Get file content from a connected repo
    */
-  async getRepoFile(repoId: string, filePath: string): Promise<{ file: RepoFile & { content: string } }> {
+  async getRepoFile(
+    repoId: string,
+    filePath: string
+  ): Promise<{ file: RepoFile & { content: string } }> {
     return this.request(`/api/repos/${repoId}/files/${encodeURIComponent(filePath)}`);
   }
 

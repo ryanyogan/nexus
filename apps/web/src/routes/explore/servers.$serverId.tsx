@@ -80,8 +80,10 @@ function ServerDetailPage() {
   const { server } = Route.useLoaderData();
   const displayName = server.displayName || server.name;
   const category = server.categories?.[0];
-  
-  const [configFormat, setConfigFormat] = useState<"opencode" | "claude-desktop" | "vscode">("opencode");
+
+  const [configFormat, setConfigFormat] = useState<"opencode" | "claude-desktop" | "vscode">(
+    "opencode"
+  );
   const [copied, setCopied] = useState(false);
   const [copiedInstall, setCopiedInstall] = useState(false);
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
@@ -179,18 +181,14 @@ function ServerDetailPage() {
                   </span>
                 )}
               </div>
-              
+
               {server.description && (
-                <p className="mt-2 font-mono text-sm text-muted-foreground">
-                  {server.description}
-                </p>
+                <p className="mt-2 font-mono text-sm text-muted-foreground">{server.description}</p>
               )}
 
               {/* Meta */}
               <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-xs">
-                {category && (
-                  <span className="uppercase text-muted-foreground">{category}</span>
-                )}
+                {category && <span className="uppercase text-muted-foreground">{category}</span>}
                 {server.packageName && (
                   <>
                     <span className="text-border">|</span>
@@ -376,9 +374,7 @@ function ServerDetailPage() {
                 Ask your AI assistant to set up this server:
               </p>
               <pre className="mt-3 overflow-x-auto border border-border bg-background p-3 font-mono text-[10px]">
-                <code className="text-foreground">
-                  "Install the {displayName} MCP server"
-                </code>
+                <code className="text-foreground">"Install the {displayName} MCP server"</code>
               </pre>
             </div>
 
@@ -391,24 +387,18 @@ function ServerDetailPage() {
                 {category && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Category</dt>
-                    <dd className="font-bold uppercase text-foreground">
-                      {category}
-                    </dd>
+                    <dd className="font-bold uppercase text-foreground">{category}</dd>
                   </div>
                 )}
                 {server.version && (
                   <div className="flex items-center justify-between">
                     <dt className="uppercase text-muted-foreground">Version</dt>
-                    <dd className="text-foreground">
-                      {server.version}
-                    </dd>
+                    <dd className="text-foreground">{server.version}</dd>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <dt className="uppercase text-muted-foreground">Risk</dt>
-                  <dd className={`font-bold uppercase ${security.color}`}>
-                    {security.label}
-                  </dd>
+                  <dd className={`font-bold uppercase ${security.color}`}>{security.label}</dd>
                 </div>
                 {server.isSecurityAudited && (
                   <div className="flex items-center justify-between">
@@ -472,9 +462,7 @@ function FormatButton({
       }`}
     >
       {label}
-      {recommended && !active && (
-        <span className="text-[8px] text-accent">*</span>
-      )}
+      {recommended && !active && <span className="text-[8px] text-accent">*</span>}
     </button>
   );
 }
@@ -519,12 +507,16 @@ const securityConfig: Record<
   },
 };
 
-function SecurityCard({ server }: { server: { 
-  securityRiskLevel?: string | null;
-  securityCapabilities?: string[] | null;
-  securityNotes?: string | null;
-  isSecurityAudited?: boolean | null;
-}}) {
+function SecurityCard({
+  server,
+}: {
+  server: {
+    securityRiskLevel?: string | null;
+    securityCapabilities?: string[] | null;
+    securityNotes?: string | null;
+    isSecurityAudited?: boolean | null;
+  };
+}) {
   const riskLevel = (server.securityRiskLevel || "medium") as RiskLevel;
   const security = securityConfig[riskLevel];
   const SecurityIcon = security.icon;
@@ -552,9 +544,7 @@ function SecurityCard({ server }: { server: {
         )}
       </div>
 
-      <p className="font-mono text-xs text-muted-foreground">
-        {security.description}
-      </p>
+      <p className="font-mono text-xs text-muted-foreground">{security.description}</p>
 
       {/* Security Notes */}
       {server.securityNotes && (

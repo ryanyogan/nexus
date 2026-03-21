@@ -33,11 +33,7 @@ export const authMiddleware = createMiddleware<AppContext>(async (c, next) => {
       const { users } = await import("@nexus/db");
       const { eq } = await import("drizzle-orm");
 
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, result.userId))
-        .limit(1);
+      const [user] = await db.select().from(users).where(eq(users.id, result.userId)).limit(1);
 
       if (user) {
         c.set("user", {

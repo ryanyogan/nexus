@@ -4,9 +4,7 @@ import { adminClient } from "better-auth/client/plugins";
 const BEARER_TOKEN_KEY = "nexus_bearer_token";
 
 // Safe check for browser environment
-const isBrowser = () =>
-  typeof window !== "undefined" &&
-  typeof window.localStorage !== "undefined";
+const isBrowser = () => typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
 // Get bearer token from localStorage
 function getBearerToken(): string {

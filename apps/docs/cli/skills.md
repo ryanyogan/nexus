@@ -10,11 +10,11 @@ nexus skills <command> [options]
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `search <query>` | Search for skills |
-| `list` | List available skills |
-| `info <id>` | Get skill details |
+| Command          | Description           |
+| ---------------- | --------------------- |
+| `search <query>` | Search for skills     |
+| `list`           | List available skills |
+| `info <id>`      | Get skill details     |
 
 ## Examples
 
@@ -31,7 +31,7 @@ nexus skills info code-review
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
+| Option             | Description        |
+| ------------------ | ------------------ |
 | `--category <cat>` | Filter by category |
-| `--limit <n>` | Max results |
+| `--limit <n>`      | Max results        |

@@ -16,6 +16,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "project": "my-saas",
@@ -25,6 +26,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "memories": [
@@ -43,9 +45,9 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `project` | string | No | Filter by project |
-| `type` | string | No | Filter by memory type |
-| `limit` | number | No | Max results 1-50, default 20 |
-| `offset` | number | No | Pagination offset |
+| Parameter | Type   | Required | Description                  |
+| --------- | ------ | -------- | ---------------------------- |
+| `project` | string | No       | Filter by project            |
+| `type`    | string | No       | Filter by memory type        |
+| `limit`   | number | No       | Max results 1-50, default 20 |
+| `offset`  | number | No       | Pagination offset            |

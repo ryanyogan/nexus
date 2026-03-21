@@ -13,6 +13,7 @@ Parameters:
 ## Example
 
 **Input:**
+
 ```json
 {
   "memoryId": "mem_abc123"
@@ -20,6 +21,7 @@ Parameters:
 ```
 
 **Output:**
+
 ```json
 {
   "deleted": true,
@@ -29,9 +31,9 @@ Parameters:
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `memoryId` | string | Yes | Memory ID to delete |
+| Parameter  | Type   | Required | Description         |
+| ---------- | ------ | -------- | ------------------- |
+| `memoryId` | string | Yes      | Memory ID to delete |
 
 ## Authentication
 

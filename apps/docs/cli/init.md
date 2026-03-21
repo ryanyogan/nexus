@@ -10,12 +10,12 @@ nexus init [options]
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `--local` | Configure for local mode |
-| `--remote` | Configure for remote mode (default) |
-| `--client <name>` | Specific client to configure |
-| `--force` | Overwrite existing configuration |
+| Option            | Description                         |
+| ----------------- | ----------------------------------- |
+| `--local`         | Configure for local mode            |
+| `--remote`        | Configure for remote mode (default) |
+| `--client <name>` | Specific client to configure        |
+| `--force`         | Overwrite existing configuration    |
 
 ## Examples
 

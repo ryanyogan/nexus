@@ -63,9 +63,7 @@ async function loginWithToken(jsonOutput: boolean): Promise<void> {
   return new Promise((resolve) => {
     if (!jsonOutput) {
       logger.info("Enter your Nexus API token:");
-      logger.info(
-        `Get one from ${chalk.cyan("https://nexus.yogan.dev/dashboard/settings")}`
-      );
+      logger.info(`Get one from ${chalk.cyan("https://nexus.yogan.dev/dashboard/settings")}`);
       logger.newline();
     }
 
@@ -222,9 +220,7 @@ async function loginWithBrowser(jsonOutput: boolean): Promise<void> {
       }
 
       try {
-        const pollResponse = await fetch(
-          `${apiUrl}/api/cli/auth/poll?code=${code}`
-        );
+        const pollResponse = await fetch(`${apiUrl}/api/cli/auth/poll?code=${code}`);
 
         if (!pollResponse.ok) {
           const status = pollResponse.status;
@@ -266,9 +262,7 @@ async function loginWithBrowser(jsonOutput: boolean): Promise<void> {
           } else {
             logger.newline();
             logger.newline();
-            logger.success(
-              `Authenticated as ${chalk.cyan(authConfig.email)}`
-            );
+            logger.success(`Authenticated as ${chalk.cyan(authConfig.email)}`);
           }
           return;
         }
@@ -286,10 +280,7 @@ async function loginWithBrowser(jsonOutput: boolean): Promise<void> {
     }
   } catch (error) {
     if (jsonOutput) {
-      outputJsonError(
-        "CONNECTION_ERROR",
-        error instanceof Error ? error.message : "Unknown error"
-      );
+      outputJsonError("CONNECTION_ERROR", error instanceof Error ? error.message : "Unknown error");
     } else {
       logger.error("Failed to connect to Nexus API");
       logger.error(error instanceof Error ? error.message : "Unknown error");

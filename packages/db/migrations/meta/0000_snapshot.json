@@ -68,9 +68,7 @@
       "indexes": {
         "compositions_user_id_idx": {
           "name": "compositions_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -127,12 +125,8 @@
           "name": "server_stats_server_id_servers_id_fk",
           "tableFrom": "server_stats",
           "tableTo": "servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -248,16 +242,12 @@
       "indexes": {
         "servers_name_idx": {
           "name": "servers_name_idx",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": false
         },
         "servers_active_idx": {
           "name": "servers_active_idx",
-          "columns": [
-            "is_active"
-          ],
+          "columns": ["is_active"],
           "isUnique": false
         }
       },
@@ -329,23 +319,17 @@
       "indexes": {
         "tools_server_id_idx": {
           "name": "tools_server_id_idx",
-          "columns": [
-            "server_id"
-          ],
+          "columns": ["server_id"],
           "isUnique": false
         },
         "tools_namespace_idx": {
           "name": "tools_namespace_idx",
-          "columns": [
-            "namespace"
-          ],
+          "columns": ["namespace"],
           "isUnique": false
         },
         "tools_name_idx": {
           "name": "tools_name_idx",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": false
         }
       },
@@ -354,12 +338,8 @@
           "name": "tools_server_id_servers_id_fk",
           "tableFrom": "tools",
           "tableTo": "servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

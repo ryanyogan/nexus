@@ -101,9 +101,7 @@ function PackageNode({ data, selected }: NodeProps<PackageNodeType>) {
 
       <div
         className={`min-w-[160px] border-2 bg-background transition-all ${
-          selected
-            ? "shadow-[3px_3px_0_0]"
-            : "border-border hover:border-foreground/50"
+          selected ? "shadow-[3px_3px_0_0]" : "border-border hover:border-foreground/50"
         }`}
         style={{
           borderColor: selected ? color : undefined,
@@ -125,13 +123,9 @@ function PackageNode({ data, selected }: NodeProps<PackageNodeType>) {
             {registryIcons[registry]}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-mono text-xs font-bold tracking-wide truncate">
-              {data.name}
-            </div>
+            <div className="font-mono text-xs font-bold tracking-wide truncate">{data.name}</div>
             {data.version && (
-              <div className="font-mono text-[10px] text-muted-foreground">
-                v{data.version}
-              </div>
+              <div className="font-mono text-[10px] text-muted-foreground">v{data.version}</div>
             )}
           </div>
         </div>
@@ -145,8 +139,8 @@ function PackageNode({ data, selected }: NodeProps<PackageNodeType>) {
                   data.status === "researching"
                     ? "animate-pulse bg-amber-500"
                     : data.status === "failed"
-                    ? "bg-destructive"
-                    : "bg-muted-foreground"
+                      ? "bg-destructive"
+                      : "bg-muted-foreground"
                 }`}
               />
               <span className="font-mono text-[10px] uppercase text-muted-foreground">

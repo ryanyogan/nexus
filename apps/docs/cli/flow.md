@@ -20,12 +20,12 @@ nexus flow list [options]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--active` | Only show active flows |
-| `--installed` | Only show installed flows |
-| `--starter` | Only show starter pack flows |
-| `--json` | Output as JSON |
+| Option        | Description                  |
+| ------------- | ---------------------------- |
+| `--active`    | Only show active flows       |
+| `--installed` | Only show installed flows    |
+| `--starter`   | Only show starter pack flows |
+| `--json`      | Output as JSON               |
 
 **Examples:**
 
@@ -50,8 +50,8 @@ nexus flow get <flow-id>
 
 **Arguments:**
 
-| Argument | Description |
-|----------|-------------|
+| Argument  | Description     |
+| --------- | --------------- |
 | `flow-id` | Flow ID or slug |
 
 **Examples:**
@@ -70,8 +70,8 @@ nexus flow active [options]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
+| Option   | Description    |
+| -------- | -------------- |
 | `--json` | Output as JSON |
 
 ### activate
@@ -84,14 +84,14 @@ nexus flow activate <flow-id> [options]
 
 **Arguments:**
 
-| Argument | Description |
-|----------|-------------|
+| Argument  | Description                 |
+| --------- | --------------------------- |
 | `flow-id` | Flow ID or slug to activate |
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
+| Option           | Description                            |
+| ---------------- | -------------------------------------- |
 | `--priority <n>` | Set priority (lower = higher priority) |
 
 **Examples:**
@@ -115,14 +115,14 @@ nexus flow deactivate --all
 
 **Arguments:**
 
-| Argument | Description |
-|----------|-------------|
+| Argument  | Description                   |
+| --------- | ----------------------------- |
 | `flow-id` | Flow ID or slug to deactivate |
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
+| Option  | Description          |
+| ------- | -------------------- |
 | `--all` | Deactivate all flows |
 
 ### download
@@ -135,16 +135,16 @@ nexus flow download <flow-id> [options]
 
 **Arguments:**
 
-| Argument | Description |
-|----------|-------------|
+| Argument  | Description                 |
+| --------- | --------------------------- |
 | `flow-id` | Flow ID or slug to download |
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
+| Option            | Description                         |
+| ----------------- | ----------------------------------- |
 | `--output <path>` | Output file path (default: FLOW.md) |
-| `--resolve` | Include resolved parent content |
+| `--resolve`       | Include resolved parent content     |
 
 **Examples:**
 
@@ -166,16 +166,16 @@ nexus flow create [options]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--name <name>` | Flow name |
-| `--slug <slug>` | URL-friendly slug |
-| `--description <desc>` | Flow description |
-| `--prompt <prompt>` | System prompt |
-| `--parent <id>` | Parent flow to extend |
-| `--libraries <ids>` | Comma-separated library IDs |
-| `--skills <ids>` | Comma-separated skill IDs |
-| `--interactive` | Interactive mode |
+| Option                 | Description                 |
+| ---------------------- | --------------------------- |
+| `--name <name>`        | Flow name                   |
+| `--slug <slug>`        | URL-friendly slug           |
+| `--description <desc>` | Flow description            |
+| `--prompt <prompt>`    | System prompt               |
+| `--parent <id>`        | Parent flow to extend       |
+| `--libraries <ids>`    | Comma-separated library IDs |
+| `--skills <ids>`       | Comma-separated skill IDs   |
+| `--interactive`        | Interactive mode            |
 
 **Examples:**
 
@@ -195,14 +195,14 @@ nexus flow create \
 
 Nexus includes these pre-configured flows:
 
-| Slug | Description |
-|------|-------------|
-| `react-typescript-expert` | Modern React with TypeScript |
-| `fullstack-developer` | Full-stack web development |
-| `testing-qa-engineer` | Testing and quality assurance |
-| `ui-ux-designer` | Design systems and UX |
-| `api-developer` | REST and GraphQL APIs |
-| `tanstack-cloudflare` | TanStack Start + Cloudflare |
+| Slug                      | Description                   |
+| ------------------------- | ----------------------------- |
+| `react-typescript-expert` | Modern React with TypeScript  |
+| `fullstack-developer`     | Full-stack web development    |
+| `testing-qa-engineer`     | Testing and quality assurance |
+| `ui-ux-designer`          | Design systems and UX         |
+| `api-developer`           | REST and GraphQL APIs         |
+| `tanstack-cloudflare`     | TanStack Start + Cloudflare   |
 
 ## See Also
 
