@@ -2,12 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Key, Plus, Trash2, Copy, Check, Loader2, AlertCircle, X } from "lucide-react";
 import { authFetch } from "../../../lib/api";
-import {
-  PageContainer,
-  PageHeader,
-  CenteredSpinner,
-  PageSkeleton,
-} from "../../../components/layout";
+import { PageHeader, CenteredSpinner, PageSkeleton } from "../../../components/layout";
 
 // ============================================================================
 // Route Definition
@@ -89,7 +84,7 @@ function ApiKeysPage() {
   }
 
   return (
-    <PageContainer>
+    <div className="py-8 md:py-12">
       <PageHeader
         title="API Keys"
         description="Manage your API keys for Nexus access"
@@ -251,7 +246,7 @@ function ApiKeysPage() {
           }}
         />
       )}
-    </PageContainer>
+    </div>
   );
 }
 

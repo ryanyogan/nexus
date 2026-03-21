@@ -24,25 +24,19 @@ const config = defineConfig({
       // Cloudflare-specific imports should be external for client builds
       external: ["cloudflare:workers"],
       output: {
-        manualChunks: {
+        // Use function form for proper typing with Vite 8
+        manualChunks: (id: string) => {
           // Shiki is large (~1MB), keep it in a separate chunk (lazy-loaded)
-          shiki: ["shiki", "shiki/core", "shiki/engine/javascript"],
+          if (id.includes("shiki")) return "shiki";
           // CodeMirror for /code routes - lazy loaded
-          codemirror: [
-            "@codemirror/state",
-            "@codemirror/view",
-            "@codemirror/lang-javascript",
-            "@codemirror/lang-css",
-            "@codemirror/lang-html",
-            "@codemirror/lang-json",
-            "@codemirror/lang-markdown",
-            "@codemirror/lang-python",
-            "@codemirror/lang-go",
-            "@codemirror/lang-rust",
-            "@codemirror/lang-java",
-            "@uiw/react-codemirror",
-            "@uiw/codemirror-themes",
-          ],
+          if (
+            id.includes("@codemirror") ||
+            id.includes("@uiw/react-codemirror") ||
+            id.includes("@uiw/codemirror-themes")
+          ) {
+            return "codemirror";
+          }
+          return undefined;
         },
       },
     },

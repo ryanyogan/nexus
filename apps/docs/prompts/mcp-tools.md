@@ -10,8 +10,8 @@ List all available prompts with optional filtering.
 
 **Parameters:**
 
-| Parameter       | Type    | Description                    |
-| --------------- | ------- | ------------------------------ |
+| Parameter       | Type    | Description                      |
+| --------------- | ------- | -------------------------------- |
 | `activeOnly`    | boolean | Only return active prompts       |
 | `installedOnly` | boolean | Only return installed prompts    |
 | `starterOnly`   | boolean | Only return starter pack prompts |
@@ -34,10 +34,10 @@ Get detailed information about a specific prompt.
 
 **Parameters:**
 
-| Parameter | Type    | Required | Description               |
-| --------- | ------- | -------- | ------------------------- |
-| `promptId`  | string  | Yes      | Prompt ID or slug           |
-| `resolve` | boolean | No       | Resolve inheritance chain |
+| Parameter  | Type    | Required | Description               |
+| ---------- | ------- | -------- | ------------------------- |
+| `promptId` | string  | Yes      | Prompt ID or slug         |
+| `resolve`  | boolean | No       | Resolve inheritance chain |
 
 **Example:**
 
@@ -67,7 +67,7 @@ Activate a prompt for the current user.
 
 | Parameter  | Type   | Required | Description                              |
 | ---------- | ------ | -------- | ---------------------------------------- |
-| `promptId`   | string | Yes      | Prompt ID or slug                          |
+| `promptId` | string | Yes      | Prompt ID or slug                        |
 | `priority` | number | No       | Priority order (lower = higher priority) |
 
 **Example:**
@@ -88,10 +88,10 @@ Deactivate a specific prompt or all prompts.
 
 **Parameters:**
 
-| Parameter | Type    | Required | Description                   |
-| --------- | ------- | -------- | ----------------------------- |
-| `promptId`  | string  | No\*     | Prompt ID or slug to deactivate |
-| `all`     | boolean | No\*     | Deactivate all prompts          |
+| Parameter  | Type    | Required | Description                     |
+| ---------- | ------- | -------- | ------------------------------- |
+| `promptId` | string  | No\*     | Prompt ID or slug to deactivate |
+| `all`      | boolean | No\*     | Deactivate all prompts          |
 
 \*One of `promptId` or `all` is required.
 
@@ -112,10 +112,10 @@ Download a prompt as markdown content.
 
 **Parameters:**
 
-| Parameter | Type    | Required | Description                     |
-| --------- | ------- | -------- | ------------------------------- |
-| `promptId`  | string  | Yes      | Prompt ID or slug                 |
-| `resolve` | boolean | No       | Include resolved parent content |
+| Parameter  | Type    | Required | Description                     |
+| ---------- | ------- | -------- | ------------------------------- |
+| `promptId` | string  | Yes      | Prompt ID or slug               |
+| `resolve`  | boolean | No       | Include resolved parent content |
 
 **Returns:** Markdown content of the prompt suitable for FLOW.md files.
 
@@ -152,16 +152,16 @@ Create a new custom prompt.
 
 **Parameters:**
 
-| Parameter      | Type     | Required | Description            |
-| -------------- | -------- | -------- | ---------------------- |
-| `name`         | string   | Yes      | Prompt name              |
-| `slug`         | string   | Yes      | URL-friendly slug      |
-| `description`  | string   | No       | Prompt description       |
-| `systemPrompt` | string   | Yes      | System prompt content  |
-| `parentPromptId` | string   | No       | Parent prompt to extend  |
-| `libraries`    | string[] | No       | Library IDs to include |
-| `skills`       | string[] | No       | Skill IDs to include   |
-| `preferences`  | object   | No       | Response preferences   |
+| Parameter        | Type     | Required | Description             |
+| ---------------- | -------- | -------- | ----------------------- |
+| `name`           | string   | Yes      | Prompt name             |
+| `slug`           | string   | Yes      | URL-friendly slug       |
+| `description`    | string   | No       | Prompt description      |
+| `systemPrompt`   | string   | Yes      | System prompt content   |
+| `parentPromptId` | string   | No       | Parent prompt to extend |
+| `libraries`      | string[] | No       | Library IDs to include  |
+| `skills`         | string[] | No       | Skill IDs to include    |
+| `preferences`    | object   | No       | Response preferences    |
 
 **Example:**
 
@@ -217,10 +217,10 @@ When saving memories while prompts are active:
 
 All tools return standardized errors:
 
-| Error               | Code | Description                   |
-| ------------------- | ---- | ----------------------------- |
+| Error                 | Code | Description                     |
+| --------------------- | ---- | ------------------------------- |
 | `PromptNotFound`      | 404  | Prompt ID or slug doesn't exist |
-| `NotAuthenticated`  | 401  | API key required              |
+| `NotAuthenticated`    | 401  | API key required                |
 | `PromptAlreadyActive` | 409  | Prompt is already activated     |
-| `MaxDepthExceeded`  | 400  | Inheritance chain too deep    |
-| `PermissionDenied`  | 403  | Cannot modify this prompt       |
+| `MaxDepthExceeded`    | 400  | Inheritance chain too deep      |
+| `PermissionDenied`    | 403  | Cannot modify this prompt       |

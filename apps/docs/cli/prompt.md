@@ -20,12 +20,12 @@ nexus prompt list [options]
 
 **Options:**
 
-| Option        | Description                  |
-| ------------- | ---------------------------- |
+| Option        | Description                    |
+| ------------- | ------------------------------ |
 | `--active`    | Only show active prompts       |
 | `--installed` | Only show installed prompts    |
 | `--starter`   | Only show starter pack prompts |
-| `--json`      | Output as JSON               |
+| `--json`      | Output as JSON                 |
 
 **Examples:**
 
@@ -50,8 +50,8 @@ nexus prompt get <prompt-id>
 
 **Arguments:**
 
-| Argument  | Description     |
-| --------- | --------------- |
+| Argument    | Description       |
+| ----------- | ----------------- |
 | `prompt-id` | Prompt ID or slug |
 
 **Examples:**
@@ -84,8 +84,8 @@ nexus prompt activate <prompt-id> [options]
 
 **Arguments:**
 
-| Argument  | Description                 |
-| --------- | --------------------------- |
+| Argument    | Description                   |
+| ----------- | ----------------------------- |
 | `prompt-id` | Prompt ID or slug to activate |
 
 **Options:**
@@ -115,14 +115,14 @@ nexus prompt deactivate --all
 
 **Arguments:**
 
-| Argument  | Description                   |
-| --------- | ----------------------------- |
+| Argument    | Description                     |
+| ----------- | ------------------------------- |
 | `prompt-id` | Prompt ID or slug to deactivate |
 
 **Options:**
 
-| Option  | Description          |
-| ------- | -------------------- |
+| Option  | Description            |
+| ------- | ---------------------- |
 | `--all` | Deactivate all prompts |
 
 ### download
@@ -135,8 +135,8 @@ nexus prompt download <prompt-id> [options]
 
 **Arguments:**
 
-| Argument  | Description                 |
-| --------- | --------------------------- |
+| Argument    | Description                   |
+| ----------- | ----------------------------- |
 | `prompt-id` | Prompt ID or slug to download |
 
 **Options:**
@@ -168,11 +168,11 @@ nexus prompt create [options]
 
 | Option                 | Description                 |
 | ---------------------- | --------------------------- |
-| `--name <name>`        | Prompt name                   |
+| `--name <name>`        | Prompt name                 |
 | `--slug <slug>`        | URL-friendly slug           |
-| `--description <desc>` | Prompt description            |
+| `--description <desc>` | Prompt description          |
 | `--prompt <prompt>`    | System prompt               |
-| `--parent <id>`        | Parent prompt to extend       |
+| `--parent <id>`        | Parent prompt to extend     |
 | `--libraries <ids>`    | Comma-separated library IDs |
 | `--skills <ids>`       | Comma-separated skill IDs   |
 | `--interactive`        | Interactive mode            |

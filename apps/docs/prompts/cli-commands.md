@@ -12,12 +12,12 @@ nexus prompt list [options]
 
 ### Options
 
-| Option        | Description                  |
-| ------------- | ---------------------------- |
+| Option        | Description                    |
+| ------------- | ------------------------------ |
 | `--active`    | Only show active prompts       |
 | `--installed` | Only show installed prompts    |
 | `--starter`   | Only show starter pack prompts |
-| `--json`      | Output as JSON               |
+| `--json`      | Output as JSON                 |
 
 ### Examples
 
@@ -129,9 +129,9 @@ nexus prompt download <prompt-id-or-slug> [options]
 
 ### Options
 
-| Option            | Description                          |
-| ----------------- | ------------------------------------ |
-| `--output <path>` | Output file path (default: FLOW.md)  |
+| Option            | Description                            |
+| ----------------- | -------------------------------------- |
+| `--output <path>` | Output file path (default: FLOW.md)    |
 | `--resolve`       | Include resolved parent prompt content |
 
 ### Examples
@@ -159,11 +159,11 @@ nexus prompt create [options]
 
 | Option                 | Description                          |
 | ---------------------- | ------------------------------------ |
-| `--name <name>`        | Prompt name                            |
+| `--name <name>`        | Prompt name                          |
 | `--slug <slug>`        | URL-friendly slug                    |
-| `--description <desc>` | Prompt description                     |
+| `--description <desc>` | Prompt description                   |
 | `--prompt <prompt>`    | System prompt                        |
-| `--parent <id>`        | Parent prompt to extend                |
+| `--parent <id>`        | Parent prompt to extend              |
 | `--libraries <ids>`    | Comma-separated library IDs          |
 | `--skills <ids>`       | Comma-separated skill IDs            |
 | `--interactive`        | Interactive mode (prompts for input) |
@@ -188,7 +188,7 @@ nexus prompt create \
 | Variable             | Description                |
 | -------------------- | -------------------------- |
 | `NEXUS_API_KEY`      | API key for authentication |
-| `NEXUS_DEFAULT_FLOW` | Default prompt to activate   |
+| `NEXUS_DEFAULT_FLOW` | Default prompt to activate |
 
 ## Exit Codes
 
@@ -197,5 +197,5 @@ nexus prompt create \
 | 0    | Success                 |
 | 1    | General error           |
 | 2    | Authentication required |
-| 3    | Prompt not found          |
+| 3    | Prompt not found        |
 | 4    | Permission denied       |

@@ -15,6 +15,7 @@ These tools are designed to be used through natural conversation with your AI as
 ### Example Prompts
 
 **Documentation lookup:**
+
 > "How do I set up authentication in Next.js App Router?"
 
 > "Show me examples of React Server Components with data fetching"
@@ -22,6 +23,7 @@ These tools are designed to be used through natural conversation with your AI as
 > "What's the correct way to use Drizzle ORM migrations?"
 
 **Memory and context:**
+
 > "Remember that this project uses pnpm and Tailwind CSS"
 
 > "What decisions have we made about the database schema?"
@@ -29,6 +31,7 @@ These tools are designed to be used through natural conversation with your AI as
 > "Save this as a lesson learned: always use parameterized queries"
 
 **Server discovery:**
+
 > "I need to connect Claude to my PostgreSQL database - what MCP servers are available?"
 
 > "How do I install the GitHub MCP server?"
