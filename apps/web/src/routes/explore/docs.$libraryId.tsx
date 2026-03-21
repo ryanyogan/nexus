@@ -106,7 +106,7 @@ function LibraryDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
         {/* Back link */}
         <Link
           to="/"

@@ -212,7 +212,7 @@ function BrainPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               <StatMini icon={<Target />} value={score.stats.totalQueries} label="Queries" />
               <StatMini icon={<BookOpen />} value={score.stats.totalMemories} label="Memories" />
               <StatMini icon={<Sparkles />} value={score.stats.totalLearnings} label="Learnings" />
@@ -264,12 +264,12 @@ function BrainPage() {
         {activeTab === "learnings" && (
           <>
             {/* Filter */}
-            <div className="mb-4 flex gap-2">
+            <div className="mb-4 flex flex-wrap gap-2">
               {["all", "correction", "pattern", "preference", "skill"].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setLearningFilter(filter)}
-                  className={`px-3 py-1.5 font-mono text-xs uppercase transition-colors ${
+                  className={`min-h-[40px] px-3 py-2 font-mono text-xs uppercase transition-colors ${
                     learningFilter === filter
                       ? "bg-foreground text-background"
                       : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
@@ -390,7 +390,7 @@ function BrainPage() {
         {/* New Learning Modal */}
         {showNewLearning && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4">
-            <div className="w-full max-w-lg border border-border bg-background p-6 shadow-xl">
+            <div className="w-full max-w-[calc(100%-2rem)] border border-border bg-background p-4 shadow-xl sm:max-w-lg sm:p-6">
               <h2 className="mb-4 font-mono text-lg font-bold uppercase text-foreground">
                 Add Learning
               </h2>
@@ -422,7 +422,7 @@ function BrainPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block font-mono text-xs uppercase text-muted-foreground">
                       Type

@@ -178,7 +178,7 @@ function SkillDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
         {/* Back link */}
         <Link
           to="/"
@@ -514,7 +514,7 @@ function SkillDetailPage() {
 function SkillDetailSkeleton() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
         <Skeleton className="mb-8 h-4 w-16" />
 
         <div className="mb-8 border-b border-border pb-8">

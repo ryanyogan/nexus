@@ -245,7 +245,7 @@ function CreateKeyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md border border-border bg-background p-6">
+      <div className="w-full max-w-[calc(100%-2rem)] border border-border bg-background p-4 sm:max-w-md sm:p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground">
             Create API Key

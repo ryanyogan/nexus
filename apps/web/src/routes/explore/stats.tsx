@@ -134,7 +134,7 @@ function StatsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[960px] px-4 py-12 sm:px-6 lg:px-0">
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="font-mono text-2xl font-bold uppercase tracking-tight text-foreground sm:text-3xl">

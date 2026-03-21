@@ -53,7 +53,7 @@ function InstalledSkillsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
       {/* Header */}
       <div className="mb-8">
         <Link
@@ -63,14 +63,16 @@ function InstalledSkillsPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Installed Skills</h1>
-            <p className="mt-1 text-muted-foreground">Manage your AI agent skills</p>
+            <h1 className="text-xl font-bold text-foreground sm:text-2xl">Installed Skills</h1>
+            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+              Manage your AI agent skills
+            </p>
           </div>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Search className="h-4 w-4" />
             Browse Skills

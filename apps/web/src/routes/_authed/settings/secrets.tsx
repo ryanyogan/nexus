@@ -118,18 +118,18 @@ function SecretsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">API Key Vault</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className="text-xl font-bold text-foreground sm:text-2xl">API Key Vault</h1>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
             Securely store your API keys for use with MCP servers
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
           Add Secret
@@ -258,12 +258,12 @@ function SecretCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {revealedValue ? (
             <>
               <button
                 onClick={() => onCopy(secret.id)}
-                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="min-h-[40px] min-w-[40px] rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 title="Copy"
               >
                 {copiedId === secret.id ? (
@@ -274,7 +274,7 @@ function SecretCard({
               </button>
               <button
                 onClick={() => onHide(secret.id)}
-                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="min-h-[40px] min-w-[40px] rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 title="Hide"
               >
                 <EyeOff className="h-4 w-4" />
@@ -284,7 +284,7 @@ function SecretCard({
             <button
               onClick={() => onReveal(secret.id)}
               disabled={isRevealing}
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+              className="min-h-[40px] min-w-[40px] rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
               title="Reveal"
             >
               {isRevealing ? (
@@ -297,7 +297,7 @@ function SecretCard({
           <button
             onClick={() => onDelete(secret.id)}
             disabled={isDeleting}
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 disabled:opacity-50"
+            className="min-h-[40px] min-w-[40px] rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 disabled:opacity-50"
             title="Delete"
           >
             {isDeleting ? (
@@ -343,7 +343,7 @@ function AddSecretModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
+      <div className="w-full max-w-[calc(100%-2rem)] rounded-lg border border-border bg-card p-4 shadow-lg sm:max-w-md sm:p-6">
         <h2 className="text-lg font-semibold text-foreground">Add New Secret</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Your secret will be encrypted before storage

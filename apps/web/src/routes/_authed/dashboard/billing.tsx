@@ -117,7 +117,7 @@ function BillingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
       {/* Header */}
       <div className="mb-8">
         <Link
@@ -127,8 +127,10 @@ function BillingPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">Billing</h1>
-        <p className="mt-1 text-muted-foreground">Manage your subscription and billing</p>
+        <h1 className="text-xl font-bold text-foreground sm:text-2xl">Billing</h1>
+        <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+          Manage your subscription and billing
+        </p>
       </div>
 
       {/* Error */}

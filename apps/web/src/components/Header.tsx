@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import {
   Menu,
   X,
-  Plus,
   Github,
   User,
   LogOut,
@@ -16,7 +15,9 @@ import {
   Sun,
   Layers,
   Zap,
+  LayoutDashboard,
 } from "lucide-react";
+import { LAYOUT_WIDTHS } from "./layout/PageContainer";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "@nexus/auth/client";
 import type { SessionData } from "../server/auth";
@@ -81,10 +82,12 @@ export default function Header({ session }: HeaderProps) {
 
   return (
     <header className="left-0 right-0 top-0 z-40 bg-background pt-4 md:pt-6">
-      <div className="mx-auto flex w-full max-w-[960px] items-center justify-between px-4 sm:px-6 lg:px-0 h-14">
-        {/* Logo */}
+      <div
+        className={`mx-auto flex w-full items-center justify-between px-4 sm:px-6 lg:px-8 h-14 ${LAYOUT_WIDTHS.full}`}
+      >
+        {/* Logo - Always goes to home */}
         <Link
-          to={isSignedIn ? "/dashboard" : "/"}
+          to="/"
           className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider hover:text-accent transition-colors"
         >
           <span className="border border-foreground bg-foreground text-background px-2 py-1">
@@ -95,6 +98,19 @@ export default function Header({ session }: HeaderProps) {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1 font-mono text-xs font-bold uppercase tracking-wider">
+          {/* Dashboard link for logged-in users */}
+          {isSignedIn && (
+            <>
+              <Link
+                to="/dashboard"
+                className="px-3 py-2 hover:bg-muted transition-colors flex items-center gap-1"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                DASHBOARD
+              </Link>
+              <span className="text-border">|</span>
+            </>
+          )}
           <a
             href="https://github.com/ryanyogan/nexus"
             target="_blank"
@@ -200,7 +216,7 @@ export default function Header({ session }: HeaderProps) {
                     <span className="font-mono text-xs font-bold uppercase tracking-wider">
                       CREATE API KEY
                     </span>
-                    <Plus className="h-4 w-4" />
+                    <Key className="h-4 w-4" />
                   </Link>
                 ) : (
                   <a
@@ -216,17 +232,6 @@ export default function Header({ session }: HeaderProps) {
               </div>
             </div>
           </div>
-
-          <span className="text-border">|</span>
-
-          {/* Submit CTA */}
-          <Link
-            to="/submit"
-            className="ml-1 flex items-center gap-1 border border-foreground bg-foreground text-background px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors"
-          >
-            <Plus className="h-3 w-3" />
-            SUBMIT
-          </Link>
         </nav>
 
         {/* Right side - Auth + Mobile */}
@@ -315,36 +320,51 @@ export default function Header({ session }: HeaderProps) {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-4 py-4 space-y-2">
-            {/* First row: DOCS + PLANS + SUBMIT */}
+            {/* Dashboard link for signed-in users */}
+            {isSignedIn && (
+              <Link
+                to="/dashboard"
+                className="flex items-center justify-center gap-2 px-4 py-3 border border-accent bg-accent/10 text-accent font-mono text-xs font-bold uppercase tracking-wider hover:bg-accent/20 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                DASHBOARD
+              </Link>
+            )}
+
+            {/* Primary links: DOCS + PLANS + INSTALL */}
             <div className="grid grid-cols-3 gap-2">
               <a
                 href="https://docs.nexus.yogan.dev"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                className="min-h-[44px] flex items-center justify-center border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
               >
                 DOCS
               </a>
               <Link
                 to="/plans"
-                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                className="min-h-[44px] flex items-center justify-center border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 PLANS
               </Link>
-              <Link
-                to="/submit"
-                className="px-2 py-3 border border-foreground bg-foreground text-background font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-foreground/90 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
+              <a
+                href="https://github.com/ryanyogan/nexus"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-[44px] flex items-center justify-center border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
               >
-                SUBMIT
-              </Link>
+                INSTALL
+              </a>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+
+            {/* Secondary links: content filters */}
+            <div className="grid grid-cols-2 gap-2 xs:grid-cols-4">
               <Link
                 to="/"
                 search={{ filter: "servers" }}
-                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                className="min-h-[44px] flex items-center justify-center border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 SERVERS
@@ -352,33 +372,39 @@ export default function Header({ session }: HeaderProps) {
               <Link
                 to="/"
                 search={{ filter: "skills" }}
-                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                className="min-h-[44px] flex items-center justify-center border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 SKILLS
               </Link>
               <Link
-                to="/dashboard/stacks"
-                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                to="/"
+                search={{ filter: "stacks" }}
+                className="min-h-[44px] flex items-center justify-center border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 STACKS
               </Link>
               <Link
-                to="/dashboard/prompts"
-                className="px-2 py-3 border border-border font-mono text-[10px] font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
+                to="/"
+                search={{ filter: "prompts" }}
+                className="min-h-[44px] flex items-center justify-center border border-border font-mono text-xs font-bold uppercase tracking-wider text-center hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 PROMPTS
               </Link>
             </div>
+
+            {/* Dark mode toggle */}
             <button
               onClick={toggleDarkMode}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-border font-mono text-xs font-bold uppercase tracking-wider hover:bg-muted transition-colors"
+              className="w-full min-h-[44px] flex items-center justify-center gap-2 border border-border font-mono text-xs font-bold uppercase tracking-wider hover:bg-muted transition-colors"
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               {isDark ? "LIGHT MODE" : "DARK MODE"}
             </button>
+
+            {/* Sign in for unauthenticated users */}
             {!isSignedIn && (
               <a
                 href="/sign-in"

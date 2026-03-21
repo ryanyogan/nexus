@@ -135,7 +135,7 @@ function LibraryDetailPage() {
     <div className="min-h-screen">
       {/* Header */}
       <div className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
           <Link
             to="/explore"
             className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -276,7 +276,7 @@ function LibraryDetailPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-0">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Chunks List */}
           <div className="lg:col-span-2">

@@ -264,7 +264,7 @@ function SubmitServerPage() {
           {/* Transport Type */}
           <div>
             <label className="mb-2 block text-sm font-medium text-foreground">Transport Type</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {TRANSPORT_TYPES.map((type) => (
                 <button
                   key={type.id}

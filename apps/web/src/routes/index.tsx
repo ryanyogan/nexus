@@ -6,7 +6,12 @@ import { Search, Github, ArrowUpRight, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "../hooks/use-debounce";
 import { getHomePageData, normalizeAndSort } from "../server/home";
-import { ContentRow, ContentListSkeleton } from "../components/home";
+import {
+  ContentRow,
+  ContentListSkeleton,
+  ContentCard,
+  ContentGridSkeleton,
+} from "../components/home";
 import { SearchTabs } from "../components/home/SearchTabs";
 import { queryKeys } from "../lib/query-keys";
 import type { SortMode, ContentFilter } from "../types/home";
@@ -61,7 +66,7 @@ function HomePageSkeleton() {
 
         {/* Search Skeleton */}
         <div className="mt-10 animate-pulse md:mt-12 lg:mt-16">
-          <div className="h-12 max-w-lg rounded border border-border bg-muted" />
+          <div className="h-12 rounded border border-border bg-muted" />
           <div className="mb-5 mt-8 flex items-center gap-4 border-b border-border pb-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="h-4 w-16 rounded bg-muted" />
@@ -69,8 +74,13 @@ function HomePageSkeleton() {
           </div>
         </div>
 
-        {/* Content List Skeleton */}
-        <ContentListSkeleton count={10} />
+        {/* Content Grid Skeleton - mobile list, desktop grid */}
+        <div className="md:hidden">
+          <ContentListSkeleton count={10} />
+        </div>
+        <div className="hidden md:block">
+          <ContentGridSkeleton count={8} />
+        </div>
       </div>
     </div>
   );
@@ -273,7 +283,7 @@ function HomePage() {
         {/* Search + Tabs */}
         <div className="mt-10 md:mt-12 lg:mt-16">
           <form onSubmit={handleSearch}>
-            <div className="flex h-12 max-w-lg items-center gap-4 border border-foreground bg-background px-4 font-mono shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.3)] md:h-12">
+            <div className="flex h-12 items-center gap-4 border border-foreground bg-background px-4 font-mono shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.3)] md:h-14">
               <Search className="h-5 w-5 shrink-0 text-foreground" />
               <input
                 ref={inputRef}
@@ -321,15 +331,27 @@ function HomePage() {
             </div>
           )}
 
-          {/* Content List - slightly faded during refetch for subtle feedback */}
+          {/* Content display - slightly faded during refetch for subtle feedback */}
           <div className={cn(isRefetching && "opacity-60 transition-opacity")}>
-            {sortedItems.map((item, idx) => (
-              <ContentRow
-                key={`${item.type}-${item.id}`}
-                item={item}
-                isLast={idx === sortedItems.length - 1}
-              />
-            ))}
+            {/* Mobile: List view */}
+            <div className="md:hidden">
+              {sortedItems.map((item, idx) => (
+                <ContentRow
+                  key={`${item.type}-${item.id}`}
+                  item={item}
+                  isLast={idx === sortedItems.length - 1}
+                />
+              ))}
+            </div>
+
+            {/* Desktop: Grid view */}
+            <div className="hidden md:block">
+              <div className="grid grid-cols-2 gap-px bg-border border border-border">
+                {sortedItems.map((item) => (
+                  <ContentCard key={`${item.type}-${item.id}`} item={item} />
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Empty state */}
