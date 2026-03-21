@@ -476,3 +476,203 @@ Build an independent documentation crawler to replace Context7 dependency (which
 - Analyze endpoint works: `GET /api/analyze?url=https://github.com/honojs/hono`
 - Most repos don't have LLM.txt yet (Hono, Drizzle, Next.js, Anthropic SDK all lack it)
 - Crawler falls back to docs folder when no LLM.txt found
+
+---
+
+## Planned: Context7-Style Ingestion Improvements
+
+### Background
+
+Context7 achieves better retrieval quality through several AI-powered techniques that Nexus currently lacks. After analyzing their approach (see their [Quality and Safety blog post](https://upstash.com/blog/context7-quality-and-safety)), we've identified key improvements to adopt while keeping costs minimal using Workers AI (Llama).
+
+**Context7's Key Techniques:**
+- Uses Gemini Flash, OpenAI, and Anthropic for AI processing
+- Benchmark-driven scoring with AI-generated developer questions
+- Cosine similarity deduplication for near-duplicate removal
+- Trust scores based on repository signals (stars, activity, account age) and website signals (TLS, domain authority, backlinks)
+- Version-aware parsing to exclude outdated documentation
+- Two-pass prompt injection detection pipeline
+
+### Current Nexus vs Context7
+
+| Feature | Nexus (Current) | Context7 |
+|---------|-----------------|----------|
+| Code extraction | Regex-based | AI-powered (Gemini Flash) |
+| Deduplication | Content hash only | Cosine similarity + exact match |
+| Benchmark scoring | Heuristic formulas | AI-generated questions + retrieval testing |
+| Chunking | Fixed 512 tokens | Semantic boundaries |
+| Quality filtering | None (indexes everything) | AI-assessed relevance filtering |
+| Token counting | `text.length / 4` estimate | Actual tokenizer |
+
+### Implementation Plan
+
+#### Phase 1: Semantic Deduplication
+**Goal**: Remove near-duplicate content using cosine similarity, not just exact hash matching.
+
+**Files to modify/create**:
+- `apps/api/src/lib/similarity.ts` (new) - Cosine similarity utilities
+- `apps/api/src/lib/chunker.ts` - Add deduplication pass
+- `apps/api/src/lib/ingestion.ts` - Reorder pipeline
+
+**Key functions**:
+```typescript
+export function cosineSimilarity(a: number[], b: number[]): number
+export function deduplicateChunks(chunks: Chunk[], embeddings: number[][], threshold?: number): Chunk[]
+```
+
+**Threshold**: Remove chunks with similarity > 0.92 (configurable)
+
+**Estimated effort**: 1-2 hours
+
+#### Phase 2: AI-Powered Code Extraction
+**Goal**: Use Workers AI (Llama) to identify relevant code snippets and generate better descriptions.
+
+**Files to create**:
+- `apps/api/src/lib/extractors/code.ts` - AI code extractor
+
+**AI prompt template**:
+```
+Analyze this code snippet from {library} documentation:
+
+\`\`\`{language}
+{code}
+\`\`\`
+
+Context: {surrounding_text}
+
+Return JSON:
+- relevance_score: 0-100 (how useful is this for developers?)
+- title: short descriptive title
+- description: 1-2 sentence explanation
+- is_boilerplate: true/false
+```
+
+**Changes**:
+- Score each code block for relevance (0-100)
+- Generate AI titles/descriptions for code snippets
+- Filter out boilerplate (install commands, imports only, etc.)
+
+**Estimated effort**: 3-4 hours
+
+#### Phase 3: Quality-Based Filtering
+**Goal**: Score content relevance before indexing, filter low-quality chunks.
+
+**Files to create**:
+- `apps/api/src/lib/quality/scorer.ts` - Content quality scorer
+
+**Scoring dimensions**:
+- Relevance (0-100): Is this useful documentation?
+- Completeness (0-100): Is this a complete thought/example?
+- Actionability (0-100): Can a developer use this immediately?
+
+**Filtering thresholds**:
+- Score < 30: Don't index (boilerplate, legal text, etc.)
+- Score 30-50: Index but lower priority in retrieval
+- Score > 50: Full indexing
+
+**Estimated effort**: 2-3 hours
+
+#### Phase 4: Benchmark-Driven Scoring
+**Goal**: Generate developer questions and test retrieval accuracy to score libraries.
+
+**Files to create**:
+- `apps/api/src/lib/benchmark/questions.ts` - Question generator
+- `apps/api/src/lib/benchmark/evaluator.ts` - Retrieval tester
+
+**Process**:
+1. After indexing, generate 10-20 developer-style questions using AI
+2. For each question, query Vectorize
+3. AI-evaluate how well results answer the question
+4. Average scores = benchmark score
+
+**Question generation prompt**:
+```
+You are generating test questions for {library} documentation.
+Generate 15 questions a developer would ask, covering:
+- Installation and setup
+- Core concepts
+- Common use cases
+- API usage
+- Error handling
+- Best practices
+
+Return as JSON array of question strings.
+```
+
+**Evaluation prompt**:
+```
+Question: {question}
+Retrieved content: {retrieved_chunks}
+
+Score 0-100: How well does this content answer the question?
+```
+
+**Database changes**:
+- Add `benchmark_questions` JSON column to `libraries` table
+- Store questions and scores for transparency
+
+**Estimated effort**: 4-5 hours
+
+#### Phase 5: Integration & Testing
+**Goal**: Tie everything together with feature flags for gradual rollout.
+
+**Feature flags** (`apps/api/src/lib/config.ts`):
+```typescript
+export const INGESTION_FEATURES = {
+  semanticDedup: true,
+  aiCodeExtraction: true,
+  qualityFiltering: true,
+  benchmarkScoring: true,
+}
+```
+
+**Updated pipeline order**:
+```
+Fetch docs → Parse markdown → AI code extraction → 
+Chunk content → Generate embeddings → Semantic deduplication →
+Quality filtering → Store in Vectorize → Run benchmark → Update scores
+```
+
+**Metrics to track**:
+- Chunks filtered by deduplication
+- Chunks filtered by quality
+- Average benchmark scores
+- AI processing time
+
+**Estimated effort**: 2-3 hours
+
+### Cost Analysis (Workers AI)
+
+Workers AI Llama pricing:
+- **Free tier**: 10,000 neurons/day
+- **Paid**: $0.011 per 1,000 neurons
+
+**Per library estimate** (500 chunks):
+
+| Task | AI Calls | Neurons | Cost |
+|------|----------|---------|------|
+| Code extraction | ~500 | 500k | $0.0055 |
+| Quality scoring | ~500 | 250k | $0.0028 |
+| Benchmark (20 questions) | ~40 | 80k | $0.0009 |
+| **Total** | ~1040 | 830k | **~$0.009** |
+
+This is extremely cost-effective (~1 cent per library).
+
+### Priority Order
+
+| Phase | Priority | Effort | Impact |
+|-------|----------|--------|--------|
+| 1. Semantic Dedup | High | 1-2h | Medium |
+| 2. AI Code Extraction | High | 3-4h | High |
+| 3. Quality Filtering | Medium | 2-3h | Medium |
+| 4. Benchmark Scoring | Medium | 4-5h | High |
+| 5. Integration | High | 2-3h | Required |
+
+**Total estimated effort**: 12-17 hours
+
+### Success Metrics
+
+1. **Retrieval quality**: Side-by-side comparison with Context7 for same libraries
+2. **Index size reduction**: Target 20-30% smaller index via deduplication
+3. **Benchmark scores**: Compare AI-generated scores vs heuristic scores
+4. **User feedback**: Track if users report better documentation results
