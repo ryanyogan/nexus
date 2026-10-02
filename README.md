@@ -8,7 +8,7 @@ Nexus is an MCP platform that solves two problems current agent tooling handles 
 
 The memory system stores context as semantic embeddings across Cloudflare's D1 (metadata), R2 (content), and Vectorize (768-dimensional vectors). When Agent A saves a decision — "we chose JWT tokens in httpOnly cookies for auth" — Agent B can recall it later by meaning, not keywords. Memories are typed (project context, session summaries, decisions, corrections), scoped (global or per-user), and importance-weighted. This makes institutional knowledge persistent and compound across conversations instead of dying when a session ends.
 
-The documentation layer provides semantic search across 100+ libraries, synced weekly from Context7 and indexed via Cloudflare Workers AI embeddings. Query by meaning ("how to memoize with useCallback") rather than keyword matching. Responses are configurable: full, compact, code-only, or summary — because token budgets matter when you are inside an MCP tool call.
+The documentation layer provides semantic search across about 70 libraries, sourced mainly from Context7 and indexed via Cloudflare Workers AI embeddings. Query by meaning ("how to memoize with useCallback") rather than keyword matching. Responses are configurable: full, compact, code-only, or summary — because token budgets matter when you are inside an MCP tool call.
 
 Nexus started as a context-injection tool for a single editor. After user testing, it became clear that the real gap was not "inject docs into my prompt" but "let multiple agents build shared understanding." The pivot reshaped the entire architecture around multi-agent memory as the primary use case.
 
@@ -19,11 +19,10 @@ Nexus started as a context-injection tool for a single editor. After user testin
 │                      Monorepo (Turbo)                     │
 │                                                           │
 │  apps/                          packages/                 │
-│  ├── web (TanStack Start)       ├── cli (nexus-cli)      │
-│  ├── api (Hono on Workers)      ├── sdk (@nexus/sdk)     │
-│  └── docs                       ├── db (Drizzle + D1)    │
-│                                  ├── auth (Better Auth)   │
-│                                  ├── logger               │
+│  ├── web (TanStack Start)       ├── sdk (@nexus/sdk)     │
+│  ├── api (Hono on Workers)      ├── db (Drizzle + D1)    │
+│  ├── code                       ├── auth (Better Auth)   │
+│  └── docs                       ├── logger               │
 │                                  └── ui (shared React)    │
 └──────────────────────────────────────────────────────────┘
 
@@ -45,24 +44,23 @@ Documentation Flow:
 
 ### MCP Surface
 
-33 MCP tools exposed via HTTP, stdio, and SSE transports:
+14 MCP tools and 3 prompts, served over HTTP (JSON-RPC on `POST /mcp`, with an optional SSE stream on `GET /mcp`):
 
 | Category | Tools | Purpose |
 |----------|-------|---------|
-| **Documentation** | resolve-library, query-docs, get-library-info, list-libraries | Semantic search across 100+ indexed libraries |
+| **Documentation** | resolve-library, query-docs, get-library-info, list-libraries | Semantic search across about 70 indexed libraries |
 | **Memory** | save-memory, recall-memories, get-project-context, list-memories, update-memory, delete-memory | Persistent, shared context across agents and sessions |
-| **Servers** | discover-servers, get-server-config, list-server-categories | MCP server directory and installation configs |
-| **Skills** | Dynamic discovery | AI skill marketplace |
-| **Stacks** | Tech detection | Repository technology analysis |
+| **Servers** | discover-servers, get-server-info, get-server-config, list-server-categories | MCP server directory and installation configs |
+
+Skills and repository stack analysis are available as REST routes (`/api/skills`, `/api/analyze`), not as MCP tools.
 
 ### Async Processing
 
-Two Cloudflare Queue workers handle background jobs:
+One Cloudflare Queue handles background jobs:
 
 - **nexus-ingestion**: Fetches library docs from GitHub/websites, chunks content, generates embeddings, upserts into D1/R2/Vectorize. Retries up to 3 times.
-- **nexus-stack-learning**: Analyzes repositories for tech stack detection (package.json, Dockerfile, requirements.txt).
 
-Weekly scheduled sync (Sundays 2am UTC) keeps 100+ library indexes current against Context7.
+Repository stack analysis runs on request through `/api/analyze`. No cron trigger is configured in `apps/api/wrangler.jsonc`; re-indexing is started through the admin API.
 
 ## Why This Matters
 
@@ -70,11 +68,11 @@ The current MCP ecosystem treats each agent as isolated. Your coding assistant i
 
 Nexus makes memory a shared resource rather than a per-agent feature. The semantic embedding layer means agents find relevant context by meaning, not by knowing which exact key to look up. The type system (decisions, corrections, project context, session summaries) means you can ask "what architectural decisions have been made on this project" and get a structured answer from across every agent that has ever contributed.
 
-The documentation search exists because the alternative — each MCP server reimplementing docs lookup for each library — does not scale. One ingestion pipeline, one embedding model, one search interface, 100+ libraries.
+The documentation search exists because the alternative — each MCP server reimplementing docs lookup for each library — does not scale. One ingestion pipeline, one embedding model, one search interface, about 70 libraries.
 
 ## Status
 
-Active development. API deployed on Cloudflare Workers. Documentation index covers 100+ libraries. Memory system is functional and in use. CLI and SDK published on npm.
+Active development. API deployed on Cloudflare Workers. Documentation index covers about 70 libraries (the live count is at `api.nexus.yogan.dev/api/stats`). Memory system is functional and in use. The SDK (`packages/sdk`) lives in this repo and is not published on npm; there is no CLI package.
 
 ## Stack
 
